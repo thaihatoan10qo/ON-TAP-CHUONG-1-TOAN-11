@@ -37,7 +37,7 @@ with tab_mophong:
     st.subheader("Mô phỏng tương tác: Góc lượng giác")
     st.write("Học sinh tương tác trực tiếp với mô hình trực quan để củng cố khái niệm:")
     
-    html_filename = "GÓC LƯỢNG GIÁC.html"
+    html_filename = "GIÁ TRỊ LƯỢNG GIÁC.html"
     if os.path.exists(html_filename):
         with open(html_filename, "r", encoding="utf-8") as f:
             html_content = f.read()
