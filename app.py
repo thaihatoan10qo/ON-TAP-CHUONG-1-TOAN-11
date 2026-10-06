@@ -32,19 +32,29 @@ tab_mophong, tab_lythuyet, tab_luyentap, tab_giasu = st.tabs([
     "🤖 4. Gia Sư AI Hỏi Đáp"
 ])
 
-# ================= TAB 1: MÔ PHỎNG TRỰC QUAN TỪ FILE HTML =================
+# ================= TAB 1: MÔ PHỎNG TRỰC QUAN =================
 with tab_mophong:
-    st.subheader("Mô phỏng tương tác: Góc lượng giác")
-    st.write("Học sinh tương tác trực tiếp với mô hình trực quan để củng cố khái niệm:")
+    st.subheader("Mô phỏng tương tác trực quan Chương 1")
+    st.write("Học sinh chọn chuyên đề để thao tác với mô hình trực quan:")
     
-    html_filename = "GIÁ TRỊ LƯỢNG GIÁC.html"
-    if os.path.exists(html_filename):
-        with open(html_filename, "r", encoding="utf-8") as f:
+    # Danh mục liên kết trực tiếp tới 3 file HTML bạn đã tải lên
+    danh_sach_mo_phong = {
+        "1. Giá trị lượng giác & Vòng tròn đơn vị": "GIÁ TRỊ LƯỢNG GIÁC.html",
+        "2. Đồ thị & Tính chất Hàm số lượng giác": "HÀM SỐ LƯỢNG GIÁC.html",
+        "3. Phương trình lượng giác cơ bản": "PT LƯỢNG GIÁC.html"
+    }
+    
+    # Hộp lựa chọn chuyên đề
+    lua_chon = st.selectbox("Chọn mô hình muốn tương tác:", list(danh_sach_mo_phong.keys()))
+    file_html_can_chieu = danh_sach_mo_phong[lua_chon]
+    
+    # Đọc và hiển thị file HTML tương ứng
+    if os.path.exists(file_html_can_chieu):
+        with open(file_html_can_chieu, "r", encoding="utf-8") as f:
             html_content = f.read()
-        # Hiển thị trực tiếp file HTML
-        components.html(html_content, height=650, scrolling=True)
+        components.html(html_content, height=680, scrolling=True)
     else:
-        st.warning(f"Chưa tìm thấy file '{html_filename}' trong thư mục kho lưu trữ.")
+        st.warning(f"Chưa tìm thấy file '{file_html_can_chieu}' trên hệ thống.")
 
 # ================= TAB 2: TÓM TẮT LÝ THUYẾT =================
 with tab_lythuyet:
