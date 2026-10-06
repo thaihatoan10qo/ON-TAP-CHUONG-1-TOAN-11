@@ -64,10 +64,10 @@ with tab_lythuyet:
 
     # Danh mục ảnh tương ứng 4 bài
     danh_sach_anh = {
-        "Bài 1: Giá trị lượng giác của góc lượng giác": "ly_thuyet_bai_1.png",
-        "Bài 2: Công thức lượng giác": "ly_thuyet_bai_2.png",
-        "Bài 3: Hàm số lượng giác": "ly_thuyet_bai_3.png",
-        "Bài 4: Phương trình lượng giác cơ bản": "ly_thuyet_bai_4.png"
+        "Bài 1: Giá trị lượng giác của góc lượng giác": "ly-thuyet-bai-1.png",
+        "Bài 2: Công thức lượng giác": "ly-thuyet-bai-2.png",
+        "Bài 3: Hàm số lượng giác": "ly-thuyet-bai-3.png",
+        "Bài 4: Phương trình lượng giác cơ bản": "ly-thuyet-bai-4.png"
     }
 
     bai_chon = st.selectbox("Chọn bài học cần ôn tập:", list(danh_sach_anh.keys()))
