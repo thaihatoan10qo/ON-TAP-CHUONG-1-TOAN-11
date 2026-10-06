@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mô Phỏng Đồ Thị Hàm Số Lượng Giác - Toán 11</title>
+  <style>
+    :root {
+      --bg-main: #f8fafc;
+      --panel-bg: #ffffff;
+      --border: #cbd5e1;
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --accent: #f97316;
+      --text: #0f172a;
+      --muted: #475569;
+      --sin-color: #2563eb;
+      --cos-color: #059669;
+      --tan-color: #d97706;
+      --cot-color: #7c3aed;
+      --inc-color: #16a34a;
+      --dec-color: #dc2626;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background-color: var(--bg-main);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* HEADER */
+    header {
+      background: #ffffff;
+      padding: 6px 18px;
+      border-bottom: 1.5px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .header-title h1 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--primary-dark);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .header-title p {
+      font-size: 0.74rem;
+      color: var(--muted);
+    }
+
+    /* TABS CHỌN HÀM */
+    .func-tabs {
+      display: flex;
+      gap: 6px;
+    }
+    .tab-btn {
+      padding: 5px 14px;
+      border-radius: 6px;
+      border: 1.5px solid var(--border);
+      background: white;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all 0.15s ease;
+    }
+    .tab-btn:hover {
+      background: #e0f2fe;
+      color: var(--primary-dark);
+      border-color: var(--primary);
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      box-shadow: 0 2px 4px rgba(2, 132, 199, 0.2);
+    }
+
+    /* BỐ CỤC CHÍNH */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 390px;
+      gap: 10px;
+      padding: 8px 14px;
+      min-height: 0;
+      width: 100%;
+    }
+
+    /* KHUNG CANVAS */
+    .canvas-container {
+      position: relative;
+      background: #ffffff;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .canvas-wrapper {
+      flex: 1;
+      position: relative;
+      min-height: 0;
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: crosshair;
+    }
+
+    /* TOOLBAR TRÊN CANVAS */
+    .canvas-toolbar {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      gap: 6px;
+      z-index: 10;
+    }
+    .tool-btn {
+      background: rgba(255,255,255,0.9);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 4px 8px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+      color: var(--text);
+      backdrop-filter: blur(4px);
+    }
+    .tool-btn:hover { background: #e0f2fe; color: var(--primary-dark); }
+
+    /* BẢNG ĐIỀU KHIỂN BÊN PHẢI */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 0;
+      overflow-y: auto;
+    }
+    .panel-card {
+      background: #ffffff;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      padding: 10px 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .panel-title {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: var(--primary-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      border-bottom: 1.5px solid #e2e8f0;
+      padding-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* CÔNG THỨC HÀM SỐ */
+    .formula-display {
+      background: #f0fdf4;
+      border: 1.5px solid #86efac;
+      border-radius: 6px;
+      padding: 7px 10px;
+      text-align: center;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #15803d;
+      margin-bottom: 4px;
+    }
+
+    /* THANH TRƯỢT THAM SỐ */
+    .param-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .param-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      background: #f8fafc;
+      padding: 5px 8px;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+    }
+    .param-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--muted);
+    }
+    .param-header span.val {
+      color: var(--accent);
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.88rem;
+    }
+    .param-slider {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    input[type="range"] {
+      flex: 1;
+      height: 6px;
+      border-radius: 3px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    /* BẢNG TÍNH CHẤT HÀM SỐ MỚI */
+    .prop-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .prop-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 6px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .prop-label {
+      font-size: 0.74rem;
+      font-weight: 800;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .prop-val {
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+    .prop-val.inc { color: var(--inc-color); }
+    .prop-val.dec { color: var(--dec-color); }
+
+    /* NÚT THAO TÁC */
+    .action-row {
+      display: flex;
+      gap: 6px;
+      margin-top: auto;
+    }
+    .btn {
+      flex: 1;
+      border: 1.5px solid var(--border);
+      background: #ffffff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.82rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.15s;
+    }
+    .btn-reset {
+      background: #fee2e2;
+      color: #dc2626;
+      border-color: #fca5a5;
+    }
+    .btn-reset:hover { background: #fecaca; }
+    .btn-clear {
+      background: #f1f5f9;
+      color: var(--muted);
+    }
+    .btn-clear:hover { background: #e2e8f0; }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-title">
+      <h1>📊 MÔ PHỎNG ĐỒ THỊ HÀM SỐ LƯỢNG GIÁC</h1>
+      <p>Khảo sát trực quan đồ thị, tập xác định, tập giá trị và khoảng đơn điệu</p>
+    </div>
+
+    <!-- TABS CHỌN HÀM -->
+    <div class="func-tabs">
+      <button class="tab-btn active" data-func="sin">y = sin x</button>
+      <button class="tab-btn" data-func="cos">y = cos x</button>
+      <button class="tab-btn" data-func="tan">y = tan x</button>
+      <button class="tab-btn" data-func="cot">y = cot x</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- KHUNG ĐỒ THỊ CANVAS -->
+    <div class="canvas-container">
+      <div class="canvas-toolbar">
+        <button class="tool-btn" id="btnZoomIn">🔍+ Phóng to</button>
+        <button class="tool-btn" id="btnZoomOut">🔍- Thu nhỏ</button>
+        <button class="tool-btn" id="btnRecenter">🎯 Về tâm O</button>
+      </div>
+
+      <div class="canvas-wrapper">
+        <canvas id="graphCanvas"></canvas>
+      </div>
+    </div>
+
+    <!-- CỘT ĐIỀU KHIỂN & TÍNH CHẤT HÀM SỐ -->
+    <div class="sidebar">
+      
+      <!-- BIỂU THỨC HÀM SỐ HIỆN TẠI -->
+      <div class="panel-card">
+        <div class="panel-title">
+          <span>Hàm số đang khảo sát</span>
+          <span style="font-size:0.7rem; color:var(--muted);" id="lblGeneralForm">Dạng tổng quát: y = A sin(Bx + C) + D</span>
+        </div>
+        <div class="formula-display" id="dispFormula">
+          y = 1 sin(1x)
+        </div>
+      </div>
+
+      <!-- THANH TRƯỢT THAY ĐỔI THAM SỐ A, B, C, D -->
+      <div class="panel-card">
+        <div class="panel-title">
+          <span>Điều chỉnh tham số</span>
+          <span style="font-size:0.7rem; color:var(--accent);">Kéo xem đồ thị đổi dạng</span>
+        </div>
+
+        <div class="param-group">
+          <!-- THAM SỐ A -->
+          <div class="param-item" id="itemParamA">
+            <div class="param-header">
+              <span>Biên độ A (Co / giãn dọc):</span>
+              <span class="val" id="valA">1.0</span>
+            </div>
+            <div class="param-slider">
+              <input type="range" id="sliderA" min="-3" max="3" step="0.1" value="1">
+            </div>
+          </div>
+
+          <!-- THAM SỐ B -->
+          <div class="param-item">
+            <div class="param-header">
+              <span>Hệ số B (Co / giãn ngang - Chu kỳ):</span>
+              <span class="val" id="valB">1.0</span>
+            </div>
+            <div class="param-slider">
+              <input type="range" id="sliderB" min="0.2" max="3" step="0.1" value="1">
+            </div>
+          </div>
+
+          <!-- THAM SỐ C -->
+          <div class="param-item">
+            <div class="param-header">
+              <span>Hệ số C (Dịch chuyển ngang Ox):</span>
+              <span class="val" id="valC">0.00π</span>
+            </div>
+            <div class="param-slider">
+              <input type="range" id="sliderC" min="-6.283" max="6.283" step="0.1963" value="0">
+            </div>
+          </div>
+
+          <!-- THAM SỐ D -->
+          <div class="param-item">
+            <div class="param-header">
+              <span>Hệ số D (Dịch chuyển dọc Oy):</span>
+              <span class="val" id="valD">0.0</span>
+            </div>
+            <div class="param-slider">
+              <input type="range" id="sliderD" min="-3" max="3" step="0.2" value="0">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BẢNG TÍNH CHẤT: TXD, TGT, ĐỒNG BIẾN, NGHỊCH BIẾN -->
+      <div class="panel-card">
+        <div class="panel-title">
+          <span>Tính chất hàm số</span>
+          <span style="font-size:0.7rem; color:var(--muted);" id="dispPeriodBadge">T = 2.00π</span>
+        </div>
+
+        <div class="prop-list">
+          <!-- 1. TẬP XÁC ĐỊNH -->
+          <div class="prop-box">
+            <span class="prop-label">📌 Tập xác định (D):</span>
+            <span class="prop-val" id="dispDomain">ℝ</span>
+          </div>
+
+          <!-- 2. TẬP GIÁ TRỊ -->
+          <div class="prop-box">
+            <span class="prop-label">🎯 Tập giá trị (T):</span>
+            <span class="prop-val" id="dispRange">[-1.0; 1.0]</span>
+          </div>
+
+          <!-- 3. KHOẢNG ĐỒNG BIẾN -->
+          <div class="prop-box" style="border-left: 3.5px solid var(--inc-color);">
+            <span class="prop-label" style="color:var(--inc-color);">↗ Khoảng đồng biến (tăng):</span>
+            <span class="prop-val inc" id="dispInc">[-0.50π + k2π; 0.50π + k2π] (k ∈ ℤ)</span>
+          </div>
+
+          <!-- 4. KHOẢNG NGHỊCH BIẾN -->
+          <div class="prop-box" style="border-left: 3.5px solid var(--dec-color);">
+            <span class="prop-label" style="color:var(--dec-color);">↘ Khoảng nghịch biến (giảm):</span>
+            <span class="prop-val dec" id="dispDec">[0.50π + k2π; 1.50π + k2π] (k ∈ ℤ)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- NÚT ĐẶT LẠI VÀ XOÁ ĐỒ THỊ -->
+      <div class="action-row">
+        <button class="btn btn-clear" id="btnClear">👁 Ẩn / Hiện đồ thị</button>
+        <button class="btn btn-reset" id="btnReset">↻ Đặt lại ban đầu</button>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    /* ==========================================================================
+       1. TRẠNG THÁI & BIẾN HỆ THỐNG
+       ========================================================================== */
+    const state = {
+      func: 'sin',
+      A: 1.0,
+      B: 1.0,
+      C: 0.0,
+      D: 0.0,
+      isVisible: true,
+      scaleX: 65,
+      scaleY: 65,
+      originX: 0,
+      originY: 0,
+      hoverX: null,
+      hoverY: null
+    };
+
+    const canvas = document.getElementById('graphCanvas');
+    const ctx = canvas.getContext('2d');
+    let w = 0, h = 0, dpr = 1;
+
+    // DOM Elements
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const sliderA = document.getElementById('sliderA');
+    const sliderB = document.getElementById('sliderB');
+    const sliderC = document.getElementById('sliderC');
+    const sliderD = document.getElementById('sliderD');
+
+    const valA = document.getElementById('valA');
+    const valB = document.getElementById('valB');
+    const valC = document.getElementById('valC');
+    const valD = document.getElementById('valD');
+
+    const dispFormula = document.getElementById('dispFormula');
+    const lblGeneralForm = document.getElementById('lblGeneralForm');
+    const itemParamA = document.getElementById('itemParamA');
+
+    const dispPeriodBadge = document.getElementById('dispPeriodBadge');
+    const dispDomain = document.getElementById('dispDomain');
+    const dispRange = document.getElementById('dispRange');
+    const dispInc = document.getElementById('dispInc');
+    const dispDec = document.getElementById('dispDec');
+
+    /* ==========================================================================
+       2. TÍNH TOÁN KÍCH THƯỚC CANVAS ĐỘ NÉT CAO (DPR)
+       ========================================================================== */
+    function resizeCanvas() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      dpr = window.devicePixelRatio || 1;
+      const newW = rect.width > 0 ? rect.width : 600;
+      const newH = rect.height > 0 ? rect.height : 450;
+
+      const needsInitOrigin = (w === 0 || state.originX === 0);
+
+      w = newW;
+      h = newH;
+
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+
+      if (needsInitOrigin) {
+        state.originX = w / 2;
+        state.originY = h / 2;
+      }
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    /* ==========================================================================
+       3. TÍNH TOÁN GIÁ TRỊ TOÁN HỌC
+       ========================================================================== */
+    function evalTrig(x) {
+      const u = state.B * x + state.C;
+      let base = 0;
+      if (state.func === 'sin') {
+        base = Math.sin(u);
+      } else if (state.func === 'cos') {
+        base = Math.cos(u);
+      } else if (state.func === 'tan') {
+        base = Math.tan(u);
+      } else if (state.func === 'cot') {
+        const sinU = Math.sin(u);
+        if (Math.abs(sinU) < 1e-5) return NaN;
+        base = Math.cos(u) / sinU;
+      }
+      return state.A * base + state.D;
+    }
+
+    /* ==========================================================================
+       4. VẼ HỆ TRỤC TỌA ĐỘ VÀ VẠCH CHIA
+       ========================================================================== */
+    function drawAxes() {
+      const ox = state.originX;
+      const oy = state.originY;
+
+      // Lưới phụ
+      ctx.save();
+      ctx.strokeStyle = '#f1f5f9';
+      ctx.lineWidth = 1;
+      const gridStepX = state.scaleX * Math.PI / 2;
+      for (let x = ox % gridStepX; x < w; x += gridStepX) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+      }
+      for (let y = oy % state.scaleY; y < h; y += state.scaleY) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+      }
+      ctx.restore();
+
+      // Hai trục chính
+      ctx.save();
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 2;
+
+      // Ox
+      ctx.beginPath(); ctx.moveTo(20, oy); ctx.lineTo(w - 20, oy); ctx.stroke();
+      ctx.fillStyle = '#64748b';
+      ctx.beginPath();
+      ctx.moveTo(w - 20, oy - 5); ctx.lineTo(w - 8, oy); ctx.lineTo(w - 20, oy + 5);
+      ctx.fill();
+
+      // Oy
+      ctx.beginPath(); ctx.moveTo(ox, h - 20); ctx.lineTo(ox, 20); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(ox - 5, 20); ctx.lineTo(ox, 8); ctx.lineTo(ox + 5, 20);
+      ctx.fill();
+
+      ctx.font = "bold 13px 'Segoe UI', sans-serif";
+      ctx.fillStyle = '#0f172a';
+      ctx.fillText('x', w - 24, oy + 18);
+      ctx.fillText('y', ox + 10, 22);
+      ctx.fillText('O', ox - 16, oy + 16);
+
+      // Đánh số trục Ox theo bội số π/2
+      ctx.font = "bold 11px 'Segoe UI', sans-serif";
+      ctx.fillStyle = '#475569';
+      ctx.textAlign = 'center';
+
+      const stepRad = Math.PI / 2;
+      const minK = Math.floor((-ox) / (state.scaleX * stepRad)) - 1;
+      const maxK = Math.ceil((w - ox) / (state.scaleX * stepRad)) + 1;
+
+      for (let k = minK; k <= maxK; k++) {
+        if (k === 0) continue;
+        const screenX = ox + k * stepRad * state.scaleX;
+
+        ctx.strokeStyle = '#94a3b8';
+        ctx.beginPath();
+        ctx.moveTo(screenX, oy - 4);
+        ctx.lineTo(screenX, oy + 4);
+        ctx.stroke();
+
+        let label = "";
+        if (k === 1) label = "π/2";
+        else if (k === -1) label = "-π/2";
+        else if (k === 2) label = "π";
+        else if (k === -2) label = "-π";
+        else if (k === 3) label = "3π/2";
+        else if (k === -3) label = "-3π/2";
+        else if (k === 4) label = "2π";
+        else if (k === -4) label = "-2π";
+        else if (k % 2 === 0) label = `${k / 2}π`;
+        else label = `${k}π/2`;
+
+        ctx.fillText(label, screenX, oy + 16);
+      }
+
+      // Đánh số trục Oy
+      ctx.textAlign = 'right';
+      const minY = Math.floor((- (h - oy)) / state.scaleY) - 1;
+      const maxY = Math.ceil(oy / state.scaleY) + 1;
+
+      for (let k = minY; k <= maxY; k++) {
+        if (k === 0) continue;
+        const screenY = oy - k * state.scaleY;
+        ctx.strokeStyle = '#94a3b8';
+        ctx.beginPath();
+        ctx.moveTo(ox - 4, screenY);
+        ctx.lineTo(ox + 4, screenY);
+        ctx.stroke();
+
+        ctx.fillText(k.toString(), ox - 8, screenY + 4);
+      }
+
+      ctx.restore();
+    }
+
+    /* ==========================================================================
+       5. VẼ TIỆM CẬN ĐỨNG CHO TAN VÀ COT
+       ========================================================================== */
+    function drawAsymptotes() {
+      if (state.func !== 'tan' && state.func !== 'cot') return;
+
+      ctx.save();
+      ctx.strokeStyle = '#f87171';
+      ctx.setLineDash([4, 4]);
+      ctx.lineWidth = 1.6;
+
+      const minXMath = (-state.originX) / state.scaleX;
+      const maxXMath = (w - state.originX) / state.scaleX;
+
+      const baseOffset = state.func === 'tan' ? (Math.PI / 2) : 0;
+      const kMin = Math.floor((minXMath * state.B + state.C - baseOffset) / Math.PI) - 1;
+      const kMax = Math.ceil((maxXMath * state.B + state.C - baseOffset) / Math.PI) + 1;
+
+      for (let k = kMin; k <= kMax; k++) {
+        const xMath = (baseOffset - state.C + k * Math.PI) / state.B;
+        const screenX = state.originX + xMath * state.scaleX;
+
+        if (screenX >= 0 && screenX <= w) {
+          ctx.beginPath();
+          ctx.moveTo(screenX, 0);
+          ctx.lineTo(screenX, h);
+          ctx.stroke();
+
+          ctx.fillStyle = '#dc2626';
+          ctx.font = "bold 9.5px 'Segoe UI', sans-serif";
+          ctx.fillText("x ≈ " + (xMath / Math.PI).toFixed(2) + "π", screenX + 4, 30);
+        }
+      }
+      ctx.restore();
+    }
+
+    /* ==========================================================================
+       6. VẼ ĐỒ THỊ
+       ========================================================================== */
+    function drawPlot() {
+      if (!state.isVisible) return;
+
+      ctx.save();
+      let color = '#2563eb';
+      if (state.func === 'cos') color = '#059669';
+      else if (state.func === 'tan') color = '#d97706';
+      else if (state.func === 'cot') color = '#7c3aed';
+
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+
+      let isDrawing = false;
+      const stepPixel = 1;
+
+      for (let px = 0; px <= w; px += stepPixel) {
+        const xMath = (px - state.originX) / state.scaleX;
+        const yMath = evalTrig(xMath);
+
+        if (isNaN(yMath) || !isFinite(yMath) || Math.abs(yMath) > 25) {
+          isDrawing = false;
+          continue;
+        }
+
+        const py = state.originY - yMath * state.scaleY;
+
+        if (py < -60 || py > h + 60) {
+          isDrawing = false;
+          continue;
+        }
+
+        if (!isDrawing) {
+          ctx.moveTo(px, py);
+          isDrawing = true;
+        } else {
+          ctx.lineTo(px, py);
+        }
+      }
+      ctx.stroke();
+
+      // Cực trị sin/cos
+      if (state.func === 'sin' || state.func === 'cos') {
+        const periodMath = (2 * Math.PI) / state.B;
+        const minXMath = (-state.originX) / state.scaleX;
+        const maxXMath = (w - state.originX) / state.scaleX;
+
+        const kMin = Math.floor(minXMath / (periodMath / 4)) - 2;
+        const kMax = Math.ceil(maxXMath / (periodMath / 4)) + 2;
+
+        for (let k = kMin; k <= kMax; k++) {
+          const xMath = (k * Math.PI / 2 - state.C) / state.B;
+          const yMath = evalTrig(xMath);
+          if (isNaN(yMath) || Math.abs(yMath) > 15) continue;
+
+          const px = state.originX + xMath * state.scaleX;
+          const py = state.originY - yMath * state.scaleY;
+
+          if (px >= 10 && px <= w - 10 && py >= 10 && py <= h - 10) {
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.arc(px, py, 4.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+          }
+        }
+      }
+      ctx.restore();
+    }
+
+    /* ==========================================================================
+       7. VÒNG LẶP HOẠT HOẠ
+       ========================================================================== */
+    function render() {
+      ctx.clearRect(0, 0, w, h);
+      drawAxes();
+      drawAsymptotes();
+      drawPlot();
+
+      if (state.hoverX !== null && state.hoverY !== null) {
+        const xMath = (state.hoverX - state.originX) / state.scaleX;
+        const yMath = evalTrig(xMath);
+
+        if (!isNaN(yMath) && isFinite(yMath)) {
+          const py = state.originY - yMath * state.scaleY;
+          ctx.save();
+          ctx.fillStyle = '#f97316';
+          ctx.beginPath();
+          ctx.arc(state.hoverX, py, 5, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.font = "bold 12px 'Segoe UI', sans-serif";
+          ctx.fillStyle = '#0f172a';
+          ctx.fillText(`(${ (xMath / Math.PI).toFixed(2) }π ; ${ yMath.toFixed(2) })`, state.hoverX + 8, py - 8);
+          ctx.restore();
+        }
+      }
+    }
+
+    function animate() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      if (rect.width > 0 && (rect.width !== w || rect.height !== h)) {
+        resizeCanvas();
+      }
+
+      render();
+      requestAnimationFrame(animate);
+    }
+
+    /* ==========================================================================
+       8. CẬP NHẬT TÍNH CHẤT TOÁN HỌC (TXD, TGT, ĐỒNG BIẾN, NGHỊCH BIẾN)
+       ========================================================================== */
+    function updateUI() {
+      valA.innerText = state.A.toFixed(1);
+      valB.innerText = state.B.toFixed(1);
+      valC.innerText = `${(state.C / Math.PI).toFixed(2)}π`;
+      valD.innerText = state.D.toFixed(1);
+
+      let funcName = state.func;
+      let formulaText = `y = `;
+      if (state.A !== 1) formulaText += `${state.A} `;
+      formulaText += `${funcName}(`;
+      if (state.B !== 1) formulaText += `${state.B}`;
+      formulaText += `x`;
+
+      if (Math.abs(state.C) > 0.05) {
+        const cPi = state.C / Math.PI;
+        formulaText += ` ${cPi > 0 ? '+' : '-'} ${Math.abs(cPi).toFixed(2)}π`;
+      }
+      formulaText += `)`;
+
+      if (state.D !== 0) {
+        formulaText += ` ${state.D > 0 ? '+' : '-'} ${Math.abs(state.D)}`;
+      }
+      dispFormula.innerText = formulaText;
+
+      const B = state.B;
+      const C = state.C;
+      const A = state.A;
+      const D = state.D;
+
+      const basePeriod = (state.func === 'sin' || state.func === 'cos') ? (2 * Math.PI) : Math.PI;
+      const T = basePeriod / B;
+      const tInPi = (T / Math.PI).toFixed(2);
+      dispPeriodBadge.innerText = `Chu kỳ T = ${tInPi}π`;
+
+      // 1. TẬP XÁC ĐỊNH & TẬP GIÁ TRỊ
+      if (state.func === 'sin' || state.func === 'cos') {
+        itemParamA.style.display = 'flex';
+        lblGeneralForm.innerText = `Dạng tổng quát: y = A ${funcName}(Bx + C) + D`;
+
+        dispDomain.innerText = "D = ℝ";
+
+        const minVal = (-Math.abs(A) + D).toFixed(1);
+        const maxVal = (Math.abs(A) + D).toFixed(1);
+        dispRange.innerText = `T = [${minVal}; ${maxVal}]`;
+
+        // Tính khoảng đơn điệu cho sin & cos
+        // u = Bx + C
+        const stepPi = (2 / B).toFixed(2);
+
+        if (state.func === 'sin') {
+          // sin(u) đồng biến khi u in [-pi/2 + k2pi, pi/2 + k2pi]
+          // Nếu A > 0: giữ nguyên. Nếu A < 0: đổi ngược đồng biến <-> nghịch biến
+          const leftBase = (-Math.PI / 2 - C) / B / Math.PI;
+          const rightBase = (Math.PI / 2 - C) / B / Math.PI;
+
+          const incText = `[${leftBase.toFixed(2)}π + k${stepPi}π; ${rightBase.toFixed(2)}π + k${stepPi}π] (k ∈ ℤ)`;
+          const decText = `[${rightBase.toFixed(2)}π + k${stepPi}π; ${(rightBase + 2/B).toFixed(2)}π + k${stepPi}π] (k ∈ ℤ)`;
+
+          if (A >= 0) {
+            dispInc.innerText = incText;
+            dispDec.innerText = decText;
+          } else {
+            dispInc.innerText = decText;
+            dispDec.innerText = incText;
+          }
+        } else {
+          // cos(u) nghịch biến khi u in [0 + k2pi, pi + k2pi], đồng biến khi u in [pi + k2pi, 2pi + k2pi]
+          const leftBase = (0 - C) / B / Math.PI;
+          const midBase = (Math.PI - C) / B / Math.PI;
+          const rightBase = (2 * Math.PI - C) / B / Math.PI;
+
+          const decText = `[${leftBase.toFixed(2)}π + k${stepPi}π; ${midBase.toFixed(2)}π + k${stepPi}π] (k ∈ ℤ)`;
+          const incText = `[${midBase.toFixed(2)}π + k${stepPi}π; ${rightBase.toFixed(2)}π + k${stepPi}π] (k ∈ ℤ)`;
+
+          if (A >= 0) {
+            dispInc.innerText = incText;
+            dispDec.innerText = decText;
+          } else {
+            dispInc.innerText = decText;
+            dispDec.innerText = incText;
+          }
+        }
+      } else if (state.func === 'tan') {
+        itemParamA.style.display = 'none';
+        lblGeneralForm.innerText = `Dạng: y = tan(Bx + C) + D`;
+
+        const asympOffset = (Math.PI / 2 - C) / B / Math.PI;
+        const stepPi = (1 / B).toFixed(2);
+
+        dispDomain.innerText = `D = ℝ \\ { ${asympOffset.toFixed(2)}π + k${stepPi}π | k ∈ ℤ }`;
+        dispRange.innerText = "T = ℝ";
+
+        const leftOpen = (-Math.PI / 2 - C) / B / Math.PI;
+        const rightOpen = (Math.PI / 2 - C) / B / Math.PI;
+
+        dispInc.innerText = `(${leftOpen.toFixed(2)}π + k${stepPi}π; ${rightOpen.toFixed(2)}π + k${stepPi}π) (k ∈ ℤ)`;
+        dispDec.innerText = "Không có (hàm số không nghịch biến)";
+      } else if (state.func === 'cot') {
+        itemParamA.style.display = 'none';
+        lblGeneralForm.innerText = `Dạng: y = cot(Bx + C) + D`;
+
+        const asympOffset = (-C) / B / Math.PI;
+        const stepPi = (1 / B).toFixed(2);
+
+        dispDomain.innerText = `D = ℝ \\ { ${asympOffset.toFixed(2)}π + k${stepPi}π | k ∈ ℤ }`;
+        dispRange.innerText = "T = ℝ";
+
+        const leftOpen = (0 - C) / B / Math.PI;
+        const rightOpen = (Math.PI - C) / B / Math.PI;
+
+        dispInc.innerText = "Không có (hàm số không đồng biến)";
+        dispDec.innerText = `(${leftOpen.toFixed(2)}π + k${stepPi}π; ${rightOpen.toFixed(2)}π + k${stepPi}π) (k ∈ ℤ)`;
+      }
+    }
+
+    /* ==========================================================================
+       9. SỰ KIỆN TƯƠNG TÁC
+       ========================================================================== */
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.func = btn.dataset.func;
+        updateUI();
+      });
+    });
+
+    sliderA.addEventListener('input', (e) => { state.A = parseFloat(e.target.value); updateUI(); });
+    sliderB.addEventListener('input', (e) => { state.B = parseFloat(e.target.value); updateUI(); });
+    sliderC.addEventListener('input', (e) => { state.C = parseFloat(e.target.value); updateUI(); });
+    sliderD.addEventListener('input', (e) => { state.D = parseFloat(e.target.value); updateUI(); });
+
+    document.getElementById('btnReset').addEventListener('click', () => {
+      state.A = 1.0;
+      state.B = 1.0;
+      state.C = 0.0;
+      state.D = 0.0;
+      state.isVisible = true;
+      sliderA.value = 1;
+      sliderB.value = 1;
+      sliderC.value = 0;
+      sliderD.value = 0;
+      state.scaleX = 65;
+      state.scaleY = 65;
+      state.originX = w / 2;
+      state.originY = h / 2;
+      updateUI();
+    });
+
+    document.getElementById('btnClear').addEventListener('click', () => {
+      state.isVisible = !state.isVisible;
+    });
+
+    document.getElementById('btnZoomIn').addEventListener('click', () => {
+      state.scaleX *= 1.25;
+      state.scaleY *= 1.25;
+    });
+    document.getElementById('btnZoomOut').addEventListener('click', () => {
+      state.scaleX *= 0.8;
+      state.scaleY *= 0.8;
+    });
+    document.getElementById('btnRecenter').addEventListener('click', () => {
+      state.originX = w / 2;
+      state.originY = h / 2;
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      state.hoverX = e.clientX - rect.left;
+      state.hoverY = e.clientY - rect.top;
+    });
+    canvas.addEventListener('mouseleave', () => {
+      state.hoverX = null;
+      state.hoverY = null;
+    });
+
+    // KHỞI CHẠY HỆ THỐNG
+    updateUI();
+    animate();
+  </script>
+</body>
+</html>
