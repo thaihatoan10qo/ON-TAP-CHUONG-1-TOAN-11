@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mô Phỏng Trực Quan - Giá Trị Lượng Giác (Toán 11)</title>
+  
+  <!-- MathJax hiển thị công thức toán học chuẩn đẹp -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    :root {
+      --bg-body: #f8fafc;
+      --bg-card: #ffffff;
+      --border-color: #cbd5e1;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --cos-color: #2563eb;
+      --sin-color: #dc2626;
+      --tan-color: #d97706;
+      --cot-color: #7c3aed;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      max-height: 100vh;
+      overflow: hidden;
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* HEADER */
+    header {
+      background: #ffffff;
+      padding: 6px 18px;
+      border-bottom: 1.5px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .header-title h1 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #0284c7;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .header-title p {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+    .header-badge {
+      background: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #7dd3fc;
+      padding: 4px 14px;
+      border-radius: 999px;
+      font-size: 0.86rem;
+      font-weight: 700;
+    }
+
+    /* MAIN CONTAINER: 2 CỘT */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 10px;
+      padding: 8px 14px;
+      min-height: 0;
+      width: 100%;
+    }
+
+    /* KHUNG CANVAS MÔ PHỎNG */
+    .sim-container {
+      position: relative;
+      background: #ffffff;
+      border-radius: 8px;
+      border: 1.5px solid var(--border-color);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .canvas-wrapper {
+      flex: 1;
+      position: relative;
+      min-height: 0;
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* ĐIỀU KHIỂN DƯỚI CANVAS */
+    .sim-controls {
+      padding: 6px 14px;
+      background: #f1f5f9;
+      border-top: 1.5px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .slider-row label {
+      font-weight: 800;
+      font-size: 0.88rem;
+      color: #0369a1;
+      min-width: 110px;
+    }
+    input[type="range"] {
+      flex: 1;
+      height: 6px;
+      border-radius: 3px;
+      accent-color: #0284c7;
+      cursor: pointer;
+    }
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      align-items: center;
+    }
+    .btn-row-label {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      margin-right: 4px;
+    }
+
+    .btn {
+      border: 1.5px solid var(--border-color);
+      background: #ffffff;
+      color: var(--text-main);
+      padding: 3px 9px;
+      border-radius: 5px;
+      font-weight: 700;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn:hover {
+      background: #e0f2fe;
+      border-color: #0284c7;
+      color: #0369a1;
+    }
+    .btn-reset {
+      background: #fee2e2;
+      color: #dc2626;
+      border-color: #fca5a5;
+      margin-left: auto;
+    }
+    .btn-reset:hover {
+      background: #fecaca;
+      border-color: #dc2626;
+      color: #991b1b;
+    }
+    .btn.active-angle {
+      background: #0284c7;
+      color: #ffffff;
+      border-color: #0284c7;
+    }
+
+    /* CỘT PHẢI: BẢNG GIÁ TRỊ */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 0;
+      overflow-y: auto;
+    }
+    .panel-card {
+      background: #ffffff;
+      border-radius: 8px;
+      border: 1.5px solid var(--border-color);
+      padding: 8px 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .panel-title {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #0369a1;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1.5px solid #e2e8f0;
+      padding-bottom: 4px;
+    }
+
+    .m-coord-box {
+      background: #f0fdf4;
+      border: 1.5px solid #86efac;
+      border-radius: 6px;
+      padding: 5px 10px;
+      text-align: center;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #15803d;
+      margin-bottom: 4px;
+    }
+
+    .val-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .val-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 8px;
+      background: #f8fafc;
+      border-radius: 5px;
+      border-left: 4px solid var(--border-color);
+      font-size: 0.84rem;
+    }
+    .val-item.cos { border-left-color: var(--cos-color); }
+    .val-item.sin { border-left-color: var(--sin-color); }
+    .val-item.tan { border-left-color: var(--tan-color); }
+    .val-item.cot { border-left-color: var(--cot-color); }
+
+    .val-item .name {
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .val-item .num {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.95rem;
+      font-weight: 800;
+    }
+
+    .sign-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: center;
+      font-size: 0.82rem;
+    }
+    .sign-table th, .sign-table td {
+      border: 1px solid var(--border-color);
+      padding: 3px 6px;
+      font-weight: 700;
+    }
+    .sign-table th {
+      background: #f8fafc;
+      color: var(--text-muted);
+    }
+    .sign-badge {
+      display: inline-block;
+      width: 22px;
+      height: 22px;
+      line-height: 20px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 0.9rem;
+    }
+    .sign-badge.pos {
+      background: #dcfce7;
+      color: #16a34a;
+      border: 1px solid #86efac;
+    }
+    .sign-badge.neg {
+      background: #fee2e2;
+      color: #dc2626;
+      border: 1px solid #fca5a5;
+    }
+    .sign-badge.zero {
+      background: #f1f5f9;
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+    }
+
+    .pedagogy-tip {
+      font-size: 0.84rem;
+      color: #334155;
+      line-height: 1.6;
+      background: #ffffff;
+      border-left: 3.5px solid #0284c7;
+      padding: 6px 10px;
+      border-radius: 0 4px 4px 0;
+    }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-title">
+      <h1>⭕ GIÁ TRỊ LƯỢNG GIÁC CỦA GÓC LƯỢNG GIÁC</h1>
+      <p>Trực quan hóa mối liên hệ giữa góc α, điểm M trên đường tròn đơn vị và các giá trị sin, cos, tan, cot</p>
+    </div>
+    <div class="header-badge" id="badgeAngleDisplay">α = π/4 rad</div>
+  </header>
+
+  <main>
+    <!-- KHU VỰC CANVAS MÔ PHỎNG -->
+    <div class="sim-container">
+      <div class="canvas-wrapper">
+        <canvas id="simCanvas"></canvas>
+      </div>
+
+      <!-- THANH ĐIỀU KHIỂN DƯỚI CANVAS -->
+      <div class="sim-controls">
+        <div class="slider-row">
+          <label for="angleRange">Góc α: <span id="lblAngle">π/4</span></label>
+          <button class="btn" id="btnMinusStep" title="Giảm π/36 rad">◀</button>
+          <input type="range" id="angleRange" min="-12.5664" max="12.5664" step="0.01745" value="0.7854">
+          <button class="btn" id="btnPlusStep" title="Tăng π/36 rad">▶</button>
+        </div>
+
+        <div class="btn-row">
+          <span class="btn-row-label">Góc đặc biệt:</span>
+          <button class="btn btn-quick" data-rad="0">0</button>
+          <button class="btn btn-quick" data-rad="0.5236">π/6</button>
+          <button class="btn btn-quick active-angle" data-rad="0.7854">π/4</button>
+          <button class="btn btn-quick" data-rad="1.0472">π/3</button>
+          <button class="btn btn-quick" data-rad="1.5708">π/2</button>
+          <button class="btn btn-quick" data-rad="2.0944">2π/3</button>
+          <button class="btn btn-quick" data-rad="2.3562">3π/4</button>
+          <button class="btn btn-quick" data-rad="2.6180">5π/6</button>
+          <button class="btn btn-quick" data-rad="3.1416">π</button>
+          <button class="btn btn-quick" data-rad="4.7124">3π/2</button>
+          <button class="btn btn-quick" data-rad="6.2832">2π</button>
+          <button class="btn btn-quick" data-rad="-0.7854">-π/4</button>
+          <button class="btn btn-quick" data-rad="-1.5708">-π/2</button>
+
+          <button class="btn btn-reset" id="btnReset">↻ Đặt lại (0 rad)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CỘT PHẢI: BẢNG GIÁ TRỊ -->
+    <div class="sidebar">
+      <div class="panel-card">
+        <div class="panel-title">
+          <span>Tọa độ điểm biểu diễn M(x; y)</span>
+          <span style="font-size:0.75rem; color:var(--text-muted);">Bán kính R = 1</span>
+        </div>
+        <div class="m-coord-box" id="dispMCoord">M (0.71 ; 0.71)</div>
+        <p style="font-size:0.75rem; color:var(--text-muted); text-align:center;">
+          Hoành độ x trên trục Ox • Tung độ y trên trục Oy
+        </p>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-title">
+          <span>Giá trị lượng giác của α</span>
+          <span style="font-size:0.72rem; color:var(--text-muted);" id="dispTurnInfo">0 vòng + 0.25π</span>
+        </div>
+
+        <div class="val-grid">
+          <div class="val-item cos">
+            <span class="name" style="color:var(--cos-color);">● cos α = x</span>
+            <span class="num" id="valCos" style="color:var(--cos-color);">+0.7071</span>
+          </div>
+
+          <div class="val-item sin">
+            <span class="name" style="color:var(--sin-color);">● sin α = y</span>
+            <span class="num" id="valSin" style="color:var(--sin-color);">+0.7071</span>
+          </div>
+
+          <div class="val-item tan">
+            <span class="name" style="color:var(--tan-color);">● tan α = y / x</span>
+            <span class="num" id="valTan" style="color:var(--tan-color);">+1.0000</span>
+          </div>
+
+          <div class="val-item cot">
+            <span class="name" style="color:var(--cot-color);">● cot α = x / y</span>
+            <span class="num" id="valCot" style="color:var(--cot-color);">+1.0000</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-title">
+          <span>Xét dấu tự động</span>
+          <span id="dispQuadrantLabel" style="color:#0369a1; font-weight:800;">Góc Phần Tư I</span>
+        </div>
+
+        <table class="sign-table">
+          <thead>
+            <tr>
+              <th style="color:var(--sin-color);">sin α</th>
+              <th style="color:var(--cos-color);">cos α</th>
+              <th style="color:var(--tan-color);">tan α</th>
+              <th style="color:var(--cot-color);">cot α</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="sign-badge pos" id="signSin">+</span></td>
+              <td><span class="sign-badge pos" id="signCos">+</span></td>
+              <td><span class="sign-badge pos" id="signTan">+</span></td>
+              <td><span class="sign-badge pos" id="signCot">+</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-title">Điều kiện xác định</div>
+        <div class="pedagogy-tip">
+          • <strong style="color:var(--tan-color);">$\tan\alpha$:</strong> Xác định khi $x \ne 0$ $\left(\alpha \ne \frac{\pi}{2} + k\pi,\; k \in \mathbb{Z}\right)$.<br>
+          • <strong style="color:var(--cot-color);">$\cot\alpha$:</strong> Xác định khi $y \ne 0$ $(\alpha \ne k\pi,\; k \in \mathbb{Z})$.
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let currentRad = Math.PI / 4;
+    let targetRad = Math.PI / 4;
+
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+    let w = 0, h = 0, dpr = 1;
+
+    const angleRange = document.getElementById('angleRange');
+    const lblAngle = document.getElementById('lblAngle');
+    const badgeAngleDisplay = document.getElementById('badgeAngleDisplay');
+    const dispMCoord = document.getElementById('dispMCoord');
+    const dispTurnInfo = document.getElementById('dispTurnInfo');
+
+    const valCos = document.getElementById('valCos');
+    const valSin = document.getElementById('valSin');
+    const valTan = document.getElementById('valTan');
+    const valCot = document.getElementById('valCot');
+
+    const dispQuadrantLabel = document.getElementById('dispQuadrantLabel');
+    const signSin = document.getElementById('signSin');
+    const signCos = document.getElementById('signCos');
+    const signTan = document.getElementById('signTan');
+    const signCot = document.getElementById('signCot');
+
+    const quickButtons = document.querySelectorAll('.btn-quick');
+    const btnReset = document.getElementById('btnReset');
+    const btnMinusStep = document.getElementById('btnMinusStep');
+    const btnPlusStep = document.getElementById('btnPlusStep');
+
+    /* CHUYỂN ĐỔI RADIAN SANG PHÂN SỐ PI CHUẨN ĐẸP */
+    function formatPiFraction(rad) {
+      if (Math.abs(rad) < 0.005) return "0 rad";
+      const fraction = rad / Math.PI;
+
+      const specialRads = [
+        { val: 0.166667, str: "π/6" }, { val: -0.166667, str: "-π/6" },
+        { val: 0.25, str: "π/4" }, { val: -0.25, str: "-π/4" },
+        { val: 0.333333, str: "π/3" }, { val: -0.333333, str: "-π/3" },
+        { val: 0.5, str: "π/2" }, { val: -0.5, str: "-π/2" },
+        { val: 0.666667, str: "2π/3" }, { val: -0.666667, str: "-2π/3" },
+        { val: 0.75, str: "3π/4" }, { val: -0.75, str: "-3π/4" },
+        { val: 0.833333, str: "5π/6" }, { val: -0.833333, str: "-5π/6" },
+        { val: 1.0, str: "π" }, { val: -1.0, str: "-π" },
+        { val: 1.5, str: "3π/2" }, { val: -1.5, str: "-3π/2" },
+        { val: 2.0, str: "2π" }, { val: -2.0, str: "-2π" },
+        { val: 3.0, str: "3π" }, { val: -3.0, str: "-3π" },
+        { val: 4.0, str: "4π" }, { val: -4.0, str: "-4π" }
+      ];
+
+      for (let item of specialRads) {
+        if (Math.abs(fraction - item.val) < 0.015) {
+          return `${item.str} rad`;
+        }
+      }
+      return `${fraction >= 0 ? '+' : ''}${fraction.toFixed(2)}π rad`;
+    }
+
+    /* ĐO KÍCH THƯỚC VÀ ĐỒNG BỘ ĐỘ NÉT CAO */
+    function resizeCanvas() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      dpr = window.devicePixelRatio || 1;
+      w = rect.width;
+      h = rect.height;
+
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function drawArrow(fromX, fromY, toX, toY, color, width) {
+      const headLen = 9;
+      const angle = Math.atan2(toY - fromY, toX - fromX);
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = width || 2;
+
+      ctx.beginPath();
+      ctx.moveTo(fromX, fromY);
+      ctx.lineTo(toX, toY);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(toX, toY);
+      ctx.lineTo(toX - headLen * Math.cos(angle - Math.PI / 6), toY - headLen * Math.sin(angle - Math.PI / 6));
+      ctx.lineTo(toX - headLen * Math.cos(angle + Math.PI / 6), toY - headLen * Math.sin(angle + Math.PI / 6));
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function render() {
+      if (Math.abs(targetRad - currentRad) > 0.002) {
+        currentRad += (targetRad - currentRad) * 0.25;
+      } else {
+        currentRad = targetRad;
+      }
+
+      ctx.clearRect(0, 0, w, h);
+
+      const cx = w / 2;
+      const cy = h / 2;
+      const R = Math.min(w, h) * 0.38;
+
+      const cosVal = Math.cos(currentRad);
+      const sinVal = Math.sin(currentRad);
+
+      const mx = cx + cosVal * R;
+      const my = cy - sinVal * R;
+
+      // 1. Trục tọa độ Oxy (vẽ đậm hơn)
+      drawArrow(cx - R - 40, cy, cx + R + 55, cy, '#64748b', 2.4);
+      drawArrow(cx, cy + R + 40, cx, cy - R - 55, '#64748b', 2.4);
+
+      // Chữ tên trục to hơn (15px)
+      ctx.fillStyle = '#0f172a';
+      ctx.font = "bold 15px 'Segoe UI', sans-serif";
+      ctx.fillText('x (Cos)', cx + R + 16, cy + 20);
+      ctx.fillText('y (Sin)', cx + 12, cy - R - 36);
+      ctx.fillText('O', cx - 20, cy + 20);
+
+      // Chữ số mốc to hơn (13.5px)
+      ctx.fillStyle = '#334155';
+      ctx.font = "bold 13.5px 'Segoe UI', sans-serif";
+      ctx.fillText('1', cx + R - 4, cy + 18);
+      ctx.fillText('-1', cx - R - 18, cy + 18);
+      ctx.fillText('1', cx - 20, cy - R + 4);
+      ctx.fillText('-1', cx - 25, cy + R + 4);
+      ctx.fillText('A(1;0)', cx + R + 6, cy - 8);
+
+      // Ký hiệu góc phần tư to rõ ràng (30px)
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = "bold 30px 'Segoe UI', sans-serif";
+      ctx.fillText('I', cx + R * 0.55, cy - R * 0.55);
+      ctx.fillText('II', cx - R * 0.65, cy - R * 0.55);
+      ctx.fillText('III', cx - R * 0.65, cy + R * 0.65);
+      ctx.fillText('IV', cx + R * 0.55, cy + R * 0.65);
+
+      // 2. Đường tròn lượng giác
+      ctx.save();
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+
+      // 3. Cung xoắn ốc biểu diễn góc α
+      if (Math.abs(currentRad) >= 0.01) {
+        ctx.save();
+        const isPositive = currentRad > 0;
+        ctx.strokeStyle = isPositive ? '#f97316' : '#8b5cf6';
+        ctx.lineWidth = 2.6;
+
+        const baseRadius = R * 0.22;
+        const maxExtra = R * 0.35;
+        const inc = 0.05 * Math.sign(currentRad);
+
+        ctx.beginPath();
+        let currentTheta = 0;
+        let lastX = cx + baseRadius, lastY = cy;
+
+        while (Math.abs(currentTheta) < Math.abs(currentRad)) {
+          const progress = Math.abs(currentTheta) / (Math.PI * 4);
+          const rCurrent = baseRadius + Math.min(progress, 1) * maxExtra;
+          const px = cx + rCurrent * Math.cos(currentTheta);
+          const py = cy - rCurrent * Math.sin(currentTheta);
+
+          if (currentTheta === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+
+          lastX = px;
+          lastY = py;
+          currentTheta += inc;
+        }
+        ctx.stroke();
+
+        const arrowRad = -currentRad;
+        const tangentAngle = arrowRad + (isPositive ? -Math.PI / 2 : Math.PI / 2);
+        const headLen = 9;
+        ctx.fillStyle = ctx.strokeStyle;
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(lastX - headLen * Math.cos(tangentAngle - Math.PI / 6), lastY - headLen * Math.sin(tangentAngle - Math.PI / 6));
+        ctx.lineTo(lastX - headLen * Math.cos(tangentAngle + Math.PI / 6), lastY - headLen * Math.sin(tangentAngle + Math.PI / 6));
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // 4. Đoạn đại số cos α (xanh) và sin α (đỏ)
+      ctx.save();
+      ctx.strokeStyle = '#2563eb';
+      ctx.lineWidth = 5.5;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(mx, cy);
+      ctx.stroke();
+
+      ctx.fillStyle = '#2563eb';
+      ctx.beginPath();
+      ctx.arc(mx, cy, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      ctx.save();
+      ctx.strokeStyle = '#dc2626';
+      ctx.lineWidth = 5.5;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx, my);
+      ctx.stroke();
+
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath();
+      ctx.arc(cx, my, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // Nét đứt dóng từ M xuống Ox và Oy
+      ctx.save();
+      ctx.setLineDash([4, 4]);
+      ctx.lineWidth = 1.8;
+
+      ctx.strokeStyle = '#2563eb';
+      ctx.beginPath();
+      ctx.moveTo(mx, my);
+      ctx.lineTo(mx, cy);
+      ctx.stroke();
+
+      ctx.strokeStyle = '#dc2626';
+      ctx.beginPath();
+      ctx.moveTo(mx, my);
+      ctx.lineTo(cx, my);
+      ctx.stroke();
+      ctx.restore();
+
+      // 5. Tia đầu OA và tia cuối OM
+      ctx.save();
+      ctx.strokeStyle = '#0284c7';
+      ctx.lineWidth = 2.6;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + R, cy);
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.save();
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 3.2;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(mx, my);
+      ctx.stroke();
+      ctx.restore();
+
+      // Điểm M
+      ctx.save();
+      ctx.fillStyle = '#f97316';
+      ctx.beginPath();
+      ctx.arc(mx, my, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+      ctx.restore();
+
+      // Nhãn điểm M to rõ (15px)
+      ctx.fillStyle = '#0f172a';
+      ctx.font = "bold 15px 'Segoe UI', sans-serif";
+      const offsetX = cosVal >= 0 ? 14 : -128;
+      const offsetY = sinVal >= 0 ? -14 : 26;
+      ctx.fillText(`M (cos α; sin α)`, mx + offsetX, my + offsetY);
+
+      // Nhãn chữ trên 2 trục to hơn (14px)
+      ctx.fillStyle = '#2563eb';
+      ctx.font = "bold 14px 'Segoe UI', sans-serif";
+      ctx.fillText(`cos α`, mx - 18, cy + (sinVal >= 0 ? 22 : -10));
+
+      ctx.fillStyle = '#dc2626';
+      ctx.font = "bold 14px 'Segoe UI', sans-serif";
+      ctx.fillText(`sin α`, cx + (cosVal >= 0 ? -48 : 10), my + 5);
+    }
+
+    function animate() {
+      render();
+      requestAnimationFrame(animate);
+    }
+
+    function updateTrigValues() {
+      const cos = Math.cos(targetRad);
+      const sin = Math.sin(targetRad);
+
+      dispMCoord.innerText = `M (${cos.toFixed(2)} ; ${sin.toFixed(2)})`;
+
+      valCos.innerText = `${cos >= 0 ? '+' : ''}${cos.toFixed(4)}`;
+      valSin.innerText = `${sin >= 0 ? '+' : ''}${sin.toFixed(4)}`;
+
+      if (Math.abs(cos) < 1e-5) {
+        valTan.innerText = "Không xác định";
+        valTan.style.color = "#dc2626";
+      } else {
+        const tan = sin / cos;
+        valTan.innerText = `${tan >= 0 ? '+' : ''}${tan.toFixed(4)}`;
+        valTan.style.color = "#d97706";
+      }
+
+      if (Math.abs(sin) < 1e-5) {
+        valCot.innerText = "Không xác định";
+        valCot.style.color = "#dc2626";
+      } else {
+        const cot = cos / sin;
+        valCot.innerText = `${cot >= 0 ? '+' : ''}${cot.toFixed(4)}`;
+        valCot.style.color = "#7c3aed";
+      }
+
+      const twoPi = 2 * Math.PI;
+      let norm = targetRad % twoPi;
+      if (norm < 0) norm += twoPi;
+
+      const k = Math.trunc(targetRad / twoPi);
+      const rem = targetRad - k * twoPi;
+      dispTurnInfo.innerText = `${k} vòng + ${(rem / Math.PI).toFixed(2)}π`;
+
+      setQuadrantAndSigns(norm, sin, cos);
+
+      const radText = formatPiFraction(targetRad);
+      lblAngle.innerText = radText;
+      angleRange.value = targetRad;
+      badgeAngleDisplay.innerText = `α = ${radText}`;
+
+      quickButtons.forEach(btn => {
+        const r = parseFloat(btn.dataset.rad);
+        btn.classList.toggle('active-angle', Math.abs(r - targetRad) < 0.02);
+      });
+    }
+
+    function setBadge(el, val, isUndefined) {
+      if (isUndefined) {
+        el.className = "sign-badge zero";
+        el.innerText = "✕";
+      } else if (Math.abs(val) < 1e-4) {
+        el.className = "sign-badge zero";
+        el.innerText = "0";
+      } else if (val > 0) {
+        el.className = "sign-badge pos";
+        el.innerText = "+";
+      } else {
+        el.className = "sign-badge neg";
+        el.innerText = "-";
+      }
+    }
+
+    function setQuadrantAndSigns(normRad, sin, cos) {
+      const eps = 0.015;
+
+      if (Math.abs(normRad - 0) <= eps || Math.abs(normRad - 2 * Math.PI) <= eps) {
+        dispQuadrantLabel.innerText = "Trục Ox dương";
+      } else if (Math.abs(normRad - Math.PI / 2) <= eps) {
+        dispQuadrantLabel.innerText = "Trục Oy dương";
+      } else if (Math.abs(normRad - Math.PI) <= eps) {
+        dispQuadrantLabel.innerText = "Trục Ox âm";
+      } else if (Math.abs(normRad - 3 * Math.PI / 2) <= eps) {
+        dispQuadrantLabel.innerText = "Trục Oy âm";
+      } else if (normRad > 0 && normRad < Math.PI / 2) {
+        dispQuadrantLabel.innerText = "Góc Phần Tư I";
+      } else if (normRad > Math.PI / 2 && normRad < Math.PI) {
+        dispQuadrantLabel.innerText = "Góc Phần Tư II";
+      } else if (normRad > Math.PI && normRad < 3 * Math.PI / 2) {
+        dispQuadrantLabel.innerText = "Góc Phần Tư III";
+      } else {
+        dispQuadrantLabel.innerText = "Góc Phần Tư IV";
+      }
+
+      setBadge(signSin, sin, false);
+      setBadge(signCos, cos, false);
+
+      if (Math.abs(cos) < 1e-4) {
+        setBadge(signTan, 0, true);
+      } else {
+        setBadge(signTan, sin / cos, false);
+      }
+
+      if (Math.abs(sin) < 1e-4) {
+        setBadge(signCot, 0, true);
+      } else {
+        setBadge(signCot, cos / sin, false);
+      }
+    }
+
+    // Sự kiện tương tác
+    angleRange.addEventListener('input', (e) => {
+      targetRad = parseFloat(e.target.value);
+      updateTrigValues();
+    });
+
+    btnMinusStep.addEventListener('click', () => {
+      targetRad = Math.max(-4 * Math.PI, targetRad - Math.PI / 36);
+      updateTrigValues();
+    });
+
+    btnPlusStep.addEventListener('click', () => {
+      targetRad = Math.min(4 * Math.PI, targetRad + Math.PI / 36);
+      updateTrigValues();
+    });
+
+    quickButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        targetRad = parseFloat(btn.dataset.rad);
+        updateTrigValues();
+      });
+    });
+
+    btnReset.addEventListener('click', () => {
+      targetRad = 0;
+      updateTrigValues();
+    });
+
+    // KHỞI CHẠY TỨC THÌ
+    updateTrigValues();
+    animate();
+  </script>
+</body>
+</html>
