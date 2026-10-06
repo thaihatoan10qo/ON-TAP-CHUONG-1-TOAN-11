@@ -64,7 +64,7 @@ with tab_lythuyet:
 
     # Danh mục ảnh tương ứng 4 bài
     danh_sach_anh = {
-        "Bài 1: Giá trị lượng giác của góc lượng giác": "ly-thuyet-bai-1.pdf",
+        "Bài 1: Giá trị lượng giác của góc lượng giác": "LY-THUYET-BAI-1.pdf",
         "Bài 2: Công thức lượng giác": "ly-thuyet-bai-2.pdf",
         "Bài 3: Hàm số lượng giác": "ly-thuyet-bai-3.pdf",
         "Bài 4: Phương trình lượng giác cơ bản": "ly-thuyet-bai-4.PDF"
