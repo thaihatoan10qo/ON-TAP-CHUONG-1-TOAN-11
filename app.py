@@ -65,9 +65,9 @@ with tab_lythuyet:
     # Khai báo đúng tên file thực tế bạn đã tải lên GitHub
     danh_sach_anh = {
         "Bài 1: Giá trị lượng giác của góc lượng giác": "LY-THUYET-BAI-1.jpg",
-        "Bài 2: Công thức lượng giác": "LY-THUYET-BAI-2.pdf",
-        "Bài 3: Hàm số lượng giác": "LY-THUYET-BAI-3.PDF",
-        "Bài 4: Phương trình lượng giác cơ bản": "LY-THUYET-BAI-4.PDF"
+        "Bài 2: Công thức lượng giác": "LY-THUYET-BAI-2.jpg",
+        "Bài 3: Hàm số lượng giác": "LY-THUYET-BAI-3.jpg",
+        "Bài 4: Phương trình lượng giác cơ bản": "LY-THUYET-BAI-4.jpg"
     }
 
     bai_chon = st.selectbox("Chọn bài học cần ôn tập:", list(danh_sach_anh.keys()))
