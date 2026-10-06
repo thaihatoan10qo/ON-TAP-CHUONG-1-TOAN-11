@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thợ Săn Góc Lượng Giác - Toán 11</title>
+  <style>
+    :root {
+      --primary-blue: #0284c7;
+      --deep-blue: #0369a1;
+      --light-blue: #e0f2fe;
+      --accent-orange: #f97316;
+      --accent-hover: #ea580c;
+      --bg-slate: #f8fafc;
+      --panel-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --border-color: #cbd5e1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      max-height: 100vh;
+      overflow: hidden;
+      background-color: var(--bg-slate);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* HEADER */
+    header {
+      background: linear-gradient(135deg, var(--deep-blue), var(--primary-blue));
+      color: white;
+      padding: 6px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .header-title h1 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .header-title p {
+      font-size: 0.74rem;
+      opacity: 0.9;
+    }
+    .header-status {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .badge {
+      background: rgba(255,255,255,0.2);
+      padding: 3px 10px;
+      border-radius: 9999px;
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+
+    /* NAV */
+    nav {
+      background: white;
+      border-bottom: 1.5px solid var(--border-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      flex-shrink: 0;
+    }
+    .nav-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      padding: 4px 12px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .nav-btn:hover {
+      background: var(--light-blue);
+      color: var(--deep-blue);
+    }
+    .nav-btn.active {
+      background: var(--primary-blue);
+      color: white;
+    }
+
+    /* MAIN */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 8px;
+      padding: 8px 12px;
+      min-height: 0;
+      width: 100%;
+    }
+
+    /* SIMULATION AREA */
+    .sim-container {
+      background: var(--panel-bg);
+      border-radius: 8px;
+      border: 1.5px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+      position: relative;
+    }
+    .canvas-wrapper {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      position: relative;
+      min-height: 0;
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* CONTROLS */
+    .sim-controls {
+      padding: 6px 12px;
+      background: #f8fafc;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .slider-row label {
+      font-weight: bold;
+      font-size: 0.82rem;
+      min-width: 74px;
+      color: var(--deep-blue);
+    }
+    input[type="range"] {
+      flex: 1;
+      height: 6px;
+      border-radius: 3px;
+      accent-color: var(--accent-orange);
+      cursor: pointer;
+    }
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      justify-content: center;
+    }
+
+    .btn {
+      border: none;
+      padding: 4px 10px;
+      border-radius: 5px;
+      font-weight: 600;
+      font-size: 0.78rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      transition: all 0.12s ease;
+    }
+    .btn-blue { background: var(--primary-blue); color: white; }
+    .btn-blue:hover { background: var(--deep-blue); }
+    .btn-orange { background: var(--accent-orange); color: white; }
+    .btn-orange:hover { background: var(--accent-hover); }
+    .btn-outline {
+      background: white;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+    }
+    .btn-outline:hover {
+      background: var(--light-blue);
+      border-color: var(--primary-blue);
+    }
+    .btn-danger { background: #ef4444; color: white; }
+
+    /* SIDEBAR */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 0;
+      overflow-y: auto;
+    }
+    .panel-card {
+      background: var(--panel-bg);
+      border-radius: 8px;
+      border: 1.5px solid var(--border-color);
+      padding: 8px 10px;
+    }
+    .panel-title {
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: var(--deep-blue);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-bottom: 1.5px solid var(--light-blue);
+      padding-bottom: 4px;
+    }
+
+    .math-info-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .info-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 3px 8px;
+      background: #f8fafc;
+      border-radius: 4px;
+      border-left: 3.5px solid var(--primary-blue);
+      font-size: 0.78rem;
+    }
+    .info-item span.val {
+      font-weight: bold;
+      color: var(--accent-orange);
+      font-size: 0.84rem;
+    }
+    .highlight-angle {
+      background: #fff7ed;
+      border-left-color: var(--accent-orange);
+    }
+    .highlight-angle span.val {
+      font-size: 0.98rem;
+    }
+
+    .quick-angles {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+    }
+    .quick-angles button {
+      padding: 4px 0;
+      font-size: 0.76rem;
+      font-weight: 600;
+    }
+
+    .mode-container {
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .mode-container.active-mode {
+      display: flex;
+    }
+    .challenge-box {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 6px;
+      padding: 8px 10px;
+    }
+    .challenge-q {
+      font-weight: bold;
+      font-size: 0.84rem;
+      color: #1e3a8a;
+      margin-bottom: 6px;
+      line-height: 1.35;
+    }
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+    }
+    .feedback-box {
+      padding: 6px 8px;
+      border-radius: 4px;
+      font-size: 0.76rem;
+      font-weight: 500;
+      margin-top: 6px;
+      display: none;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      backdrop-filter: blur(2px);
+    }
+    .modal-card {
+      background: white;
+      border-radius: 12px;
+      padding: 18px 24px;
+      max-width: 360px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+    .modal-card h2 {
+      color: var(--deep-blue);
+      font-size: 1.15rem;
+      margin-bottom: 8px;
+    }
+    .score-breakdown {
+      margin: 10px 0;
+      text-align: left;
+      line-height: 1.6;
+      background: #f8fafc;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+    }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-title">
+      <h1>🎯 THỢ SĂN GÓC LƯỢNG GIÁC</h1>
+      <p>Khám phá chiều quay – độ lớn góc – vị trí điểm cuối</p>
+    </div>
+    <div class="header-status">
+      <div class="badge">⭐ Điểm: <span id="scoreVal">0</span></div>
+      <div class="badge">🔥 Chuỗi: <span id="streakVal">0</span></div>
+      <button class="btn btn-outline" id="audioToggleBtn">🔊 BẬT</button>
+    </div>
+  </header>
+
+  <nav>
+    <button class="nav-btn active" data-mode="1">Màn 1: Điều Khiển Kim</button>
+    <button class="nav-btn" data-mode="2">Màn 2: Đoán Góc</button>
+    <button class="nav-btn" data-mode="3">Màn 3: Thợ Săn Góc</button>
+    <button class="nav-btn" data-mode="4">Màn 4: Săn Điểm Cuối</button>
+    <button class="btn btn-outline" id="showSummaryBtn" style="margin-left: auto;">🏆 Tổng kết</button>
+  </nav>
+
+  <main>
+    <div class="sim-container">
+      <div class="canvas-wrapper">
+        <canvas id="simCanvas"></canvas>
+      </div>
+
+      <div class="sim-controls">
+        <div class="slider-row">
+          <label for="angleRange">Góc: <span id="lblSliderAngle">0°</span></label>
+          <button class="btn btn-outline" id="stepMinusBtn">◀</button>
+          <input type="range" id="angleRange" min="-720" max="720" step="1" value="0">
+          <button class="btn btn-outline" id="stepPlusBtn">▶</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-outline" id="rotM360Btn">-360°</button>
+          <button class="btn btn-outline" id="rotM90Btn">-90°</button>
+          <button class="btn btn-outline" id="rotM45Btn">-45°</button>
+          <button class="btn btn-danger" id="resetAngleBtn">Về 0°</button>
+          <button class="btn btn-outline" id="rotP45Btn">+45°</button>
+          <button class="btn btn-outline" id="rotP90Btn">+90°</button>
+          <button class="btn btn-outline" id="rotP360Btn">+360°</button>
+          <button class="btn btn-orange" id="autoRotateBtn">▶ Quay tự động</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="panel-card">
+        <div class="panel-title">📐 Thông tin góc lượng giác</div>
+        <div class="math-info-list">
+          <div class="info-item highlight-angle">
+            <span>Số đo góc (α):</span>
+            <span class="val" id="dispAngle">0°</span>
+          </div>
+          <div class="info-item">
+            <span>Chiều quay:</span>
+            <span class="val" id="dispDirection">Đứng yên (0°)</span>
+          </div>
+          <div class="info-item">
+            <span>Phân tích số vòng:</span>
+            <span class="val" id="dispTurns">0 vòng</span>
+          </div>
+          <div class="info-item">
+            <span>Góc tương đương:</span>
+            <span class="val" id="dispEquivalent">0°</span>
+          </div>
+          <div class="info-item">
+            <span>Vị trí điểm M:</span>
+            <span class="val" id="dispQuadrant">Trục Ox dương</span>
+          </div>
+          <div class="info-item">
+            <span>Tọa độ M:</span>
+            <span class="val" id="dispCoord">(1.00; 0.00)</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="modePanel1" class="mode-container active-mode">
+        <div class="panel-card">
+          <div class="panel-title">🧭 Thư viện góc nhanh</div>
+          <div class="quick-angles">
+            <button class="btn btn-outline" data-quick="0">0°</button>
+            <button class="btn btn-outline" data-quick="30">30°</button>
+            <button class="btn btn-outline" data-quick="45">45°</button>
+            <button class="btn btn-outline" data-quick="60">60°</button>
+            <button class="btn btn-outline" data-quick="90">90°</button>
+            <button class="btn btn-outline" data-quick="120">120°</button>
+            <button class="btn btn-outline" data-quick="135">135°</button>
+            <button class="btn btn-outline" data-quick="180">180°</button>
+            <button class="btn btn-outline" data-quick="225">225°</button>
+            <button class="btn btn-outline" data-quick="270">270°</button>
+            <button class="btn btn-outline" data-quick="315">315°</button>
+            <button class="btn btn-outline" data-quick="360">360°</button>
+            <button class="btn btn-outline" data-quick="450">450°</button>
+            <button class="btn btn-outline" data-quick="-45">-45°</button>
+            <button class="btn btn-outline" data-quick="-90">-90°</button>
+            <button class="btn btn-outline" data-quick="765">765°</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="modePanel2" class="mode-container">
+        <div class="panel-card challenge-box">
+          <div class="panel-title">🤔 Màn 2: Thử Tài Đoán Góc</div>
+          <div class="challenge-q" id="m2QuestionText">Đang chuẩn bị...</div>
+          <div class="options-grid" id="m2Options"></div>
+          <div class="feedback-box" id="m2Feedback"></div>
+          <button class="btn btn-blue" id="m2NextBtn" style="margin-top: 8px; width: 100%; display: none;">Câu tiếp theo ➔</button>
+        </div>
+      </div>
+
+      <div id="modePanel3" class="mode-container">
+        <div class="panel-card challenge-box">
+          <div class="panel-title">🎯 Màn 3: Thợ Săn Góc</div>
+          <div style="display: flex; gap: 4px; margin-bottom: 6px; align-items: center;">
+            <span style="font-size: 0.76rem; font-weight: bold;">Mức độ:</span>
+            <button class="btn btn-outline" id="m3DiffEasy" style="flex:1;">Dễ</button>
+            <button class="btn btn-outline" id="m3DiffMed" style="flex:1;">Vừa</button>
+            <button class="btn btn-outline" id="m3DiffHard" style="flex:1;">Khó</button>
+          </div>
+          <div class="challenge-q" id="m3TargetText">Hãy quay kim đến: <strong>45°</strong></div>
+          <button class="btn btn-orange" id="m3ConfirmBtn" style="width: 100%; margin-top: 6px;">Xác nhận vị trí kim</button>
+          <div class="feedback-box" id="m3Feedback"></div>
+        </div>
+      </div>
+
+      <div id="modePanel4" class="mode-container">
+        <div class="panel-card challenge-box">
+          <div class="panel-title">🧭 Màn 4: Săn Điểm Cuối M</div>
+          <div class="challenge-q" id="m4AngleGiven">Cho góc α = 765°</div>
+          <p style="font-size: 0.78rem; font-weight: 600; margin-bottom: 4px;">Bước 1: Điểm M nằm ở đâu?</p>
+          <div class="options-grid" id="m4QuadOptions">
+            <button class="btn btn-outline" data-quad="I">Góc I</button>
+            <button class="btn btn-outline" data-quad="II">Góc II</button>
+            <button class="btn btn-outline" data-quad="III">Góc III</button>
+            <button class="btn btn-outline" data-quad="IV">Góc IV</button>
+          </div>
+          <div id="m4Step2Container" style="display:none; margin-top: 8px;">
+            <p style="font-size: 0.78rem; font-weight: 600; margin-bottom: 4px;">Bước 2: Góc tương đương [0°; 360°)?</p>
+            <div class="options-grid" id="m4ModOptions"></div>
+          </div>
+          <div class="feedback-box" id="m4Feedback"></div>
+          <button class="btn btn-blue" id="m4NextBtn" style="margin-top: 8px; width: 100%; display: none;">Câu tiếp theo ➔</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="modal-overlay" id="resultModal">
+    <div class="modal-card">
+      <h2>🏆 BẢNG TỔNG KẾT</h2>
+      <div style="font-size: 2rem; margin: 4px 0;" id="rankBadge">🥇</div>
+      <div style="font-size: 1.05rem; font-weight: bold; color: var(--accent-orange);" id="rankTitle">Bậc Thầy Góc Lượng Giác</div>
+      <div class="score-breakdown">
+        <p>⭐ Tổng điểm: <strong id="sumScore">0</strong></p>
+        <p>✅ Số câu đúng: <strong id="sumCorrect">0</strong></p>
+        <p>🎯 Tỷ lệ chính xác: <strong id="sumAccuracy">0%</strong></p>
+        <p>🔥 Chuỗi dài nhất: <strong id="sumMaxStreak">0</strong></p>
+      </div>
+      <button class="btn btn-blue" id="closeModalBtn" style="width: 100%;">Tiếp tục</button>
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      angle: 0,
+      targetAngle: 0,
+      mode: '1',
+      score: 0,
+      streak: 0,
+      maxStreak: 0,
+      totalAttempts: 0,
+      correctAttempts: 0,
+      audioEnabled: true,
+      isAutoRotating: false,
+      m3Target: 45,
+      m3Difficulty: 'easy',
+      m4CurrentData: null
+    };
+
+    const AudioEngine = {
+      ctx: null,
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.ctx = new AudioContext();
+        }
+      },
+      beep(freq, duration, type = 'sine') {
+        if (!state.audioEnabled) return;
+        try {
+          this.init();
+          if (!this.ctx) return;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch (e) {}
+      },
+      correct() {
+        this.beep(587.33, 0.08, 'triangle');
+        setTimeout(() => this.beep(880, 0.18, 'triangle'), 80);
+      },
+      wrong() { this.beep(220, 0.2, 'sawtooth'); },
+      click() { this.beep(400, 0.03, 'sine'); }
+    };
+
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+    let cssW = 600, cssH = 450;
+
+    function resizeCanvas() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      cssW = rect.width > 0 ? rect.width : 600;
+      cssH = rect.height > 0 ? rect.height : 450;
+
+      canvas.width = cssW * dpr;
+      canvas.height = cssH * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+
+    function drawSimulation() {
+      ctx.clearRect(0, 0, cssW, cssH);
+
+      const cx = cssW / 2;
+      const cy = cssH / 2;
+      const R = Math.min(cssW, cssH) * 0.38;
+
+      if (Math.abs(state.targetAngle - state.angle) > 0.1) {
+        state.angle += (state.targetAngle - state.angle) * 0.2;
+      } else {
+        state.angle = state.targetAngle;
+        if (state.isAutoRotating) {
+          state.targetAngle += 1.5;
+          if (state.targetAngle > 720) state.targetAngle = -720;
+        }
+      }
+
+      const curAngle = state.angle;
+
+      // 1. Lưới nền
+      ctx.save();
+      ctx.strokeStyle = '#f1f5f9';
+      ctx.lineWidth = 1;
+      const step = 26;
+      for (let x = cx % step; x < cssW; x += step) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, cssH); ctx.stroke();
+      }
+      for (let y = cy % step; y < cssH; y += step) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(cssW, y); ctx.stroke();
+      }
+      ctx.restore();
+
+      // 2. Trục toạ độ Oxy
+      ctx.save();
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath(); ctx.moveTo(20, cy); ctx.lineTo(cssW - 20, cy); ctx.stroke();
+      ctx.fillStyle = '#64748b';
+      ctx.beginPath();
+      ctx.moveTo(cssW - 20, cy - 5); ctx.lineTo(cssW - 10, cy); ctx.lineTo(cssW - 20, cy + 5);
+      ctx.fill();
+
+      ctx.beginPath(); ctx.moveTo(cx, cssH - 20); ctx.lineTo(cx, 20); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(cx - 5, 20); ctx.lineTo(cx, 10); ctx.lineTo(cx + 5, 20);
+      ctx.fill();
+
+      ctx.font = "12px 'Segoe UI', sans-serif";
+      ctx.fillStyle = '#475569';
+      ctx.fillText('O', cx - 14, cy + 14);
+      ctx.fillText('x', cssW - 30, cy + 16);
+      ctx.fillText('y', cx + 8, 24);
+
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = "bold 20px 'Segoe UI', sans-serif";
+      ctx.fillText('I', cx + R * 0.55, cy - R * 0.55);
+      ctx.fillText('II', cx - R * 0.65, cy - R * 0.55);
+      ctx.fillText('III', cx - R * 0.65, cy + R * 0.65);
+      ctx.fillText('IV', cx + R * 0.55, cy + R * 0.65);
+      ctx.restore();
+
+      // 3. Đường tròn đơn vị
+      ctx.save();
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.setLineDash([4, 4]);
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+
+      // 4. Tia đầu Ox
+      ctx.save();
+      ctx.strokeStyle = '#0284c7';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + R * 1.15, cy);
+      ctx.stroke();
+      ctx.fillStyle = '#0284c7';
+      ctx.font = "bold 11px 'Segoe UI', sans-serif";
+      ctx.fillText('Tia đầu Ox', cx + R * 0.45, cy + 15);
+      ctx.restore();
+
+      // 5. Cung xoắn ốc
+      if (Math.abs(curAngle) >= 0.2) {
+        ctx.save();
+        const isPositive = curAngle > 0;
+        ctx.strokeStyle = isPositive ? '#f97316' : '#8b5cf6';
+        ctx.lineWidth = 2.2;
+        const totalRad = (curAngle * Math.PI) / 180;
+        const baseRadius = R * 0.25;
+        const maxExtra = R * 0.4;
+        const inc = 0.05 * Math.sign(curAngle);
+
+        ctx.beginPath();
+        let currentTheta = 0;
+        let lastX = cx + baseRadius, lastY = cy;
+
+        while (Math.abs(currentTheta) < Math.abs(totalRad)) {
+          const progress = Math.abs(currentTheta) / (Math.PI * 4);
+          const rCurrent = baseRadius + Math.min(progress, 1) * maxExtra;
+          const px = cx + rCurrent * Math.cos(currentTheta);
+          const py = cy - rCurrent * Math.sin(currentTheta);
+
+          if (currentTheta === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+
+          lastX = px; lastY = py;
+          currentTheta += inc;
+        }
+        ctx.stroke();
+
+        const arrowRad = -totalRad;
+        const tangentAngle = arrowRad + (isPositive ? -Math.PI / 2 : Math.PI / 2);
+        const headLen = 8;
+        ctx.fillStyle = ctx.strokeStyle;
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(lastX - headLen * Math.cos(tangentAngle - Math.PI / 6), lastY - headLen * Math.sin(tangentAngle - Math.PI / 6));
+        ctx.lineTo(lastX - headLen * Math.cos(tangentAngle + Math.PI / 6), lastY - headLen * Math.sin(tangentAngle + Math.PI / 6));
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // 6. Tia cuối và điểm M
+      ctx.save();
+      const rad = (curAngle * Math.PI) / 180;
+      const endX = cx + R * Math.cos(rad);
+      const endY = cy - R * Math.sin(rad);
+
+      ctx.strokeStyle = '#dc2626';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(endX, endY);
+      ctx.stroke();
+
+      ctx.setLineDash([3, 3]);
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(endX, endY); ctx.lineTo(endX, cy); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(endX, endY); ctx.lineTo(cx, endY); ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath();
+      ctx.arc(endX, endY, 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.8;
+      ctx.stroke();
+
+      ctx.font = "bold 13px 'Segoe UI', sans-serif";
+      ctx.fillStyle = '#dc2626';
+      const offX = Math.cos(rad) * 16;
+      const offY = -Math.sin(rad) * 16;
+      ctx.fillText('M', endX + offX - 4, endY + offY + 4);
+      ctx.restore();
+
+      requestAnimationFrame(drawSimulation);
+    }
+
+    function normalizeMod360(deg) {
+      let m = deg % 360;
+      if (m < 0) m += 360;
+      return Math.round(m * 10) / 10;
+    }
+
+    function getQuadrantAndAxis(deg) {
+      const norm = normalizeMod360(deg);
+      const eps = 0.5;
+      if (Math.abs(norm - 0) <= eps || Math.abs(norm - 360) <= eps) return "Trục Ox dương";
+      if (Math.abs(norm - 90) <= eps) return "Trục Oy dương";
+      if (Math.abs(norm - 180) <= eps) return "Trục Ox âm";
+      if (Math.abs(norm - 270) <= eps) return "Trục Oy âm";
+      if (norm > 0 && norm < 90) return "Góc phần tư I";
+      if (norm > 90 && norm < 180) return "Góc phần tư II";
+      if (norm > 180 && norm < 270) return "Góc phần tư III";
+      return "Góc phần tư IV";
+    }
+
+    function updateMathInfoPanel() {
+      const rounded = Math.round(state.angle);
+      const norm = normalizeMod360(rounded);
+      const rad = (rounded * Math.PI) / 180;
+      const cosVal = Math.cos(rad).toFixed(2);
+      const sinVal = Math.sin(rad).toFixed(2);
+
+      let dirText = "Đứng yên (0°)";
+      if (rounded > 0) dirText = "Dương (ngược kim đồng hồ ↺)";
+      else if (rounded < 0) dirText = "Âm (cùng kim đồng hồ ↻)";
+
+      const k = Math.trunc(rounded / 360);
+      const remainder = rounded - k * 360;
+      let turnsText = (k === 0) ? `0 vòng + ${remainder}°` : `${Math.abs(k)} vòng ${k > 0 ? '(+)' : '(-)'} ${remainder !== 0 ? `+ (${remainder}°)` : ''}`;
+
+      document.getElementById('dispAngle').innerText = `${rounded}°`;
+      document.getElementById('dispDirection').innerText = dirText;
+      document.getElementById('dispTurns').innerText = turnsText;
+      document.getElementById('dispEquivalent').innerText = `${norm}°`;
+      document.getElementById('dispQuadrant').innerText = getQuadrantAndAxis(rounded);
+      document.getElementById('dispCoord').innerText = `(${cosVal}; ${sinVal})`;
+
+      document.getElementById('angleRange').value = rounded;
+      document.getElementById('lblSliderAngle').innerText = `${rounded}°`;
+    }
+
+    function setTargetAngle(deg, animate = true) {
+      state.targetAngle = deg;
+      if (!animate) state.angle = deg;
+      updateMathInfoPanel();
+    }
+
+    function addScore(points) {
+      state.score += points;
+      state.streak++;
+      if (state.streak > state.maxStreak) state.maxStreak = state.streak;
+      if (state.streak === 3) state.score += 5;
+      else if (state.streak === 5) state.score += 10;
+      updateScoreBoard();
+      AudioEngine.correct();
+    }
+
+    function resetStreak() {
+      state.streak = 0;
+      updateScoreBoard();
+      AudioEngine.wrong();
+    }
+
+    function updateScoreBoard() {
+      document.getElementById('scoreVal').innerText = state.score;
+      document.getElementById('streakVal').innerText = state.streak;
+    }
+
+    // Màn 2
+    let m2CurrentCorrectAngle = 0;
+    function initMode2Question() {
+      state.totalAttempts++;
+      const fb = document.getElementById('m2Feedback');
+      fb.style.display = 'none';
+      document.getElementById('m2NextBtn').style.display = 'none';
+
+      const turns = Math.floor(Math.random() * 3) - 1;
+      const acuteAngles = [30, 45, 60, 90, 120, 135, 150, 210, 225, 300, 315];
+      const addAng = acuteAngles[Math.floor(Math.random() * acuteAngles.length)];
+      const isPos = Math.random() > 0.3;
+      let calcAngle = 0;
+      let questionText = "";
+
+      if (turns === 0) {
+        calcAngle = isPos ? addAng : -addAng;
+        questionText = `Kim quay theo chiều ${isPos ? 'dương' : 'âm'} một góc ${addAng}°. Góc lượng giác bằng:`;
+      } else {
+        const absTurns = Math.abs(turns);
+        calcAngle = turns * 360 + (turns >= 0 ? addAng : -addAng);
+        questionText = `Kim quay ${absTurns} vòng theo chiều ${turns > 0 ? 'dương' : 'âm'} rồi quay tiếp ${addAng}°. Góc lượng giác là:`;
+      }
+
+      m2CurrentCorrectAngle = calcAngle;
+      document.getElementById('m2QuestionText').innerText = questionText;
+
+      const choices = new Set([calcAngle]);
+      while (choices.size < 4) {
+        const offset = (Math.floor(Math.random() * 5) - 2) * 90 + (Math.random() > 0.5 ? 45 : 30);
+        choices.add(calcAngle + (offset === 0 ? 180 : offset));
+      }
+
+      const optsContainer = document.getElementById('m2Options');
+      optsContainer.innerHTML = '';
+      Array.from(choices).sort(() => Math.random() - 0.5).forEach(choice => {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-outline';
+        btn.innerText = `${choice}°`;
+        btn.onclick = () => handleMode2Answer(choice, btn);
+        optsContainer.appendChild(btn);
+      });
+    }
+
+    function handleMode2Answer(choice, btnElem) {
+      const fb = document.getElementById('m2Feedback');
+      fb.style.display = 'block';
+      document.querySelectorAll('#m2Options button').forEach(b => b.disabled = true);
+
+      if (choice === m2CurrentCorrectAngle) {
+        state.correctAttempts++;
+        fb.style.background = '#dcfce7'; fb.style.color = '#15803d';
+        fb.innerHTML = `🎯 <strong>Chính xác!</strong> Giá trị góc đúng là ${m2CurrentCorrectAngle}°.`;
+        btnElem.style.background = '#22c55e'; btnElem.style.color = 'white';
+        addScore(10);
+      } else {
+        fb.style.background = '#fee2e2'; fb.style.color = '#b91c1c';
+        fb.innerHTML = `❌ <strong>Chưa đúng!</strong> Đáp án chính xác là ${m2CurrentCorrectAngle}°.`;
+        btnElem.style.background = '#ef4444'; btnElem.style.color = 'white';
+        resetStreak();
+      }
+      setTargetAngle(m2CurrentCorrectAngle);
+      document.getElementById('m2NextBtn').style.display = 'block';
+    }
+
+    // Màn 3
+    function initMode3Target() {
+      const fb = document.getElementById('m3Feedback');
+      fb.style.display = 'none';
+
+      let pool = (state.m3Difficulty === 'easy') 
+        ? [0, 30, 45, 60, 90, 180, 270, 360] 
+        : (state.m3Difficulty === 'med')
+          ? [120, 135, 150, 210, 225, 300, 315, -90, -180]
+          : [-450, 765, -315, 450, 540, -600, 675];
+
+      state.m3Target = pool[Math.floor(Math.random() * pool.length)];
+      document.getElementById('m3TargetText').innerHTML = `Hãy quay kim đến: <strong style="font-size:1.15rem; color:var(--accent-orange);">${state.m3Target}°</strong>`;
+    }
+
+    function confirmMode3Target() {
+      state.totalAttempts++;
+      const fb = document.getElementById('m3Feedback');
+      fb.style.display = 'block';
+      const diff = Math.abs(Math.round(state.angle) - state.m3Target);
+
+      if (diff <= 3) {
+        state.correctAttempts++;
+        fb.style.background = '#dcfce7'; fb.style.color = '#15803d';
+        fb.innerHTML = `🎯 <strong>Xuất sắc!</strong> Căn góc chuẩn xác (+10 điểm).`;
+        addScore(10);
+        setTimeout(initMode3Target, 1500);
+      } else {
+        fb.style.background = '#fee2e2'; fb.style.color = '#b91c1c';
+        fb.innerHTML = `⚠️ <strong>Chưa chuẩn!</strong> Kim đang ở ${Math.round(state.angle)}°, lệch ${diff}° so với ${state.m3Target}°.`;
+        resetStreak();
+      }
+    }
+
+    // Màn 4
+    function initMode4Challenge() {
+      state.totalAttempts++;
+      const fb = document.getElementById('m4Feedback');
+      fb.style.display = 'none';
+      document.getElementById('m4NextBtn').style.display = 'none';
+      document.getElementById('m4Step2Container').style.display = 'none';
+
+      const angles = [405, 450, 540, 765, 840, -120, -315, -450, 990, -660];
+      const chosen = angles[Math.floor(Math.random() * angles.length)];
+      state.m4CurrentData = {
+        angle: chosen,
+        norm: normalizeMod360(chosen),
+        quad: getQuadrantAndAxis(chosen)
+      };
+
+      document.getElementById('m4AngleGiven').innerHTML = `Cho góc α = <strong style="color:var(--accent-orange); font-size:1.15rem;">${chosen}°</strong>`;
+      setTargetAngle(chosen);
+
+      const quadBtns = document.querySelectorAll('#m4QuadOptions button');
+      quadBtns.forEach(btn => {
+        btn.disabled = false;
+        btn.style.background = '';
+        btn.style.color = '';
+      });
+    }
+
+    function handleMode4Step1(userQuadChoice, btnElem) {
+      const d = state.m4CurrentData;
+      const fb = document.getElementById('m4Feedback');
+      fb.style.display = 'block';
+
+      if (d.quad.includes(userQuadChoice)) {
+        fb.style.background = '#dcfce7'; fb.style.color = '#15803d';
+        fb.innerHTML = `✅ Đúng! Điểm M nằm ở ${d.quad}. Hãy tìm góc tương đương.`;
+        btnElem.style.background = '#22c55e'; btnElem.style.color = 'white';
+        document.querySelectorAll('#m4QuadOptions button').forEach(b => b.disabled = true);
+        AudioEngine.correct();
+
+        const step2Box = document.getElementById('m4Step2Container');
+        step2Box.style.display = 'block';
+        const modOpts = document.getElementById('m4ModOptions');
+        modOpts.innerHTML = '';
+
+        const choices = new Set([d.norm]);
+        while (choices.size < 4) {
+          choices.add(normalizeMod360(d.norm + (Math.floor(Math.random() * 5) - 2) * 60 + 30));
+        }
+
+        Array.from(choices).sort((a,b) => a - b).forEach(val => {
+          const b = document.createElement('button');
+          b.className = 'btn btn-outline';
+          b.innerText = `${val}°`;
+          b.onclick = () => {
+            document.querySelectorAll('#m4ModOptions button').forEach(btn => btn.disabled = true);
+            const k = Math.floor(d.angle / 360);
+            if (val === d.norm) {
+              state.correctAttempts++;
+              b.style.background = '#22c55e'; b.style.color = 'white';
+              fb.innerHTML = `🎉 <strong>Chính xác!</strong> ${d.angle}° = ${k} × 360° + ${d.norm}°.`;
+              addScore(15);
+            } else {
+              b.style.background = '#ef4444'; b.style.color = 'white';
+              fb.innerHTML = `❌ <strong>Chưa đúng!</strong> Góc tương đương là ${d.norm}°.`;
+              resetStreak();
+            }
+            document.getElementById('m4NextBtn').style.display = 'block';
+          };
+          modOpts.appendChild(b);
+        });
+      } else {
+        fb.style.background = '#fee2e2'; fb.style.color = '#b91c1c';
+        fb.innerHTML = `❌ Chưa đúng! Quan sát hình vẽ: M đang thuộc ${d.quad}.`;
+        btnElem.style.background = '#ef4444'; btnElem.style.color = 'white';
+        resetStreak();
+      }
+    }
+
+    // Events
+    const rangeInput = document.getElementById('angleRange');
+    rangeInput.addEventListener('input', (e) => {
+      state.isAutoRotating = false;
+      setTargetAngle(parseFloat(e.target.value));
+    });
+
+    document.getElementById('stepMinusBtn').onclick = () => {
+      state.isAutoRotating = false;
+      AudioEngine.click();
+      setTargetAngle(Math.max(-720, Math.round(state.angle) - 1));
+    };
+    document.getElementById('stepPlusBtn').onclick = () => {
+      state.isAutoRotating = false;
+      AudioEngine.click();
+      setTargetAngle(Math.min(720, Math.round(state.angle) + 1));
+    };
+
+    document.getElementById('rotM360Btn').onclick = () => { AudioEngine.click(); setTargetAngle(state.angle - 360); };
+    document.getElementById('rotM90Btn').onclick = () => { AudioEngine.click(); setTargetAngle(state.angle - 90); };
+    document.getElementById('rotM45Btn').onclick = () => { AudioEngine.click(); setTargetAngle(state.angle - 45); };
+    document.getElementById('resetAngleBtn').onclick = () => { AudioEngine.click(); state.isAutoRotating = false; setTargetAngle(0); };
+    document.getElementById('rotP45Btn').onclick = () => { AudioEngine.click(); setTargetAngle(state.angle + 45); };
+    document.getElementById('rotP90Btn').onclick = () => { AudioEngine.click(); setTargetAngle(state.angle + 90); };
+    document.getElementById('rotP360Btn').onclick = () => { AudioEngine.click(); setTargetAngle(state.angle + 360); };
+
+    const autoBtn = document.getElementById('autoRotateBtn');
+    autoBtn.onclick = () => {
+      AudioEngine.click();
+      state.isAutoRotating = !state.isAutoRotating;
+      autoBtn.innerText = state.isAutoRotating ? '⏸ Dừng quay' : '▶ Quay tự động';
+      autoBtn.className = state.isAutoRotating ? 'btn btn-danger' : 'btn btn-orange';
+    };
+
+    document.getElementById('audioToggleBtn').onclick = (e) => {
+      state.audioEnabled = !state.audioEnabled;
+      e.target.innerText = state.audioEnabled ? '🔊 BẬT' : '🔇 TẮT';
+    };
+
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.onclick = () => {
+        AudioEngine.click();
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active-mode'));
+        state.mode = btn.dataset.mode;
+        state.isAutoRotating = false;
+        autoBtn.innerText = '▶ Quay tự động';
+        autoBtn.className = 'btn btn-orange';
+
+        if (state.mode === '1') document.getElementById('modePanel1').classList.add('active-mode');
+        else if (state.mode === '2') {
+          document.getElementById('modePanel2').classList.add('active-mode');
+          initMode2Question();
+        } else if (state.mode === '3') {
+          document.getElementById('modePanel3').classList.add('active-mode');
+          initMode3Target();
+        } else if (state.mode === '4') {
+          document.getElementById('modePanel4').classList.add('active-mode');
+          initMode4Challenge();
+        }
+      };
+    });
+
+    document.querySelectorAll('.quick-angles button').forEach(b => {
+      b.onclick = () => {
+        AudioEngine.click();
+        setTargetAngle(parseFloat(b.dataset.quick));
+      };
+    });
+
+    document.getElementById('m2NextBtn').onclick = () => { AudioEngine.click(); initMode2Question(); };
+    document.getElementById('m3ConfirmBtn').onclick = () => confirmMode3Target();
+    ['Easy', 'Med', 'Hard'].forEach(lvl => {
+      document.getElementById(`m3Diff${lvl}`).onclick = (e) => {
+        ['Easy', 'Med', 'Hard'].forEach(l => document.getElementById(`m3Diff${l}`).style.background = '');
+        e.target.style.background = 'var(--light-blue)';
+        state.m3Difficulty = lvl.toLowerCase();
+        initMode3Target();
+      };
+    });
+
+    document.querySelectorAll('#m4QuadOptions button').forEach(b => {
+      b.onclick = () => handleMode4Step1(b.dataset.quad, b);
+    });
+    document.getElementById('m4NextBtn').onclick = () => { AudioEngine.click(); initMode4Challenge(); };
+
+    document.getElementById('showSummaryBtn').onclick = () => {
+      AudioEngine.click();
+      const modal = document.getElementById('resultModal');
+      document.getElementById('sumScore').innerText = state.score;
+      document.getElementById('sumCorrect').innerText = state.correctAttempts;
+      const acc = state.totalAttempts > 0 ? Math.round((state.correctAttempts / state.totalAttempts) * 100) : 0;
+      document.getElementById('sumAccuracy').innerText = `${acc}%`;
+      document.getElementById('sumMaxStreak').innerText = state.maxStreak;
+      modal.style.display = 'flex';
+    };
+
+    document.getElementById('closeModalBtn').onclick = () => {
+      document.getElementById('resultModal').style.display = 'none';
+    };
+
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('DOMContentLoaded', () => {
+      resizeCanvas();
+      setTargetAngle(0, false);
+      updateScoreBoard();
+      drawSimulation();
+    });
+  </script>
+</body>
+</html>
