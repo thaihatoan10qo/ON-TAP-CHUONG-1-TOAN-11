@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mô Phỏng Phương Trình Lượng Giác Cơ Bản - Toán 11</title>
+  <style>
+    :root {
+      --bg-body: #f8fafc;
+      --bg-card: #ffffff;
+      --border: #cbd5e1;
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --accent: #f97316;
+      --text: #0f172a;
+      --muted: #475569;
+      --sin-color: #dc2626;
+      --cos-color: #2563eb;
+      --tan-color: #d97706;
+      --cot-color: #7c3aed;
+      --line-m: #e11d48;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background-color: var(--bg-body);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* HEADER */
+    header {
+      background: #ffffff;
+      padding: 6px 18px;
+      border-bottom: 1.5px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .header-title h1 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--primary-dark);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .header-title p {
+      font-size: 0.74rem;
+      color: var(--muted);
+    }
+
+    /* TABS DẠNG PHƯƠNG TRÌNH */
+    .func-tabs {
+      display: flex;
+      gap: 6px;
+    }
+    .tab-btn {
+      padding: 5px 14px;
+      border-radius: 6px;
+      border: 1.5px solid var(--border);
+      background: white;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all 0.15s ease;
+    }
+    .tab-btn:hover {
+      background: #e0f2fe;
+      color: var(--primary-dark);
+      border-color: var(--primary);
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      box-shadow: 0 2px 4px rgba(2, 132, 199, 0.2);
+    }
+
+    /* BỐ CỤC CHÍNH */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 390px;
+      gap: 10px;
+      padding: 8px 14px;
+      min-height: 0;
+      width: 100%;
+    }
+
+    /* KHUNG CANVAS KÉP */
+    .canvas-container {
+      position: relative;
+      background: #ffffff;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .canvas-views {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1.35fr;
+      min-height: 0;
+      position: relative;
+      border-bottom: 1.5px solid var(--border);
+    }
+    .view-box {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+    }
+    .view-box:first-child {
+      border-right: 1.5px solid var(--border);
+    }
+    .view-header {
+      position: absolute;
+      top: 8px;
+      left: 10px;
+      z-index: 5;
+      font-size: 0.74rem;
+      font-weight: 800;
+      background: rgba(248, 250, 252, 0.88);
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      color: var(--primary-dark);
+      backdrop-filter: blur(2px);
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* THANH ĐIỀU KHIỂN DƯỚI CANVAS */
+    .sim-controls {
+      padding: 7px 14px;
+      background: #f1f5f9;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .slider-row label {
+      font-weight: 800;
+      font-size: 0.88rem;
+      color: var(--line-m);
+      min-width: 130px;
+    }
+    input[type="range"] {
+      flex: 1;
+      height: 6px;
+      border-radius: 3px;
+      accent-color: var(--line-m);
+      cursor: pointer;
+    }
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      align-items: center;
+    }
+    .btn-row-label {
+      font-size: 0.76rem;
+      font-weight: 800;
+      color: var(--muted);
+      margin-right: 4px;
+    }
+    .btn {
+      border: 1.5px solid var(--border);
+      background: #ffffff;
+      color: var(--text);
+      padding: 3px 9px;
+      border-radius: 5px;
+      font-weight: 700;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn:hover {
+      background: #e0f2fe;
+      border-color: var(--primary);
+      color: var(--primary-dark);
+    }
+    .btn.active-val {
+      background: var(--line-m);
+      color: #ffffff;
+      border-color: var(--line-m);
+    }
+    .btn-reset {
+      background: #fee2e2;
+      color: #dc2626;
+      border-color: #fca5a5;
+      margin-left: auto;
+    }
+    .btn-reset:hover { background: #fecaca; }
+
+    /* CỘT PHẢI */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 0;
+      overflow-y: auto;
+    }
+    .panel-card {
+      background: #ffffff;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      padding: 10px 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .panel-title {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: var(--primary-dark);
+      letter-spacing: 0.3px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1.5px solid #e2e8f0;
+      padding-bottom: 4px;
+    }
+    .panel-title-text {
+      text-transform: uppercase;
+    }
+    .panel-title-sub {
+      text-transform: none; /* Khắc phục lỗi in hoa m */
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .formula-display {
+      background: #f0fdf4;
+      border: 1.5px solid #86efac;
+      border-radius: 6px;
+      padding: 7px 10px;
+      text-align: center;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #15803d;
+      margin-bottom: 4px;
+    }
+    .formula-display.no-sol {
+      background: #fef2f2;
+      border-color: #fca5a5;
+      color: #b91c1c;
+    }
+
+    .sol-box {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      background: #f8fafc;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+      border-left: 4px solid var(--primary);
+    }
+    .sol-line {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: #0f172a;
+      font-family: 'Courier New', Courier, monospace;
+    }
+    .sol-desc {
+      font-size: 0.76rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .note-box {
+      font-size: 0.82rem;
+      color: #334155;
+      line-height: 1.6;
+      background: #ffffff;
+      border-left: 3.5px solid var(--primary);
+      padding: 6px 10px;
+      border-radius: 0 4px 4px 0;
+    }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-title">
+      <h1>🎯 PHƯƠNG TRÌNH LƯỢNG GIÁC CƠ BẢN</h1>
+      <p>Trực quan hóa họ nghiệm trên đường tròn đơn vị và giao điểm đồ thị</p>
+    </div>
+
+    <!-- TABS CHỌN PHƯƠNG TRÌNH -->
+    <div class="func-tabs">
+      <button class="tab-btn active" data-type="sin">sin x = m</button>
+      <button class="tab-btn" data-type="cos">cos x = m</button>
+      <button class="tab-btn" data-type="tan">tan x = m</button>
+      <button class="tab-btn" data-type="cot">cot x = m</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- KHUNG CANVAS KÉP -->
+    <div class="canvas-container">
+      <div class="canvas-views">
+        <!-- KHUNG 1: ĐƯỜNG TRÒN LƯỢNG GIÁC -->
+        <div class="view-box" id="boxCircle">
+          <div class="view-header">① Đường tròn lượng giác</div>
+          <canvas id="circleCanvas"></canvas>
+        </div>
+
+        <!-- KHUNG 2: ĐỒ THỊ HÀM SỐ & ĐƯỜNG THẲNG Y = M -->
+        <div class="view-box" id="boxGraph">
+          <div class="view-header">② Giao điểm đồ thị & đường thẳng y = m</div>
+          <canvas id="graphCanvas"></canvas>
+        </div>
+      </div>
+
+      <!-- THANH ĐIỀU KHIỂN DƯỚI CANVAS -->
+      <div class="sim-controls">
+        <div class="slider-row">
+          <label for="valMSlider">Giá trị m = <span id="lblMVal">0.50</span></label>
+          <input type="range" id="valMSlider" min="-2.0" max="2.0" step="0.01" value="0.5">
+        </div>
+
+        <div class="btn-row" id="quickBtnRow">
+          <span class="btn-row-label">Giá trị mẫu:</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CỘT PHẢI: BẢNG CÔNG THỨC & NGHIỆM -->
+    <div class="sidebar">
+      <!-- CÔNG THỨC HIỆN TẠI -->
+      <div class="panel-card">
+        <div class="panel-title">
+          <span class="panel-title-text">Phương trình đang xét</span>
+          <span class="panel-title-sub" id="lblCondition">|m| ≤ 1: có nghiệm; |m| > 1: vô nghiệm</span>
+        </div>
+        <div class="formula-display" id="dispEquation">
+          sin x = 0.50
+        </div>
+      </div>
+
+      <!-- CÔNG THỨC TỔNG QUÁT -->
+      <div class="panel-card">
+        <div class="panel-title">
+          <span class="panel-title-text">Công thức nghiệm tổng quát</span>
+        </div>
+        <div class="sol-box" id="boxGeneralFormula"></div>
+      </div>
+
+      <!-- CÁC HỌ NGHIỆM CỤ THỂ -->
+      <div class="panel-card">
+        <div class="panel-title">
+          <span class="panel-title-text">Tập nghiệm cụ thể</span>
+          <span class="panel-title-sub" id="lblSolStatus">2 điểm ngọn</span>
+        </div>
+        <div class="sol-box" id="boxSpecificSolution"></div>
+      </div>
+
+      <!-- Ý NGHĨA HÌNH HỌC TRỰC QUAN -->
+      <div class="panel-card">
+        <div class="panel-title">
+          <span class="panel-title-text">Ý nghĩa bản chất hình học</span>
+        </div>
+        <div class="note-box" id="dispPedagogy"></div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    /* ==========================================================================
+       1. TRẠNG THÁI HỆ THỐNG
+       ========================================================================== */
+    const state = {
+      type: 'sin',
+      m: 0.5,
+      targetM: 0.5
+    };
+
+    // Canvas Đường tròn
+    const circleCanvas = document.getElementById('circleCanvas');
+    const cCtx = circleCanvas.getContext('2d');
+    let cW = 0, cH = 0, cDpr = 1;
+
+    // Canvas Đồ thị
+    const graphCanvas = document.getElementById('graphCanvas');
+    const gCtx = graphCanvas.getContext('2d');
+    let gW = 0, gH = 0, gDpr = 1;
+
+    // DOM Elements
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const valMSlider = document.getElementById('valMSlider');
+    const lblMVal = document.getElementById('lblMVal');
+    const quickBtnRow = document.getElementById('quickBtnRow');
+
+    const dispEquation = document.getElementById('dispEquation');
+    const lblCondition = document.getElementById('lblCondition');
+    const boxGeneralFormula = document.getElementById('boxGeneralFormula');
+    const boxSpecificSolution = document.getElementById('boxSpecificSolution');
+    const lblSolStatus = document.getElementById('lblSolStatus');
+    const dispPedagogy = document.getElementById('dispPedagogy');
+
+    /* ==========================================================================
+       2. TÍNH TOÁN KÍCH THƯỚC CANVAS
+       ========================================================================== */
+    function resizeCanvases() {
+      // 1. Circle Canvas
+      const cRect = circleCanvas.parentElement.getBoundingClientRect();
+      cDpr = window.devicePixelRatio || 1;
+      cW = cRect.width > 0 ? cRect.width : 300;
+      cH = cRect.height > 0 ? cRect.height : 300;
+      circleCanvas.width = Math.round(cW * cDpr);
+      circleCanvas.height = Math.round(cH * cDpr);
+      cCtx.resetTransform();
+      cCtx.scale(cDpr, cDpr);
+
+      // 2. Graph Canvas
+      const gRect = graphCanvas.parentElement.getBoundingClientRect();
+      gDpr = window.devicePixelRatio || 1;
+      gW = gRect.width > 0 ? gRect.width : 450;
+      gH = gRect.height > 0 ? gRect.height : 300;
+      graphCanvas.width = Math.round(gW * gDpr);
+      graphCanvas.height = Math.round(gH * gDpr);
+      gCtx.resetTransform();
+      gCtx.scale(gDpr, gDpr);
+    }
+
+    window.addEventListener('resize', resizeCanvases);
+    resizeCanvases();
+
+    /* ==========================================================================
+       3. DANH SÁCH GIÁ TRỊ MẪU
+       ========================================================================== */
+    const PRESETS = {
+      sin: [
+        { label: '-1', val: -1 },
+        { label: '-√3/2', val: -0.866 },
+        { label: '-√2/2', val: -0.707 },
+        { label: '-1/2', val: -0.5 },
+        { label: '0', val: 0 },
+        { label: '1/2', val: 0.5 },
+        { label: '√2/2', val: 0.707 },
+        { label: '√3/2', val: 0.866 },
+        { label: '1', val: 1 },
+        { label: '1.4 (Vô nghiệm)', val: 1.4 }
+      ],
+      cos: [
+        { label: '-1', val: -1 },
+        { label: '-√3/2', val: -0.866 },
+        { label: '-√2/2', val: -0.707 },
+        { label: '-1/2', val: -0.5 },
+        { label: '0', val: 0 },
+        { label: '1/2', val: 0.5 },
+        { label: '√2/2', val: 0.707 },
+        { label: '√3/2', val: 0.866 },
+        { label: '1', val: 1 },
+        { label: '1.4 (Vô nghiệm)', val: 1.4 }
+      ],
+      tan: [
+        { label: '-√3', val: -1.732 },
+        { label: '-1', val: -1 },
+        { label: '-√3/3', val: -0.577 },
+        { label: '0', val: 0 },
+        { label: '√3/3', val: 0.577 },
+        { label: '1', val: 1 },
+        { label: '√3', val: 1.732 }
+      ],
+      cot: [
+        { label: '-√3', val: -1.732 },
+        { label: '-1', val: -1 },
+        { label: '-√3/3', val: -0.577 },
+        { label: '0', val: 0 },
+        { label: '√3/3', val: 0.577 },
+        { label: '1', val: 1 },
+        { label: '√3', val: 1.732 }
+      ]
+    };
+
+    function renderPresetButtons() {
+      quickBtnRow.innerHTML = '<span class="btn-row-label">Giá trị mẫu:</span>';
+      const list = PRESETS[state.type] || [];
+      list.forEach(p => {
+        const b = document.createElement('button');
+        b.className = 'btn';
+        b.innerText = p.label;
+        if (Math.abs(state.m - p.val) < 0.02) b.classList.add('active-val');
+        b.onclick = () => {
+          state.targetM = p.val;
+          state.m = p.val;
+          valMSlider.value = p.val;
+          updateUI();
+        };
+        quickBtnRow.appendChild(b);
+      });
+
+      const bReset = document.createElement('button');
+      bReset.className = 'btn btn-reset';
+      bReset.innerText = '↻ Đặt lại';
+      bReset.onclick = () => {
+        state.targetM = (state.type === 'sin' || state.type === 'cos') ? 0.5 : 1.0;
+        state.m = state.targetM;
+        valMSlider.value = state.m;
+        updateUI();
+      };
+      quickBtnRow.appendChild(bReset);
+    }
+
+    /* ==========================================================================
+       4. TÍNH TOÁN NGHIỆM GỐC ALPHA
+       ========================================================================== */
+    function computeRoots() {
+      const m = state.m;
+      if (state.type === 'sin') {
+        if (Math.abs(m) > 1) return null;
+        const a1 = Math.asin(m);
+        const a2 = Math.PI - a1;
+        return [a1, a2];
+      } else if (state.type === 'cos') {
+        if (Math.abs(m) > 1) return null;
+        const a1 = Math.acos(m);
+        const a2 = -a1;
+        return [a1, a2];
+      } else if (state.type === 'tan') {
+        const a1 = Math.atan(m);
+        return [a1];
+      } else if (state.type === 'cot') {
+        const a1 = Math.abs(m) < 1e-5 ? Math.PI / 2 : Math.PI / 2 - Math.atan(m);
+        return [a1];
+      }
+      return null;
+    }
+
+    function radToPiString(rad) {
+      const frac = rad / Math.PI;
+      const candidates = [
+        { f: 0, s: "0" },
+        { f: 1/6, s: "π/6" }, { f: -1/6, s: "-π/6" },
+        { f: 1/4, s: "π/4" }, { f: -1/4, s: "-π/4" },
+        { f: 1/3, s: "π/3" }, { f: -1/3, s: "-π/3" },
+        { f: 1/2, s: "π/2" }, { f: -1/2, s: "-π/2" },
+        { f: 2/3, s: "2π/3" }, { f: -2/3, s: "-2π/3" },
+        { f: 3/4, s: "3π/4" }, { f: -3/4, s: "-3π/4" },
+        { f: 5/6, s: "5π/6" }, { f: -5/6, s: "-5π/6" },
+        { f: 1, s: "π" }, { f: -1, s: "-π" }
+      ];
+      for (let c of candidates) {
+        if (Math.abs(frac - c.f) < 0.015) return c.s;
+      }
+      return `${frac.toFixed(2)}π`;
+    }
+
+    /* ==========================================================================
+       5. VẼ ĐƯỜNG TRÒN LƯỢNG GIÁC (CANVAS 1)
+       ========================================================================== */
+    function drawCircleView() {
+      cCtx.clearRect(0, 0, cW, cH);
+
+      const cx = cW / 2;
+      const cy = cH / 2;
+      const R = Math.min(cW, cH) * 0.38;
+
+      // 1. Trục tọa độ Ox, Oy
+      cCtx.save();
+      cCtx.strokeStyle = '#94a3b8';
+      cCtx.lineWidth = 1.6;
+
+      cCtx.beginPath(); cCtx.moveTo(20, cy); cCtx.lineTo(cW - 20, cy); cCtx.stroke();
+      cCtx.beginPath(); cCtx.moveTo(cx, cH - 20); cCtx.lineTo(cx, 20); cCtx.stroke();
+
+      cCtx.font = "bold 12px 'Segoe UI', sans-serif";
+      cCtx.fillStyle = '#475569';
+      cCtx.fillText('x', cW - 20, cy + 15);
+      cCtx.fillText('y', cx + 8, 22);
+      cCtx.fillText('O', cx - 14, cy + 14);
+
+      // Mốc 1, -1
+      cCtx.font = "bold 11px 'Segoe UI', sans-serif";
+      cCtx.fillStyle = '#64748b';
+      cCtx.fillText('1', cx + R - 3, cy + 14);
+      cCtx.fillText('-1', cx - R - 14, cy + 14);
+      cCtx.fillText('1', cx - 16, cy - R + 4);
+      cCtx.fillText('-1', cx - 20, cy + R + 4);
+
+      // Đường tròn đơn vị
+      cCtx.strokeStyle = '#cbd5e1';
+      cCtx.lineWidth = 2.2;
+      cCtx.beginPath();
+      cCtx.arc(cx, cy, R, 0, Math.PI * 2);
+      cCtx.stroke();
+      cCtx.restore();
+
+      const roots = computeRoots();
+
+      // VÔ NGHIỆM
+      if (!roots) {
+        cCtx.save();
+        if (state.type === 'sin') {
+          const lineY = cy - state.m * R;
+          cCtx.strokeStyle = '#e11d48';
+          cCtx.lineWidth = 2;
+          cCtx.setLineDash([4, 4]);
+          cCtx.beginPath(); cCtx.moveTo(15, lineY); cCtx.lineTo(cW - 15, lineY); cCtx.stroke();
+        } else if (state.type === 'cos') {
+          const lineX = cx + state.m * R;
+          cCtx.strokeStyle = '#e11d48';
+          cCtx.lineWidth = 2;
+          cCtx.setLineDash([4, 4]);
+          cCtx.beginPath(); cCtx.moveTo(lineX, 15); cCtx.lineTo(lineX, cH - 15); cCtx.stroke();
+        }
+        cCtx.fillStyle = '#dc2626';
+        cCtx.font = "bold 13px 'Segoe UI', sans-serif";
+        cCtx.textAlign = 'center';
+        cCtx.fillText('Đường thẳng không cắt đường tròn (Vô nghiệm)', cx, cy);
+        cCtx.restore();
+        return;
+      }
+
+      // 2. VẼ ĐƯỜNG CẮT VÀ ĐƯỜNG NÉT ĐỨT QUA TÂM
+      cCtx.save();
+      if (state.type === 'sin') {
+        const lineY = cy - state.m * R;
+        cCtx.strokeStyle = '#e11d48';
+        cCtx.lineWidth = 2;
+        cCtx.beginPath(); cCtx.moveTo(20, lineY); cCtx.lineTo(cW - 20, lineY); cCtx.stroke();
+
+        cCtx.fillStyle = '#e11d48';
+        cCtx.font = "bold 11px 'Segoe UI', sans-serif";
+        cCtx.fillText(`y = ${state.m.toFixed(2)}`, 24, lineY - 6);
+
+      } else if (state.type === 'cos') {
+        const lineX = cx + state.m * R;
+        cCtx.strokeStyle = '#e11d48';
+        cCtx.lineWidth = 2;
+        cCtx.beginPath(); cCtx.moveTo(lineX, 20); cCtx.lineTo(lineX, cH - 20); cCtx.stroke();
+
+        cCtx.fillStyle = '#e11d48';
+        cCtx.font = "bold 11px 'Segoe UI', sans-serif";
+        cCtx.fillText(`x = ${state.m.toFixed(2)}`, lineX + 6, 32);
+
+      } else if (state.type === 'tan') {
+        // Trục tiếp tuyến x = 1
+        const tanAxisX = cx + R;
+        cCtx.strokeStyle = '#d97706';
+        cCtx.lineWidth = 2.2;
+        cCtx.beginPath(); cCtx.moveTo(tanAxisX, 15); cCtx.lineTo(tanAxisX, cH - 15); cCtx.stroke();
+
+        // Điểm T(1; m) trên trục tan
+        const ty = cy - state.m * R;
+        cCtx.fillStyle = '#d97706';
+        cCtx.beginPath(); cCtx.arc(tanAxisX, ty, 5.5, 0, Math.PI * 2); cCtx.fill();
+
+        // SỬA LỖI NÉT ĐỨT BỊ LỆCH: Vẽ đường thẳng chính xác qua gốc O và điểm T
+        const dirX = tanAxisX - cx;
+        const dirY = ty - cy;
+        cCtx.strokeStyle = '#e11d48';
+        cCtx.setLineDash([4, 4]);
+        cCtx.lineWidth = 1.8;
+        cCtx.beginPath();
+        // Kéo dài về hai phía của đường thẳng OT
+        cCtx.moveTo(cx - dirX * 1.25, cy - dirY * 1.25);
+        cCtx.lineTo(cx + dirX * 1.15, cy + dirY * 1.15);
+        cCtx.stroke();
+        cCtx.setLineDash([]);
+
+      } else if (state.type === 'cot') {
+        // Trục tiếp tuyến y = 1
+        const cotAxisY = cy - R;
+        cCtx.strokeStyle = '#7c3aed';
+        cCtx.lineWidth = 2.2;
+        cCtx.beginPath(); cCtx.moveTo(15, cotAxisY); cCtx.lineTo(cW - 15, cotAxisY); cCtx.stroke();
+
+        // Điểm S(m; 1) trên trục cot
+        const sx = cx + state.m * R;
+        cCtx.fillStyle = '#7c3aed';
+        cCtx.beginPath(); cCtx.arc(sx, cotAxisY, 5.5, 0, Math.PI * 2); cCtx.fill();
+
+        // SỬA LỖI NÉT ĐỨT BỊ LỆCH: Vẽ đường thẳng chính xác qua gốc O và điểm S
+        const dirX = sx - cx;
+        const dirY = cotAxisY - cy;
+        cCtx.strokeStyle = '#e11d48';
+        cCtx.setLineDash([4, 4]);
+        cCtx.lineWidth = 1.8;
+        cCtx.beginPath();
+        // Kéo dài về hai phía của đường thẳng OS
+        cCtx.moveTo(cx - dirX * 1.25, cy - dirY * 1.25);
+        cCtx.lineTo(cx + dirX * 1.15, cy + dirY * 1.15);
+        cCtx.stroke();
+        cCtx.setLineDash([]);
+      }
+      cCtx.restore();
+
+      // 3. VẼ CÁC ĐIỂM NGỌN NGHIỆM TRÊN ĐƯỜNG TRÒN
+      roots.forEach((ang, idx) => {
+        const mx = cx + Math.cos(ang) * R;
+        const my = cy - Math.sin(ang) * R;
+
+        cCtx.save();
+        // Tia OM
+        cCtx.strokeStyle = '#0284c7';
+        cCtx.lineWidth = 2.6;
+        cCtx.beginPath(); cCtx.moveTo(cx, cy); cCtx.lineTo(mx, my); cCtx.stroke();
+
+        // Điểm ngọn M
+        cCtx.fillStyle = '#f97316';
+        cCtx.beginPath(); cCtx.arc(mx, my, 6.5, 0, Math.PI * 2); cCtx.fill();
+        cCtx.strokeStyle = '#ffffff';
+        cCtx.lineWidth = 2;
+        cCtx.stroke();
+
+        // Tên điểm ngọn
+        cCtx.font = "bold 13px 'Segoe UI', sans-serif";
+        cCtx.fillStyle = '#0f172a';
+        const offX = Math.cos(ang) >= 0 ? 8 : -26;
+        const offY = Math.sin(ang) >= 0 ? -8 : 16;
+        const pName = roots.length > 1 ? `M${idx + 1}` : 'M';
+        cCtx.fillText(pName, mx + offX, my + offY);
+
+        // Với tan/cot vẽ điểm đối xứng M'
+        if (state.type === 'tan' || state.type === 'cot') {
+          const mx2 = cx - Math.cos(ang) * R;
+          const my2 = cy + Math.sin(ang) * R;
+
+          cCtx.strokeStyle = '#0284c7';
+          cCtx.lineWidth = 2.2;
+          cCtx.beginPath(); cCtx.moveTo(cx, cy); cCtx.lineTo(mx2, my2); cCtx.stroke();
+
+          cCtx.fillStyle = '#f97316';
+          cCtx.beginPath(); cCtx.arc(mx2, my2, 6, 0, Math.PI * 2); cCtx.fill();
+          cCtx.strokeStyle = '#ffffff'; cCtx.lineWidth = 2; cCtx.stroke();
+
+          cCtx.fillText("M'", mx2 - offX - 8, my2 - offY);
+        }
+        cCtx.restore();
+      });
+    }
+
+    /* ==========================================================================
+       6. VẼ ĐỒ THỊ VÀ GIAO ĐIỂM (CANVAS 2)
+       ========================================================================== */
+    function drawGraphView() {
+      gCtx.clearRect(0, 0, gW, gH);
+
+      const ox = gW * 0.45;
+      const oy = gH / 2;
+      const scaleX = 42;
+      const scaleY = 55;
+
+      // 1. Trục tọa độ Ox, Oy
+      gCtx.save();
+      gCtx.strokeStyle = '#64748b';
+      gCtx.lineWidth = 1.8;
+      gCtx.beginPath(); gCtx.moveTo(15, oy); gCtx.lineTo(gW - 15, oy); gCtx.stroke();
+      gCtx.beginPath(); gCtx.moveTo(ox, gH - 15); gCtx.lineTo(ox, 15); gCtx.stroke();
+
+      gCtx.font = "bold 12px 'Segoe UI', sans-serif";
+      gCtx.fillStyle = '#475569';
+      gCtx.fillText('x', gW - 20, oy + 15);
+      gCtx.fillText('y', ox + 8, 20);
+      gCtx.fillText('O', ox - 14, oy + 14);
+
+      // Vạch chia trục Ox theo π/2, π, 2π...
+      const stepRad = Math.PI / 2;
+      const minK = Math.floor((-ox) / (scaleX * stepRad)) - 1;
+      const maxK = Math.ceil((gW - ox) / (scaleX * stepRad)) + 1;
+
+      gCtx.font = "bold 10.5px 'Segoe UI', sans-serif";
+      gCtx.textAlign = 'center';
+      for (let k = minK; k <= maxK; k++) {
+        if (k === 0) continue;
+        const px = ox + k * stepRad * scaleX;
+        gCtx.strokeStyle = '#cbd5e1';
+        gCtx.beginPath(); gCtx.moveTo(px, oy - 3); gCtx.lineTo(px, oy + 3); gCtx.stroke();
+
+        let l = "";
+        if (k === 1) l = "π/2";
+        else if (k === -1) l = "-π/2";
+        else if (k === 2) l = "π";
+        else if (k === -2) l = "-π";
+        else if (k === 4) l = "2π";
+        else if (k === -4) l = "-2π";
+        else if (k % 2 === 0) l = `${k/2}π`;
+        else l = `${k}π/2`;
+        gCtx.fillText(l, px, oy + 15);
+      }
+      gCtx.restore();
+
+      // 2. Vẽ đường cong hàm số lượng giác
+      gCtx.save();
+      let curveColor = '#dc2626';
+      if (state.type === 'cos') curveColor = '#2563eb';
+      else if (state.type === 'tan') curveColor = '#d97706';
+      else if (state.type === 'cot') curveColor = '#7c3aed';
+
+      gCtx.strokeStyle = curveColor;
+      gCtx.lineWidth = 2.4;
+      gCtx.beginPath();
+      let isDrawing = false;
+
+      for (let px = 0; px <= gW; px++) {
+        const xMath = (px - ox) / scaleX;
+        let yMath = 0;
+        if (state.type === 'sin') yMath = Math.sin(xMath);
+        else if (state.type === 'cos') yMath = Math.cos(xMath);
+        else if (state.type === 'tan') yMath = Math.tan(xMath);
+        else if (state.type === 'cot') {
+          const s = Math.sin(xMath);
+          if (Math.abs(s) < 1e-4) { isDrawing = false; continue; }
+          yMath = Math.cos(xMath) / s;
+        }
+
+        if (isNaN(yMath) || Math.abs(yMath) > 10) {
+          isDrawing = false;
+          continue;
+        }
+
+        const py = oy - yMath * scaleY;
+        if (py < -30 || py > gH + 30) {
+          isDrawing = false;
+          continue;
+        }
+
+        if (!isDrawing) {
+          gCtx.moveTo(px, py);
+          isDrawing = true;
+        } else {
+          gCtx.lineTo(px, py);
+        }
+      }
+      gCtx.stroke();
+      gCtx.restore();
+
+      // 3. VẼ ĐƯỜNG THẲNG Y = M
+      gCtx.save();
+      const lineY = oy - state.m * scaleY;
+      gCtx.strokeStyle = '#e11d48';
+      gCtx.lineWidth = 2.2;
+      gCtx.beginPath(); gCtx.moveTo(10, lineY); gCtx.lineTo(gW - 10, lineY); gCtx.stroke();
+
+      gCtx.fillStyle = '#e11d48';
+      gCtx.font = "bold 11px 'Segoe UI', sans-serif";
+      gCtx.fillText(`y = ${state.m.toFixed(2)}`, gW - 65, lineY - 6);
+      gCtx.restore();
+
+      // 4. VẼ GIAO ĐIỂM
+      const roots = computeRoots();
+      if (roots) {
+        gCtx.save();
+        const basePeriod = (state.type === 'sin' || state.type === 'cos') ? (2 * Math.PI) : Math.PI;
+
+        for (let k = -2; k <= 3; k++) {
+          roots.forEach((ang) => {
+            const rootX = ang + k * basePeriod;
+            const px = ox + rootX * scaleX;
+
+            if (px >= 10 && px <= gW - 10) {
+              gCtx.fillStyle = '#f97316';
+              gCtx.beginPath(); gCtx.arc(px, lineY, 5, 0, Math.PI * 2); gCtx.fill();
+              gCtx.strokeStyle = '#ffffff'; gCtx.lineWidth = 1.8; gCtx.stroke();
+
+              // Nét đứt vuông góc xuống trục Ox
+              gCtx.strokeStyle = '#94a3b8';
+              gCtx.setLineDash([3, 3]);
+              gCtx.lineWidth = 1.2;
+              gCtx.beginPath(); gCtx.moveTo(px, lineY); gCtx.lineTo(px, oy); gCtx.stroke();
+              gCtx.setLineDash([]);
+            }
+          });
+        }
+        gCtx.restore();
+      }
+    }
+
+    /* ==========================================================================
+       7. VÒNG LẶP HOẠT HOẠ
+       ========================================================================== */
+    function animate() {
+      if (Math.abs(state.targetM - state.m) > 0.005) {
+        state.m += (state.targetM - state.m) * 0.25;
+      } else {
+        state.m = state.targetM;
+      }
+
+      drawCircleView();
+      drawGraphView();
+      requestAnimationFrame(animate);
+    }
+
+    /* ==========================================================================
+       8. CẬP NHẬT CÔNG THỨC & THUYẾT MINH TOÁN HỌC (CHUẨN UNICODE KHÔNG LỖI FONT)
+       ========================================================================== */
+    function updateUI() {
+      lblMVal.innerText = state.m.toFixed(2);
+      const roots = computeRoots();
+      const mStr = state.m.toFixed(2);
+
+      dispEquation.innerText = `${state.type} x = ${mStr}`;
+      dispEquation.classList.toggle('no-sol', !roots);
+
+      // Cập nhật công thức và bản chất hình học chuẩn ký tự Unicode
+      if (state.type === 'sin') {
+        lblCondition.innerText = "|m| ≤ 1: có nghiệm; |m| > 1: vô nghiệm";
+        boxGeneralFormula.innerHTML = `
+          <div class="sol-line">sin x = sin α</div>
+          <div class="sol-line">⇔ [ x = α + k2π</div>
+          <div class="sol-line">&nbsp;&nbsp; [ x = π - α + k2π (k ∈ ℤ)</div>
+        `;
+        dispPedagogy.innerHTML = `
+          • Kẻ đường thẳng <strong>y = m</strong> cắt trục Sin.<br>
+          • Nếu |m| ≤ 1: cắt đường tròn tại 2 điểm M₁, M₂ bù nhau qua trục tung (α và π - α).<br>
+          • Nghiệm tuần hoàn theo chu kỳ <strong>k2π</strong> (1 vòng đường tròn).
+        `;
+      } else if (state.type === 'cos') {
+        lblCondition.innerText = "|m| ≤ 1: có nghiệm; |m| > 1: vô nghiệm";
+        boxGeneralFormula.innerHTML = `
+          <div class="sol-line">cos x = cos α</div>
+          <div class="sol-line">⇔ x = ±α + k2π (k ∈ ℤ)</div>
+        `;
+        dispPedagogy.innerHTML = `
+          • Kẻ đường thẳng <strong>x = m</strong> cắt trục Cos.<br>
+          • Nếu |m| ≤ 1: cắt đường tròn tại 2 điểm M₁, M₂ đối xứng nhau qua trục hoành (±α).<br>
+          • Nghiệm tuần hoàn theo chu kỳ <strong>k2π</strong>.
+        `;
+      } else if (state.type === 'tan') {
+        lblCondition.innerText = "Luôn có nghiệm với mọi m ∈ ℝ";
+        boxGeneralFormula.innerHTML = `
+          <div class="sol-line">tan x = tan α</div>
+          <div class="sol-line">⇔ x = α + kπ (k ∈ ℤ)</div>
+        `;
+        dispPedagogy.innerHTML = `
+          • Điểm T(1; m) nằm trên trục tiếp tuyến <strong>x = 1 (trục tan)</strong>.<br>
+          • Tia nối OT cắt đường tròn tại 2 điểm đối xứng qua tâm O.<br>
+          • Do 2 điểm cách nhau đúng nửa vòng tròn (π), chu kỳ nghiệm chỉ là <strong>kπ</strong>.
+        `;
+      } else if (state.type === 'cot') {
+        lblCondition.innerText = "Luôn có nghiệm với mọi m ∈ ℝ";
+        boxGeneralFormula.innerHTML = `
+          <div class="sol-line">cot x = cot α</div>
+          <div class="sol-line">⇔ x = α + kπ (k ∈ ℤ)</div>
+        `;
+        dispPedagogy.innerHTML = `
+          • Điểm S(m; 1) nằm trên trục tiếp tuyến <strong>y = 1 (trục cot)</strong>.<br>
+          • Tia nối OS cắt đường tròn tại 2 điểm đối xứng qua tâm O.<br>
+          • Chu kỳ nghiệm tuần hoàn là <strong>kπ</strong>.
+        `;
+      }
+
+      // Tập nghiệm cụ thể
+      if (!roots) {
+        lblSolStatus.innerText = "Vô nghiệm";
+        boxSpecificSolution.innerHTML = `
+          <div class="sol-line" style="color:#dc2626;">Phương trình vô nghiệm!</div>
+          <div class="sol-desc">Vì |m| = ${Math.abs(state.m).toFixed(2)} > 1, nằm ngoài miền giá trị [-1; 1].</div>
+        `;
+      } else {
+        if (state.type === 'sin') {
+          const a1Str = radToPiString(roots[0]);
+          const a2Str = radToPiString(roots[1]);
+          lblSolStatus.innerText = (roots[0] === roots[1]) ? "1 họ nghiệm (tiếp xúc)" : "2 họ nghiệm (k2π)";
+          boxSpecificSolution.innerHTML = `
+            <div class="sol-line">x = ${a1Str} + k2π</div>
+            <div class="sol-line">x = ${a2Str} + k2π (k ∈ ℤ)</div>
+            <div class="sol-desc">Góc gốc α ≈ ${roots[0].toFixed(3)} rad (${(roots[0]*180/Math.PI).toFixed(1)}°)</div>
+          `;
+        } else if (state.type === 'cos') {
+          const aStr = radToPiString(roots[0]);
+          lblSolStatus.innerText = (roots[0] === 0 || Math.abs(roots[0] - Math.PI) < 0.01) ? "1 họ nghiệm (tiếp xúc)" : "2 họ nghiệm (đối xứng)";
+          boxSpecificSolution.innerHTML = `
+            <div class="sol-line">x = ±${aStr} + k2π (k ∈ ℤ)</div>
+            <div class="sol-desc">Góc gốc α ≈ ${roots[0].toFixed(3)} rad (${(roots[0]*180/Math.PI).toFixed(1)}°)</div>
+          `;
+        } else if (state.type === 'tan' || state.type === 'cot') {
+          const aStr = radToPiString(roots[0]);
+          lblSolStatus.innerText = "1 họ nghiệm duy nhất (kπ)";
+          boxSpecificSolution.innerHTML = `
+            <div class="sol-line">x = ${aStr} + kπ (k ∈ ℤ)</div>
+            <div class="sol-desc">Góc gốc α ≈ ${roots[0].toFixed(3)} rad (${(roots[0]*180/Math.PI).toFixed(1)}°)</div>
+          `;
+        }
+      }
+
+      document.querySelectorAll('#quickBtnRow .btn').forEach(btn => {
+        btn.classList.remove('active-val');
+      });
+    }
+
+    /* ==========================================================================
+       9. GẮN SỰ KIỆN TƯƠNG TÁC
+       ========================================================================== */
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.type = btn.dataset.type;
+
+        if (state.type === 'sin' || state.type === 'cos') {
+          valMSlider.min = -1.5;
+          valMSlider.max = 1.5;
+          valMSlider.step = 0.01;
+          state.targetM = 0.5;
+          state.m = 0.5;
+        } else {
+          valMSlider.min = -2.5;
+          valMSlider.max = 2.5;
+          valMSlider.step = 0.02;
+          state.targetM = 1.0;
+          state.m = 1.0;
+        }
+        valMSlider.value = state.m;
+        renderPresetButtons();
+        updateUI();
+      });
+    });
+
+    valMSlider.addEventListener('input', (e) => {
+      state.targetM = parseFloat(e.target.value);
+      state.m = state.targetM;
+      updateUI();
+    });
+
+    // KHỞI CHẠY HỆ THỐNG
+    renderPresetButtons();
+    updateUI();
+    animate();
+  </script>
+</body>
+</html>
