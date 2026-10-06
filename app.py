@@ -57,27 +57,31 @@ with tab_mophong:
         st.warning(f"Chưa tìm thấy file '{file_html_can_chieu}' trên hệ thống.")
 
 
-  # ================= TAB 2: TÓM TẮT LÝ THUYẾT =================
+ # ================= TAB 2: TÓM TẮT LÝ THUYẾT =================
 with tab_lythuyet:
     st.subheader("Hệ thống hóa kiến thức trọng tâm bằng Infographic")
     st.write("Học sinh chọn bài học để xem sơ đồ tóm tắt lý thuyết:")
 
-    # Danh mục ảnh tương ứng 4 bài
+    # Khai báo đúng tên file thực tế bạn đã tải lên GitHub
     danh_sach_anh = {
         "Bài 1: Giá trị lượng giác của góc lượng giác": "LY-THUYET-BAI-1.pdf",
-        "Bài 2: Công thức lượng giác": "ly-thuyet-bai-2.pdf",
-        "Bài 3: Hàm số lượng giác": "ly-thuyet-bai-3.pdf",
-        "Bài 4: Phương trình lượng giác cơ bản": "ly-thuyet-bai-4.PDF"
+        "Bài 2: Công thức lượng giác": "LY-THUYET-BAI-2.pdf",
+        "Bài 3: Hàm số lượng giác": "LY-THUYET-BAI-3.PDF",
+        "Bài 4: Phương trình lượng giác cơ bản": "LY-THUYET-BAI-4.PDF"
     }
 
     bai_chon = st.selectbox("Chọn bài học cần ôn tập:", list(danh_sach_anh.keys()))
     file_anh = danh_sach_anh[bai_chon]
 
-    # Kiểm tra và hiển thị ảnh
     if os.path.exists(file_anh):
-        st.image(file_anh, caption=bai_chon, use_container_width=True)
+        try:
+            from PIL import Image
+            img = Image.open(file_anh)
+            st.image(img, caption=bai_chon, use_container_width=True)
+        except Exception as e:
+            st.error(f"Không thể đọc file ảnh '{file_anh}'. Vui lòng kiểm tra lại định dạng file (lỗi: {e}).")
     else:
-        st.warning(f"Chưa tìm thấy file ảnh '{file_anh}' trên kho lưu trữ GitHub.")
+        st.warning(f"Chưa tìm thấy file '{file_anh}' trên hệ thống. Hãy kiểm tra lại tên file trên GitHub.")
 
 # ================= TAB 3: AI SINH ĐỀ LUYỆN TẬP =================
 with tab_luyentap:
