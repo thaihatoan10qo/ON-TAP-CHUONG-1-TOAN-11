@@ -56,29 +56,28 @@ with tab_mophong:
     else:
         st.warning(f"Chưa tìm thấy file '{file_html_can_chieu}' trên hệ thống.")
 
-# ================= TAB 2: TÓM TẮT LÝ THUYẾT =================
-with tab_lythuyet:
-    st.subheader("Hệ thống công thức trọng tâm")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown("#### 1. Công thức cộng lượng giác")
-        st.latex(r"\sin(a \pm b) = \sin a \cos b \pm \cos a \sin b")
-        st.latex(r"\cos(a \pm b) = \cos a \cos b \mp \sin a \sin b")
-        
-        st.markdown("#### 2. Công thức nhân đôi")
-        st.latex(r"\sin 2a = 2\sin a \cos a")
-        st.latex(r"\cos 2a = \cos^2 a - \sin^2 a = 2\cos^2 a - 1 = 1 - 2\sin^2 a")
-    
-    with col2:
-        st.markdown("#### 3. Tập xác định & Chu kỳ")
-        st.write(r"- $y = \sin x, y = \cos x$: $D = \mathbb{R}$, tuần hoàn chu kỳ $T = 2\pi$")
-        st.write(r"- $y = \tan x$: $D = \mathbb{R} \setminus \left\{\frac{\pi}{2} + k\pi, k \in \mathbb{Z}\right\}$, chu kỳ $T = \pi$")
-        st.write(r"- $y = \cot x$: $D = \mathbb{R} \setminus \{k\pi, k \in \mathbb{Z}\}$, chu kỳ $T = \pi$")
 
-        st.markdown("#### 4. Phương trình cơ bản")
-        st.latex(r"\sin x = \sin \alpha \iff x = \alpha + k2\pi \text{ hoặc } x = \pi - \alpha + k2\pi")
-        st.latex(r"\cos x = \cos \alpha \iff x = \pm \alpha + k2\pi")
+  # ================= TAB 2: TÓM TẮT LÝ THUYẾT =================
+with tab_lythuyet:
+    st.subheader("Hệ thống hóa kiến thức trọng tâm bằng Infographic")
+    st.write("Học sinh chọn bài học để xem sơ đồ tóm tắt lý thuyết:")
+
+    # Danh mục ảnh tương ứng 4 bài
+    danh_sach_anh = {
+        "Bài 1: Giá trị lượng giác của góc lượng giác": "ly_thuyet_bai_1.png",
+        "Bài 2: Công thức lượng giác": "ly_thuyet_bai_2.png",
+        "Bài 3: Hàm số lượng giác": "ly_thuyet_bai_3.png",
+        "Bài 4: Phương trình lượng giác cơ bản": "ly_thuyet_bai_4.png"
+    }
+
+    bai_chon = st.selectbox("Chọn bài học cần ôn tập:", list(danh_sach_anh.keys()))
+    file_anh = danh_sach_anh[bai_chon]
+
+    # Kiểm tra và hiển thị ảnh
+    if os.path.exists(file_anh):
+        st.image(file_anh, caption=bai_chon, use_container_width=True)
+    else:
+        st.warning(f"Chưa tìm thấy file ảnh '{file_anh}' trên kho lưu trữ GitHub.")
 
 # ================= TAB 3: AI SINH ĐỀ LUYỆN TẬP =================
 with tab_luyentap:
