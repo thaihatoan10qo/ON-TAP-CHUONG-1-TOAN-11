@@ -12,7 +12,7 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("📐 Nền Tảng Ôn Tập & Khảo Thí Cá Nhân Hóa Toán 11")
+st.title("📐 NỀN TẢNG ÔN TẬP & KHẢO THÍ CÁ NHÂN HÓA TOÁN 11")
 st.caption("Chương 1: Hàm số lượng giác và Phương trình lượng giác | Ứng dụng AI Hỗ trợ Giảng dạy & Tự học")
 
 # 2. Quản lý API Key an toàn
