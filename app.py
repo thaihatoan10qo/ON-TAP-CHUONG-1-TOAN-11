@@ -25,10 +25,10 @@ else:
 client = genai.Client(api_key=api_key) if api_key else None
 
 # 3. Tạo các phân hệ chức năng
-tab_mophong, tab_lythuyet, tab_luyentap = st.tabs([
-    "🌀 1. MÔ PHỎNG TRỰC QUAN", 
-    "📖 2. TÓM TẮT LÝ THUYẾT", 
-    "✍️ 3. LUYỆN TẬP CÙNG GIA SƯ AI"
+tab_mophong, tab_lythuyet, tab_luyentap, tab_kiemtra = st.tabs([
+    "🌀 1. MÔ PHỎNG TRỰC QUAN",
+    "📖 2. TÓM TẮT LÝ THUYẾT",
+    "✍️ 3. LUYỆN TẬP CÙNG GIA SƯ AI",
     "📝 4. KIỂM TRA THEO MA TRẬN"
 ])
 
