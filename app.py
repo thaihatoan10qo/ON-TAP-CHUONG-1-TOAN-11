@@ -25,12 +25,12 @@ else:
 client = genai.Client(api_key=api_key) if api_key else None
 
 # 3. Tạo các phân hệ chức năng
-tab_mophong, tab_lythuyet, tab_luyentap, tab_giasu = st.tabs([
-    "🌀 1. Mô Phỏng Trực Quan", 
-    "📖 2. Tóm Tắt Lý Thuyết",
-    "📝 3. Luyện Tập Thích Ứng (AI Sinh Đề)", 
-    "🤖 4. Gia Sư AI Hỏi Đáp"
+tab_mophong, tab_lythuyet, tab_luyentap = st.tabs([
+    "🌀 1. MÔ PHỎNG TRỰC QUAN", 
+    "📖 2. TÓM TẮT LÝ THUYẾT", 
+    "✍️ 3. LUYỆN TẬP CÙNG GIA SƯ AI"
 ])
+
 
 # ================= TAB 1: MÔ PHỎNG TRỰC QUAN =================
 with tab_mophong:
@@ -82,10 +82,10 @@ with tab_lythuyet:
             st.error(f"Không thể đọc file ảnh '{file_anh}'. Vui lòng kiểm tra lại định dạng file (lỗi: {e}).")
     else:
         st.warning(f"Chưa tìm thấy file '{file_anh}' trên hệ thống. Hãy kiểm tra lại tên file trên GitHub.")
-# ================= TAB 3: LUYỆN TẬP THÍCH ỨNG (AI SINH ĐỀ TÍCH HỢP GEM) =================
+# ================= TAB 3: LUYỆN TẬP THÍCH ỨNG & GIA SƯ AI TRỰC TIẾP =================
 with tab_luyentap:
-    st.subheader("Luyện tập thông minh dựa trên ngân hàng đề kiểm tra")
-    st.write("Hệ thống tích hợp trợ lý AI chuyên biệt, phân tích ngân hàng 82 câu kiểm tra thực tế để thiết kế bài tập bám sát chuẩn kiến thức:")
+    st.subheader("Luyện tập thông minh & Gia sư AI đồng hành")
+    st.write("Em hãy luyện tập các dạng bài trọng tâm. Sau khi nộp bài, em có thể đặt câu hỏi trực tiếp cho Gia sư AI về câu hỏi vừa làm:")
 
     c1, c2 = st.columns(2)
     with c1:
@@ -107,46 +107,48 @@ with tab_luyentap:
     with col_btn2:
         btn_clone = st.button("🔁 Tạo câu tương tự dạng vừa làm")
 
-    # Đọc và bốc mẫu ngắn gọn từ file kho_de.txt (giúp gửi request nhanh, không bị timeout)
+    # Đọc và bốc mẫu ngắn gọn từ file kho_de.txt
+    danh_sach_tat_ca_cau = []
     mau_cau_hoi = ""
     if os.path.exists("kho_de.txt"):
         try:
             with open("kho_de.txt", "r", encoding="utf-8") as f:
                 noi_dung = f.read()
-                danh_sach_cau = [c.strip() for c in noi_dung.split("Câu ") if c.strip()]
+                danh_sach_tat_ca_cau = [c.strip() for c in noi_dung.split("Câu ") if c.strip()]
                 import random
-                if danh_sach_cau:
-                    so_luong = min(3, len(danh_sach_cau))
-                    mau_cau_hoi = "Câu " + "\n\nCâu ".join(random.sample(danh_sach_cau, so_luong))
+                if danh_sach_tat_ca_cau:
+                    so_luong = min(3, len(danh_sach_tat_ca_cau))
+                    mau_cau_hoi = "Câu " + "\n\nCâu ".join(random.sample(danh_sach_tat_ca_cau, so_luong))
         except Exception:
             mau_cau_hoi = ""
 
-    # Xử lý khi bấm nút tạo câu hỏi mới hoặc tạo câu tương tự
+    # Xử lý sinh câu hỏi
     if btn_gen or btn_clone:
         if not client:
             st.error("Chưa cấu hình API Key trong mục Secrets của Streamlit.")
         elif btn_clone and "last_q" not in st.session_state:
             st.warning("Em cần tạo và làm thử 1 câu trước khi chọn tạo câu tương tự!")
         else:
-            with st.spinner("AI Chuyên gia đang thiết kế bài tập và phân tích bẫy sai lầm..."):
-                # Thiết lập "Bộ não của Gem" qua system_instruction
+            with st.spinner("AI đang thiết kế bài tập..."):
+                # Reset lịch sử chat khi đổi sang câu hỏi mới
+                st.session_state["chat_history"] = []
+
                 gem_instructions = """
-                Bạn là Trợ lý Chuyên gia Khảo thí & Luyện thi Toán 11 THPT (Chương trình GDPT 2018).
-                Nhiệm vụ sư phạm cốt lõi:
-                1. Dựa vào ngân hàng câu hỏi thực tế hoặc câu hỏi mẫu để tạo câu hỏi trắc nghiệm tương đương.
-                2. Xây dựng các phương án gây nhiễu (distractors) đánh trúng các lỗi sai kinh điển của học sinh: quên điều kiện xác định của tan/cot, nhầm dấu công thức cộng lượng giác, nhầm chu kỳ tuần hoàn (kpi hoặc k2pi).
-                3. Bắt buộc viết tất cả công thức toán học bằng ký hiệu LaTeX chuẩn mực trong cặp dấu $...$ (nếu nằm cùng dòng chữ) hoặc $$...$$ (nếu hiển thị dòng riêng).
-                4. Phần explanation (lời giải) phải trình bày chi tiết từng bước và chỉ rõ vì sao các phương án sai dễ gây nhầm lẫn để học sinh rút kinh nghiệm.
-                5. Luôn trả về dữ liệu đúng định dạng JSON thuần.
+                Bạn là Trợ lý Chuyên gia Khảo thí Toán 11 THPT (GDPT 2018).
+                Nhiệm vụ:
+                1. Dựa vào câu hỏi mẫu/câu hỏi gốc để tạo câu hỏi trắc nghiệm tương đương.
+                2. Xây dựng các phương án gây nhiễu đánh trúng lỗi sai kinh điển: quên điều kiện tan/cot, nhầm dấu công thức cộng, nhầm chu kỳ kpi/k2pi.
+                3. Bắt buộc viết công thức toán bằng ký hiệu LaTeX chuẩn trong cặp $...$ hoặc $$...$$.
+                4. Explanation (lời giải) trình bày chi tiết và chỉ rõ các bẫy sai lầm.
+                5. Luôn trả về đúng định dạng JSON thuần.
                 """
 
                 if btn_clone:
                     prompt = f"""
-                    Dưới đây là câu hỏi học sinh vừa làm:
+                    Câu hỏi gốc học sinh vừa làm:
                     "{st.session_state['last_q']}"
 
-                    Yêu cầu:
-                    Tạo 1 câu hỏi MỚI CÙNG DẠNG (giữ nguyên mô hình bài toán và mức độ tư duy, chỉ thay đổi số liệu/hàm số).
+                    Hãy tạo 1 câu hỏi MỚI CÙNG DẠNG (thay đổi số liệu/hàm số, giữ nguyên mô hình tư duy).
                     Trả về đúng định dạng JSON:
                     {{
                       "question": "Nội dung câu hỏi (chứa LaTeX)...",
@@ -157,13 +159,13 @@ with tab_luyentap:
                     """
                 else:
                     prompt = f"""
-                    Dưới đây là một số câu hỏi trích mẫu từ đề kiểm tra thực tế:
+                    Dưới đây là một số câu trích mẫu từ đề kiểm tra:
                     ---
                     {mau_cau_hoi}
                     ---
                     Yêu cầu:
                     Tạo 1 câu hỏi trắc nghiệm thuộc chủ đề: "{topic}", mức độ: "{level}".
-                    Bám sát văn phong và cấu trúc của câu hỏi mẫu.
+                    Bám sát văn phong câu mẫu.
                     Trả về đúng định dạng JSON:
                     {{
                       "question": "Nội dung câu hỏi (chứa LaTeX)...",
@@ -173,12 +175,12 @@ with tab_luyentap:
                     }}
                     """
 
-                # Gọi API với cơ chế tự động thử lại nếu máy chủ bận (xử lý lỗi 503)
                 success = False
-                for attempt in range(3):
+                cac_model = ['gemini-3.1-flash-lite', 'gemini-3.8-flash']
+                for ten_model in cac_model:
                     try:
                         response = client.models.generate_content(
-                            model='gemini-3.8-flash',
+                            model=ten_model,
                             contents=prompt,
                             config=types.GenerateContentConfig(
                                 system_instruction=gem_instructions,
@@ -191,19 +193,19 @@ with tab_luyentap:
                         st.session_state["last_q"] = st.session_state["quiz"]["question"]
                         success = True
                         break
-                    except Exception as err:
-                        if "503" in str(err) and attempt < 2:
-                            import time
-                            time.sleep(2)
-                            continue
-                        elif attempt == 2:
-                            pass
+                    except Exception:
+                        continue
 
-                # Dự phòng câu hỏi chuẩn nếu máy chủ Google quá tải kéo dài
                 if not success:
-                    st.info("💡 Máy chủ AI đang có lưu lượng truy cập lớn. Hệ thống đã tự động kích hoạt câu hỏi rèn luyện chuẩn từ ngân hàng để em không bị gián đoạn:")
+                    import random
+                    cau_du_phong = "Tìm tập xác định của hàm số $y = \\tan\\left(x - \\frac{\\pi}{3}\\right)$."
+                    if danh_sach_tat_ca_cau:
+                        cau_ngau_nhien = random.choice(danh_sach_tat_ca_cau)
+                        cau_du_phong = "Câu " + cau_ngau_nhien
+
+                    st.info("💡 Đường truyền AI đang bận, hệ thống trích xuất câu chuẩn từ ngân hàng để em luyện tập ngay:")
                     st.session_state["quiz"] = {
-                        "question": "Tìm tập xác định của hàm số $y = \\tan\\left(x - \\frac{\\pi}{3}\\right)$.",
+                        "question": cau_du_phong,
                         "options": {
                             "A": "$D = \\mathbb{R} \\setminus \\left\\{\\frac{5\\pi}{6} + k\\pi, k \\in \\mathbb{Z}\\right\\}$",
                             "B": "$D = \\mathbb{R} \\setminus \\left\\{\\frac{\\pi}{3} + k\\pi, k \\in \\mathbb{Z}\\right\\}$",
@@ -211,12 +213,12 @@ with tab_luyentap:
                             "D": "$D = \\mathbb{R} \\setminus \\left\\{\\frac{\\pi}{2} + k\\pi, k \\in \\mathbb{Z}\\right\\}$"
                         },
                         "correct_answer": "A",
-                        "explanation": "Hàm số xác định khi $x - \\frac{\\pi}{3} \\neq \\frac{\\pi}{2} + k\\pi \\Leftrightarrow x \\neq \\frac{5\\pi}{6} + k\\pi$ ($k \\in \\mathbb{Z}$). Sai lầm thường gặp: Quên chu kỳ của tan là $k\\pi$ mà chọn nhầm sang $k2\\pi$ (đáp án C) hoặc quên cộng góc $\\frac{\\pi}{3}$."
+                        "explanation": "Hàm số xác định khi $x - \\frac{\\pi}{3} \\neq \\frac{\\pi}{2} + k\\pi \\Leftrightarrow x \\neq \\frac{5\\pi}{6} + k\\pi$ ($k \\in \\mathbb{Z}$)."
                     }
                     st.session_state["submitted"] = False
                     st.session_state["last_q"] = st.session_state["quiz"]["question"]
 
-    # Hiển thị giao diện làm bài
+    # Hiển thị câu hỏi làm bài
     if "quiz" in st.session_state:
         q = st.session_state["quiz"]
         st.markdown("---")
@@ -230,34 +232,76 @@ with tab_luyentap:
 
         if st.button("Nộp bài & Kiểm tra đáp án"):
             st.session_state["submitted"] = True
+            st.session_state["user_choice"] = choice
 
+        # Khi học sinh nộp bài
         if st.session_state.get("submitted", False):
-            if choice == q["correct_answer"]:
-                st.success("🎉 Chính xác! Em đã nắm vững phương pháp giải và không bị mắc bẫy.")
+            user_c = st.session_state.get("user_choice", choice)
+            if user_c == q["correct_answer"]:
+                st.success("🎉 Chính xác! Em đã làm chủ phương pháp giải bài toán này.")
             else:
                 st.error(f"❌ Chưa chính xác. Đáp án đúng là: **{q['correct_answer']}**")
-                st.info("💡 Em hãy đọc kỹ phân tích bẫy sai lầm bên dưới, sau đó bấm nút **'🔁 Tạo câu tương tự dạng vừa làm'** ở trên để làm lại câu tương đương nhé!")
+                st.info("💡 Em đọc kỹ lời giải bên dưới rồi có thể trao đổi với Gia sư AI ngay phần bên dưới nhé!")
 
             with st.expander("📖 Xem lời giải chi tiết và phân tích bẫy sai lầm", expanded=True):
                 st.markdown(q["explanation"])
-# ================= TAB 4: GIA SƯ AI =================
-with tab_giasu:
-    st.subheader("Hỏi đáp trực tiếp cùng Trợ lý Gia sư AI")
-    user_q = st.text_input("Nhập câu hỏi hoặc phần kiến thức em chưa hiểu rõ:")
-    
-    if st.button("Gửi câu hỏi cho Gia sư"):
-        if not client:
-            st.error("Chưa cấu hình API Key.")
-        elif user_q.strip():
-            with st.spinner("Gia sư AI đang soạn phản hồi..."):
-                tutor_prompt = f"""
-                Bạn là một thầy/cô giáo dạy Toán THPT nhiệt tình, chuẩn mực sư phạm. 
-                Hãy giải đáp ngắn gọn, dễ hiểu, trực quan cho học sinh câu hỏi sau:
-                "{user_q}"
-                Yêu cầu: Công thức toán viết bằng LaTeX đặt trong dấu $ hoặc $$.
+
+            # ================= PHẦN GIA SƯ AI TRÒ CHUYỆN VỀ CÂU HỎI VỪA LÀM =================
+            st.markdown("---")
+            st.subheader("💬 Gia sư AI: Thắc mắc về câu hỏi này?")
+            st.caption("Em chưa hiểu bước biến đổi nào, tại sao công thức lại như vậy hay muốn gợi ý cách nhớ? Hãy nhập câu hỏi bên dưới nhé!")
+
+            if "chat_history" not in st.session_state:
+                st.session_state["chat_history"] = []
+
+            # Hiển thị các tin nhắn đã trao đổi
+            for msg in st.session_state["chat_history"]:
+                with st.chat_message(msg["role"]):
+                    st.markdown(msg["content"])
+
+            # Khung nhập câu hỏi cho học sinh
+            user_question = st.chat_input("Nhập câu hỏi của em về bài toán trên...")
+            if user_question:
+                # Lưu câu hỏi của học sinh
+                st.session_state["chat_history"].append({"role": "user", "content": user_question})
+                with st.chat_message("user"):
+                    st.markdown(user_question)
+
+                # Chuẩn bị ngữ cảnh cho Gia sư AI: Nắm rõ đề bài, đáp án học sinh chọn và lời giải
+                context_prompt = f"""
+                Bạn là Gia sư dạy Toán 11 THPT tận tâm, ân cần và sư phạm.
+                Học sinh vừa làm câu hỏi sau:
+                - Đề bài: {q['question']}
+                - Các đáp án: {q['options']}
+                - Đáp án đúng: {q['correct_answer']}
+                - Đáp án học sinh đã chọn: {user_c}
+                - Lời giải chi tiết: {q['explanation']}
+
+                Học sinh đang thắc mắc: "{user_question}"
+
+                Yêu cầu sư phạm:
+                1. Trả lời trực tiếp vào thắc mắc của học sinh, giải thích cặn kẽ từng bước, không phán xét.
+                2. Dùng lời văn động viên, gần gũi như thầy/cô hướng dẫn học sinh.
+                3. Các công thức toán bắt buộc viết dạng LaTeX đặt trong $...$ hoặc $$...$$.
+                4. Nhắc lại mẹo nhớ hoặc lưu ý quan trọng để học sinh không lặp lại lỗi sai.
                 """
-                res = client.models.generate_content(
-                    model='gemini-2.0-flash',
-                    contents=tutor_prompt
-                )
-                st.markdown(res.text)
+
+                with st.chat_message("assistant"):
+                    with st.spinner("Thầy/Cô AI đang xem xét câu hỏi của em..."):
+                        tutor_reply = ""
+                        for ten_model in ['gemini-3.1-flash-lite', 'gemini-3.8-flash']:
+                            try:
+                                resp = client.models.generate_content(
+                                    model=ten_model,
+                                    contents=context_prompt
+                                )
+                                tutor_reply = resp.text
+                                break
+                            except Exception:
+                                continue
+
+                        if not tutor_reply:
+                            tutor_reply = "Hiện hệ thống đang nghẽn mạng nhẹ. Em hãy kiểm tra lại kết nối và thử gửi lại câu hỏi nhé!"
+
+                        st.markdown(tutor_reply)
+                        st.session_state["chat_history"].append({"role": "assistant", "content": tutor_reply})
