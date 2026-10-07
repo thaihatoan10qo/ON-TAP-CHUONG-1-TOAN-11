@@ -82,20 +82,20 @@ with tab_lythuyet:
             st.error(f"Không thể đọc file ảnh '{file_anh}'. Vui lòng kiểm tra lại định dạng file (lỗi: {e}).")
     else:
         st.warning(f"Chưa tìm thấy file '{file_anh}' trên hệ thống. Hãy kiểm tra lại tên file trên GitHub.")
-# ================= TAB 3: AI SINH ĐỀ TỐI ƯU TỐC ĐỘ =================
+# ================= TAB 3: LUYỆN TẬP THÍCH ỨNG (AI SINH ĐỀ TÍCH HỢP GEM) =================
 with tab_luyentap:
     st.subheader("Luyện tập thông minh dựa trên ngân hàng đề kiểm tra")
-    st.write("Hệ thống AI sẽ tạo bài tập phân hóa theo chuẩn cấu trúc đề kiểm tra để em rèn luyện:")
+    st.write("Hệ thống tích hợp trợ lý AI chuyên biệt, phân tích ngân hàng 82 câu kiểm tra thực tế để thiết kế bài tập bám sát chuẩn kiến thức:")
 
     c1, c2 = st.columns(2)
     with c1:
         topic = st.selectbox(
             "Chọn chủ đề kiến thức:",
             [
-                "Giá trị lượng giác và công thức biến đổi",
-                "Tập xác định, tính chẵn lẻ và đồ thị hàm số lượng giác",
-                "Phương trình lượng giác cơ bản",
-                "Bài toán ứng dụng thực tế lượng giác"
+                "1. Giá trị lượng giác của góc lượng giác & Công thức lượng giác",
+                "2. Hàm số lượng giác (Tập xác định, tính chẵn lẻ, chu kỳ, đồ thị)",
+                "3. Phương trình lượng giác cơ bản & Điều kiện nghiệm",
+                "4. Ứng dụng thực tế của hàm số và phương trình lượng giác"
             ]
         )
     with c2:
@@ -103,110 +103,142 @@ with tab_luyentap:
 
     col_btn1, col_btn2 = st.columns(2)
     with col_btn1:
-        btn_gen = st.button("🎲 AI tạo câu hỏi mới")
+        btn_gen = st.button("🎲 AI tạo câu hỏi từ ngân hàng đề")
     with col_btn2:
         btn_clone = st.button("🔁 Tạo câu tương tự dạng vừa làm")
 
-    # Đọc và bốc mẫu ngẫu nhiên từ kho đề (chỉ lấy 2-3 câu để app chạy siêu nhanh)
+    # Đọc và bốc mẫu ngắn gọn từ file kho_de.txt (giúp gửi request nhanh, không bị timeout)
     mau_cau_hoi = ""
     if os.path.exists("kho_de.txt"):
         try:
             with open("kho_de.txt", "r", encoding="utf-8") as f:
                 noi_dung = f.read()
-                # Tách thành các câu hỏi riêng biệt
                 danh_sach_cau = [c.strip() for c in noi_dung.split("Câu ") if c.strip()]
                 import random
                 if danh_sach_cau:
-                    so_luong_mau = min(3, len(danh_sach_cau))
-                    mau_cau_hoi = "Câu " + "\n\nCâu ".join(random.sample(danh_sach_cau, so_luong_mau))
+                    so_luong = min(3, len(danh_sach_cau))
+                    mau_cau_hoi = "Câu " + "\n\nCâu ".join(random.sample(danh_sach_cau, so_luong))
         except Exception:
             mau_cau_hoi = ""
 
-    # Xử lý tạo câu hỏi
+    # Xử lý khi bấm nút tạo câu hỏi mới hoặc tạo câu tương tự
     if btn_gen or btn_clone:
         if not client:
-            st.error("Chưa cấu hình API Key.")
+            st.error("Chưa cấu hình API Key trong mục Secrets của Streamlit.")
         elif btn_clone and "last_q" not in st.session_state:
             st.warning("Em cần tạo và làm thử 1 câu trước khi chọn tạo câu tương tự!")
         else:
-            with st.spinner("Đang khởi tạo câu hỏi trong giây lát..."):
-                # Nếu bấm nút tạo câu tương tự: chỉ gửi đúng câu vừa làm
+            with st.spinner("AI Chuyên gia đang thiết kế bài tập và phân tích bẫy sai lầm..."):
+                # Thiết lập "Bộ não của Gem" qua system_instruction
+                gem_instructions = """
+                Bạn là Trợ lý Chuyên gia Khảo thí & Luyện thi Toán 11 THPT (Chương trình GDPT 2018).
+                Nhiệm vụ sư phạm cốt lõi:
+                1. Dựa vào ngân hàng câu hỏi thực tế hoặc câu hỏi mẫu để tạo câu hỏi trắc nghiệm tương đương.
+                2. Xây dựng các phương án gây nhiễu (distractors) đánh trúng các lỗi sai kinh điển của học sinh: quên điều kiện xác định của tan/cot, nhầm dấu công thức cộng lượng giác, nhầm chu kỳ tuần hoàn (kpi hoặc k2pi).
+                3. Bắt buộc viết tất cả công thức toán học bằng ký hiệu LaTeX chuẩn mực trong cặp dấu $...$ (nếu nằm cùng dòng chữ) hoặc $$...$$ (nếu hiển thị dòng riêng).
+                4. Phần explanation (lời giải) phải trình bày chi tiết từng bước và chỉ rõ vì sao các phương án sai dễ gây nhầm lẫn để học sinh rút kinh nghiệm.
+                5. Luôn trả về dữ liệu đúng định dạng JSON thuần.
+                """
+
                 if btn_clone:
                     prompt = f"""
-                    Bạn là chuyên gia khảo thí Toán THPT Việt Nam (GDPT 2018).
-                    Câu hỏi gốc học sinh vừa làm:
+                    Dưới đây là câu hỏi học sinh vừa làm:
                     "{st.session_state['last_q']}"
 
                     Yêu cầu:
-                    1. Tạo 1 câu hỏi MỚI CÙNG DẠNG (giữ nguyên mô hình bài toán, chỉ thay đổi số liệu/hàm số).
-                    2. Toàn bộ công thức toán học bắt buộc viết bằng LaTeX chuẩn trong $...$ hoặc $$...$$.
-                    3. Trả về định dạng JSON thuần:
+                    Tạo 1 câu hỏi MỚI CÙNG DẠNG (giữ nguyên mô hình bài toán và mức độ tư duy, chỉ thay đổi số liệu/hàm số).
+                    Trả về đúng định dạng JSON:
                     {{
-                      "question": "Nội dung câu hỏi...",
+                      "question": "Nội dung câu hỏi (chứa LaTeX)...",
                       "options": {{"A": "...", "B": "...", "C": "...", "D": "..."}},
                       "correct_answer": "A",
-                      "explanation": "Lời giải ngắn gọn từng bước..."
+                      "explanation": "Lời giải chi tiết từng bước và lưu ý bẫy sai lầm..."
                     }}
                     """
-                # Nếu bấm nút tạo mới: gửi câu mẫu trích xuất ngắn gọn
                 else:
                     prompt = f"""
-                    Bạn là chuyên gia khảo thí Toán THPT Việt Nam (GDPT 2018).
-                    Dưới đây là một số câu hỏi mẫu từ đề kiểm tra:
+                    Dưới đây là một số câu hỏi trích mẫu từ đề kiểm tra thực tế:
                     ---
                     {mau_cau_hoi}
                     ---
                     Yêu cầu:
-                    1. Tạo 1 câu trắc nghiệm thuộc chủ đề: "{topic}", mức độ: "{level}".
-                    2. Tham khảo phong cách ra đề của câu mẫu, tạo các phương án nhiễu đánh trúng bẫy sai lầm.
-                    3. Toàn bộ công thức toán học bắt buộc viết bằng LaTeX chuẩn trong $...$ hoặc $$...$$.
-                    4. Trả về định dạng JSON thuần:
+                    Tạo 1 câu hỏi trắc nghiệm thuộc chủ đề: "{topic}", mức độ: "{level}".
+                    Bám sát văn phong và cấu trúc của câu hỏi mẫu.
+                    Trả về đúng định dạng JSON:
                     {{
-                      "question": "Nội dung câu hỏi...",
+                      "question": "Nội dung câu hỏi (chứa LaTeX)...",
                       "options": {{"A": "...", "B": "...", "C": "...", "D": "..."}},
                       "correct_answer": "A",
-                      "explanation": "Lời giải ngắn gọn từng bước..."
+                      "explanation": "Lời giải chi tiết từng bước và lưu ý bẫy sai lầm..."
                     }}
                     """
 
-                try:
-                    response = client.models.generate_content(
-                        model='gemini-3.8-flash',
-                        contents=prompt,
-                        config=types.GenerateContentConfig(
-                            response_mime_type="application/json",
-                            temperature=0.7
+                # Gọi API với cơ chế tự động thử lại nếu máy chủ bận (xử lý lỗi 503)
+                success = False
+                for attempt in range(3):
+                    try:
+                        response = client.models.generate_content(
+                            model='gemini-3.8-flash',
+                            contents=prompt,
+                            config=types.GenerateContentConfig(
+                                system_instruction=gem_instructions,
+                                response_mime_type="application/json",
+                                temperature=0.7
+                            )
                         )
-                    )
-                    st.session_state["quiz"] = json.loads(response.text)
+                        st.session_state["quiz"] = json.loads(response.text)
+                        st.session_state["submitted"] = False
+                        st.session_state["last_q"] = st.session_state["quiz"]["question"]
+                        success = True
+                        break
+                    except Exception as err:
+                        if "503" in str(err) and attempt < 2:
+                            import time
+                            time.sleep(2)
+                            continue
+                        elif attempt == 2:
+                            pass
+
+                # Dự phòng câu hỏi chuẩn nếu máy chủ Google quá tải kéo dài
+                if not success:
+                    st.info("💡 Máy chủ AI đang có lưu lượng truy cập lớn. Hệ thống đã tự động kích hoạt câu hỏi rèn luyện chuẩn từ ngân hàng để em không bị gián đoạn:")
+                    st.session_state["quiz"] = {
+                        "question": "Tìm tập xác định của hàm số $y = \\tan\\left(x - \\frac{\\pi}{3}\\right)$.",
+                        "options": {
+                            "A": "$D = \\mathbb{R} \\setminus \\left\\{\\frac{5\\pi}{6} + k\\pi, k \\in \\mathbb{Z}\\right\\}$",
+                            "B": "$D = \\mathbb{R} \\setminus \\left\\{\\frac{\\pi}{3} + k\\pi, k \\in \\mathbb{Z}\\right\\}$",
+                            "C": "$D = \\mathbb{R} \\setminus \\left\\{\\frac{5\\pi}{6} + k2\\pi, k \\in \\mathbb{Z}\\right\\}$",
+                            "D": "$D = \\mathbb{R} \\setminus \\left\\{\\frac{\\pi}{2} + k\\pi, k \\in \\mathbb{Z}\\right\\}$"
+                        },
+                        "correct_answer": "A",
+                        "explanation": "Hàm số xác định khi $x - \\frac{\\pi}{3} \\neq \\frac{\\pi}{2} + k\\pi \\Leftrightarrow x \\neq \\frac{5\\pi}{6} + k\\pi$ ($k \\in \\mathbb{Z}$). Sai lầm thường gặp: Quên chu kỳ của tan là $k\\pi$ mà chọn nhầm sang $k2\\pi$ (đáp án C) hoặc quên cộng góc $\\frac{\\pi}{3}$."
+                    }
                     st.session_state["submitted"] = False
                     st.session_state["last_q"] = st.session_state["quiz"]["question"]
-                except Exception as e:
-                    st.error(f"Hệ thống đang bận, em hãy bấm lại lần nữa nhé (Chi tiết: {e})")
 
-    # Hiển thị câu hỏi cho học sinh làm
+    # Hiển thị giao diện làm bài
     if "quiz" in st.session_state:
         q = st.session_state["quiz"]
         st.markdown("---")
         st.markdown(f"**Câu hỏi:** {q['question']}")
 
         choice = st.radio(
-            "Chọn đáp án đúng:",
+            "Chọn đáp án của em:",
             ["A", "B", "C", "D"],
             format_func=lambda x: f"{x}. {q['options'][x]}"
         )
 
-        if st.button("Nộp bài & Kiểm tra"):
+        if st.button("Nộp bài & Kiểm tra đáp án"):
             st.session_state["submitted"] = True
 
         if st.session_state.get("submitted", False):
             if choice == q["correct_answer"]:
-                st.success("🎉 Chính xác! Em đã làm chủ dạng toán này.")
+                st.success("🎉 Chính xác! Em đã nắm vững phương pháp giải và không bị mắc bẫy.")
             else:
                 st.error(f"❌ Chưa chính xác. Đáp án đúng là: **{q['correct_answer']}**")
-                st.info("💡 Em có thể bấm nút **'🔁 Tạo câu tương tự dạng vừa làm'** ở trên để làm một câu tương đương nhé!")
+                st.info("💡 Em hãy đọc kỹ phân tích bẫy sai lầm bên dưới, sau đó bấm nút **'🔁 Tạo câu tương tự dạng vừa làm'** ở trên để làm lại câu tương đương nhé!")
 
-            with st.expander("📖 Xem lời giải chi tiết và phân tích sai lầm", expanded=True):
+            with st.expander("📖 Xem lời giải chi tiết và phân tích bẫy sai lầm", expanded=True):
                 st.markdown(q["explanation"])
 # ================= TAB 4: GIA SƯ AI =================
 with tab_giasu:
