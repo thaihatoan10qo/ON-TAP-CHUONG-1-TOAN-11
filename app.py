@@ -82,50 +82,87 @@ with tab_lythuyet:
             st.error(f"Không thể đọc file ảnh '{file_anh}'. Vui lòng kiểm tra lại định dạng file (lỗi: {e}).")
     else:
         st.warning(f"Chưa tìm thấy file '{file_anh}' trên hệ thống. Hãy kiểm tra lại tên file trên GitHub.")
-
-# ================= TAB 3: AI SINH ĐỀ LUYỆN TẬP =================
+# ================= TAB 3: AI SINH ĐỀ TỪ KHO ĐỀ KIỂM TRA =================
 with tab_luyentap:
-    st.subheader("Luyện tập trắc nghiệm phân hóa theo mảng kiến thức")
-    
+    st.subheader("Luyện tập thông minh dựa trên ngân hàng 82 câu kiểm tra thực tế")
+    st.write("Hệ thống AI sẽ phân tích dữ liệu đề kiểm tra thực tế để tạo bài tập tương đương, giúp em khắc phục triệt để các dạng bài hay sai.")
+
     c1, c2 = st.columns(2)
     with c1:
         topic = st.selectbox(
-            "Mảng kiến thức cần luyện:",
+            "Chọn chủ đề kiến thức:",
             [
-                "Khái niệm góc lượng giác và giá trị lượng giác",
-                "Công thức lượng giác (cộng, nhân đôi, biến đổi)",
-                "Tập xác định, tính chẵn lẻ và đồ thị hàm số lượng giác",
-                "Giải phương trình lượng giác cơ bản"
+                "1. Giá trị lượng giác của góc lượng giác & Công thức lượng giác",
+                "2. Hàm số lượng giác (Tập xác định, tính chẵn lẻ, chu kỳ, đồ thị)",
+                "3. Phương trình lượng giác cơ bản & Điều kiện nghiệm",
+                "4. Ứng dụng thực tế của hàm số và phương trình lượng giác"
             ]
         )
     with c2:
-        level = st.selectbox("Mức độ yêu cầu:", ["Nhận biết", "Thông hiểu", "Vận dụng"])
+        level = st.selectbox("Mức độ tư duy:", ["Nhận biết", "Thông hiểu", "Vận dụng"])
 
-    if st.button("🎲 AI Tạo Câu Hỏi Ngẫu Nhiên"):
+    col_btn1, col_btn2 = st.columns(2)
+    with col_btn1:
+        btn_gen = st.button("🎲 AI tạo câu hỏi từ ngân hàng đề")
+    with col_btn2:
+        btn_clone = st.button("🔁 Tạo câu tương tự dạng vừa làm")
+
+    # Đọc dữ liệu từ file kho đề kiểm tra
+    du_lieu_kho_de = ""
+    if os.path.exists("kho_de.txt"):
+        with open("KHO-DE.txt", "r", encoding="utf-8") as f:
+            du_lieu_kho_de = f.read()
+
+    # Xử lý khi bấm nút tạo câu hỏi
+    if btn_gen or btn_clone:
         if not client:
-            st.error("Chưa cấu hình API Key. Vui lòng cung cấp khóa ở cột bên trái.")
+            st.error("Chưa cấu hình API Key trong mục Secrets của Streamlit.")
         else:
-            with st.spinner("AI đang tạo câu hỏi chuẩn hóa chương trình GDPT 2018..."):
-                prompt = f"""
-                Bạn là chuyên gia khảo thí Toán THPT Việt Nam (Chương trình GDPT 2018).
-                Tạo 1 câu hỏi trắc nghiệm Toán 11 Chương 1:
-                - Chủ đề: {topic}
-                - Mức độ: {level}
-                - Toàn bộ ký hiệu toán học phải viết chuẩn LaTeX đặt trong cặp dấu $...$ (nếu inline) hoặc $$...$$ (nếu display).
-                
-                Trả về kết quả dưới dạng JSON thuần theo mẫu sau (không chứa markdown khác ngoài json):
-                {{
-                  "question": "Nội dung câu hỏi...",
-                  "options": {{
-                     "A": "Đáp án A",
-                     "B": "Đáp án B",
-                     "C": "Đáp án C",
-                     "D": "Đáp án D"
-                  }},
-                  "correct_answer": "A",
-                  "explanation": "Lời giải chi tiết từng bước..."
-                }}
-                """
+            with st.spinner("AI đang đối chiếu kho 82 câu đề kiểm tra và thiết kế câu hỏi..."):
+                if btn_clone and "last_q" in st.session_state:
+                    prompt = f"""
+                    Bạn là chuyên gia khảo thí môn Toán THPT (Chương trình GDPT 2018).
+                    Dưới đây là câu hỏi học sinh vừa làm:
+                    "{st.session_state['last_q']}"
+
+                    Nhiệm vụ:
+                    1. Tạo 1 câu hỏi MỚI CÙNG DẠNG (thay đổi số liệu/hàm số, giữ nguyên cấu trúc tư duy).
+                    2. Toàn bộ công thức toán học bắt buộc viết bằng LaTeX đặt trong $...$ hoặc $$...$$.
+                    3. Trả về định dạng JSON thuần:
+                    {{
+                      "question": "Nội dung câu hỏi...",
+                      "options": {{"A": "...", "B": "...", "C": "...", "D": "..."}},
+                      "correct_answer": "A",
+                      "explanation": "Lời giải chi tiết từng bước..."
+                    }}
+                    """
+                else:
+                    prompt = f"""
+                    Bạn là chuyên gia khảo thí môn Toán THPT (Chương trình GDPT 2018).
+                    Dưới đây là NGÂN HÀNG ĐỀ KIỂM TRA THỰC TẾ gồm 82 câu hỏi của học sinh:
+                    ---
+                    {du_lieu_kho_de}
+                    ---
+
+                    Nhiệm vụ:
+                    1. Tham khảo các câu hỏi trong ngân hàng trên thuộc chủ đề: "{topic}".
+                    2. Tạo ra 1 câu hỏi MỚI CÙNG DẠNG (đổi số liệu hoặc biến thể tương đương) ở mức độ "{level}".
+                    3. Xây dựng các phương án gây nhiễu dựa trên bẫy lỗi học sinh hay mắc.
+                    4. Toàn bộ công thức toán học bắt buộc viết bằng LaTeX đặt trong cặp dấu $...$ hoặc $$...$$.
+
+                    Trả về định dạng JSON thuần:
+                    {{
+                      "question": "Nội dung câu hỏi (chứa công thức LaTeX)...",
+                      "options": {{
+                         "A": "Nội dung đáp án A",
+                         "B": "Nội dung đáp án B",
+                         "C": "Nội dung đáp án C",
+                         "D": "Nội dung đáp án D"
+                      }},
+                      "correct_answer": "A",
+                      "explanation": "Lời giải chi tiết và phân tích bẫy sai lầm..."
+                    }}
+                    """
                 try:
                     response = client.models.generate_content(
                         model='gemini-2.5-flash',
@@ -134,33 +171,34 @@ with tab_luyentap:
                     )
                     st.session_state["quiz"] = json.loads(response.text)
                     st.session_state["submitted"] = False
+                    st.session_state["last_q"] = st.session_state["quiz"]["question"]
                 except Exception as e:
-                    st.error(f"Lỗi tạo câu hỏi: {e}")
+                    st.error(f"Lỗi khi AI tạo câu hỏi: {e}")
 
-    # Hiển thị bài tập nếu đã sinh thành công
+    # Giao diện làm bài
     if "quiz" in st.session_state:
         q = st.session_state["quiz"]
         st.markdown("---")
         st.markdown(f"**Câu hỏi:** {q['question']}")
-        
+
         choice = st.radio(
-            "Chọn phương án trả lời:",
+            "Chọn đáp án của em:",
             ["A", "B", "C", "D"],
             format_func=lambda x: f"{x}. {q['options'][x]}"
         )
-        
-        if st.button("Xác nhận nộp bài"):
+
+        if st.button("Nộp bài & Kiểm tra"):
             st.session_state["submitted"] = True
-            
+
         if st.session_state.get("submitted", False):
             if choice == q["correct_answer"]:
-                st.success("🎉 Chính xác! Bạn đã hiểu đúng bản chất vấn đề.")
+                st.success("🎉 Chính xác! Em đã làm chủ dạng toán này.")
             else:
-                st.error(f"❌ Đáp án chưa đúng. Phương án chính xác là: **{q['correct_answer']}**")
-            
-            with st.expander("📖 Xem lời giải chi tiết và phân tích", expanded=True):
-                st.markdown(q["explanation"])
+                st.error(f"❌ Chưa chính xác. Đáp án đúng là: **{q['correct_answer']}**")
+                st.info("💡 Em có thể bấm nút **'🔁 Tạo câu tương tự dạng vừa làm'** ở trên để rèn luyện lại dạng này nhé!")
 
+            with st.expander("📖 Xem lời giải chi tiết và phân tích bẫy sai lầm", expanded=True):
+                st.markdown(q["explanation"])
 # ================= TAB 4: GIA SƯ AI =================
 with tab_giasu:
     st.subheader("Hỏi đáp trực tiếp cùng Trợ lý Gia sư AI")
