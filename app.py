@@ -29,6 +29,7 @@ tab_mophong, tab_lythuyet, tab_luyentap = st.tabs([
     "🌀 1. MÔ PHỎNG TRỰC QUAN", 
     "📖 2. TÓM TẮT LÝ THUYẾT", 
     "✍️ 3. LUYỆN TẬP CÙNG GIA SƯ AI"
+    "📝 4. Kiểm Tra Theo Ma Trận"
 ])
 
 
