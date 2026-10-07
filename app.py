@@ -329,9 +329,9 @@ with tab_kiemtra:
 
     # Đọc dữ liệu kho 82 câu
     danh_sach_tat_ca_cau = []
-    if os.path.exists("kho_de.txt"):
+    if os.path.exists("KHO-DE.txt"):
         try:
-            with open("kho_de.txt", "r", encoding="utf-8") as f:
+            with open("KHO-DE.txt", "r", encoding="utf-8") as f:
                 raw_text = f.read()
                 danh_sach_tat_ca_cau = [c.strip() for c in raw_text.split("Câu ") if c.strip()]
         except Exception:
