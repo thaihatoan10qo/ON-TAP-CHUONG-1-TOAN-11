@@ -305,3 +305,213 @@ with tab_luyentap:
 
                         st.markdown(tutor_reply)
                         st.session_state["chat_history"].append({"role": "assistant", "content": tutor_reply})
+# ================= TAB 4: KIỂM TRA ĐÁNH GIÁ (TRẮC NGHIỆM + TRẢ LỜI NGẮN) =================
+with tab_kiemtra:
+    st.subheader("Kiểm tra đánh giá năng lực theo cấu trúc đề thi mới (GDPT 2018)")
+    st.write("Đề thi kết hợp dạng **Trắc nghiệm nhiều lựa chọn** và **Câu hỏi trả lời ngắn**, sinh ngẫu nhiên từ ngân hàng 82 câu thực tế:")
+
+    col_m1, col_m2 = st.columns(2)
+    with col_m1:
+        loai_de = st.selectbox(
+            "Chọn cấu trúc đề kiểm tra:",
+            [
+                "Đề tiêu chuẩn 10 câu (8 Trắc nghiệm A-B-C-D + 2 Trả lời ngắn)",
+                "Đề tổng hợp 20 câu (16 Trắc nghiệm A-B-C-D + 4 Trả lời ngắn)"
+            ]
+        )
+    with col_m2:
+        st.info("""
+        📋 **Cấu trúc tích hợp:**
+        - **Phần 1 (Trắc nghiệm 4 lựa chọn):** Đo lường kiến thức Nhận biết & Thông hiểu.
+        - **Phần 2 (Trả lời ngắn):** Tự điền đáp số (số thực/nguyên), đo lường năng lực Vận dụng & Vận dụng cao (bài toán thực tế, tìm số nghiệm, giá trị lớn nhất/nhỏ nhất).
+        """)
+
+    # Đọc dữ liệu kho 82 câu
+    danh_sach_tat_ca_cau = []
+    if os.path.exists("kho_de.txt"):
+        try:
+            with open("kho_de.txt", "r", encoding="utf-8") as f:
+                raw_text = f.read()
+                danh_sach_tat_ca_cau = [c.strip() for c in raw_text.split("Câu ") if c.strip()]
+        except Exception:
+            pass
+
+    # Nút bấm tạo đề kiểm tra
+    if st.button("🚀 Khởi tạo đề kiểm tra mới (Có câu hỏi trả lời ngắn)"):
+        if not client:
+            st.error("Chưa cấu hình API Key trong mục Secrets.")
+        elif not danh_sach_tat_ca_cau:
+            st.warning("Chưa tìm thấy nội dung trong file kho_de.txt.")
+        else:
+            tong_cau = 6 if "6 câu" in loai_de else 10
+            so_mcq = 4 if tong_cau == 6 else 7
+            so_sa = tong_cau - so_mcq
+
+            import random
+            so_mau = min(tong_cau, len(danh_sach_tat_ca_cau))
+            cac_cau_mau = random.sample(danh_sach_tat_ca_cau, so_mau)
+            mau_context = "\n---\n".join([f"Mẫu {i+1}: Câu " + c for i, c in enumerate(cac_cau_mau)])
+
+            with st.spinner(f"AI đang biên soạn đề gồm {so_mcq} câu trắc nghiệm và {so_sa} câu trả lời ngắn..."):
+                prompt_matrix = f"""
+                Bạn là Trưởng ban Khảo thí môn Toán THPT Việt Nam (Chương trình GDPT 2018).
+                Dưới đây là {so_mau} câu trích mẫu từ ngân hàng đề kiểm tra thực tế (có cả câu trắc nghiệm và câu tính toán trả lời ngắn):
+                ---
+                {mau_context}
+                ---
+
+                Nhiệm vụ:
+                Hãy tạo 1 ĐỀ KIỂM TRA CHƯƠNG 1 TOÁN 11 gồm đúng {tong_cau} câu:
+                - {so_mcq} câu TRẮC NGHIỆM 4 PHƯƠNG ÁN (type: "mcq"): mức độ Nhận biết, Thông hiểu.
+                - {so_sa} câu TRẢ LỜI NGẮN (type: "short_answer"): mức độ Vận dụng, Vận dụng cao (yêu cầu học sinh tính ra con số cụ thể, ví dụ: số nghiệm, chiều rộng mét, thời điểm t...). Đáp án đúng bắt buộc là MỘT CON SỐ CỤ THỂ (ví dụ: "28.3", "4", "-1", "12").
+                - Toàn bộ công thức toán học bắt buộc viết bằng LaTeX chuẩn trong cặp $...$ hoặc $$...$$.
+
+                Trả về đúng định dạng JSON thuần là một mảng gồm {tong_cau} đối tượng:
+                [
+                  {{
+                    "id": 1,
+                    "type": "mcq",
+                    "level": "Nhận biết",
+                    "question": "Nội dung câu trắc nghiệm...",
+                    "options": {{"A": "...", "B": "...", "C": "...", "D": "..."}},
+                    "correct_answer": "A",
+                    "explanation": "Giải thích chi tiết..."
+                  }},
+                  {{
+                    "id": {so_mcq + 1},
+                    "type": "short_answer",
+                    "level": "Vận dụng",
+                    "question": "Nội dung bài toán tính toán ra con số...",
+                    "options": null,
+                    "correct_answer": "28.3",
+                    "explanation": "Giải thích chi tiết các bước tính ra kết quả..."
+                  }}
+                ]
+                """
+
+                exam_success = False
+                cac_model = ['gemini-3.1-flash-lite', 'gemini-3.8-flash']
+                for ten_model in cac_model:
+                    try:
+                        resp = client.models.generate_content(
+                            model=ten_model,
+                            contents=prompt_matrix,
+                            config=types.GenerateContentConfig(
+                                response_mime_type="application/json",
+                                temperature=0.7
+                            )
+                        )
+                        st.session_state["exam_data"] = json.loads(resp.text)
+                        st.session_state["exam_submitted"] = False
+                        st.session_state["student_answers"] = {}
+                        exam_success = True
+                        break
+                    except Exception:
+                        continue
+
+                if not exam_success:
+                    st.warning("Máy chủ AI tạm thời đang bận xử lý lưu lượng cao. Em hãy thử bấm lại nút nhé!")
+
+    # ================= GIAO DIỆN LÀM BÀI THI =================
+    if "exam_data" in st.session_state and st.session_state["exam_data"]:
+        exam_list = st.session_state["exam_data"]
+        st.markdown("---")
+        st.markdown(f"### 📋 BÀI KIỂM TRA ĐÁNH GIÁ NĂNG LỰC ({len(exam_list)} câu)")
+
+        with st.form("hybrid_exam_form"):
+            user_exam_answers = {}
+            for idx, item in enumerate(exam_list):
+                q_type = item.get("type", "mcq")
+                level_tag = item.get("level", "Thông hiểu")
+                
+                # Hiển thị câu trắc nghiệm A-B-C-D
+                if q_type == "mcq":
+                    st.markdown(f"**Câu {idx + 1}** `[Trắc nghiệm - {level_tag}]`: {item['question']}")
+                    opts = item["options"]
+                    user_exam_answers[idx] = st.radio(
+                        f"Chọn đáp án câu {idx + 1}:",
+                        options=["A", "B", "C", "D"],
+                        format_func=lambda x, opt_dict=opts: f"{x}. {opt_dict[x]}",
+                        key=f"hybrid_mcq_{idx}",
+                        index=None
+                    )
+                # Hiển thị câu hỏi trả lời ngắn (Điền số)
+                else:
+                    st.markdown(f"**Câu {idx + 1}** `[Trả lời ngắn - {level_tag}]`: {item['question']}")
+                    user_exam_answers[idx] = st.text_input(
+                        f"Nhập kết quả câu {idx + 1} (dạng số, ví dụ 28.3 hoặc 4):",
+                        key=f"hybrid_sa_{idx}",
+                        placeholder="Điền đáp số tại đây..."
+                    )
+                st.write("")
+
+            btn_submit_exam = st.form_submit_button("🏁 Nộp Bài Kiểm Tra")
+            if btn_submit_exam:
+                st.session_state["exam_submitted"] = True
+                st.session_state["student_answers"] = user_exam_answers
+
+        # ================= CHẤM ĐIỂM TỰ ĐỘNG & BÁO CÁO NĂNG LỰC =================
+        if st.session_state.get("exam_submitted", False):
+            ans = st.session_state.get("student_answers", {})
+            dung = 0
+            tong_so = len(exam_list)
+
+            # Hàm chuẩn hóa số để so sánh (chấp nhận cả dấu phẩy và dấu chấm)
+            def is_same_number(s1, s2):
+                if not s1 or not s2:
+                    return False
+                clean1 = str(s1).strip().replace(",", ".")
+                clean2 = str(s2).strip().replace(",", ".")
+                try:
+                    return abs(float(clean1) - float(clean2)) < 0.05
+                except ValueError:
+                    return clean1.lower() == clean2.lower()
+
+            for idx, item in enumerate(exam_list):
+                q_type = item.get("type", "mcq")
+                user_val = ans.get(idx)
+                if q_type == "mcq":
+                    if user_val == item["correct_answer"]:
+                        dung += 1
+                else:
+                    if is_same_number(user_val, item["correct_answer"]):
+                        dung += 1
+
+            diem = round((dung / tong_so) * 10, 2)
+            st.markdown("---")
+            st.markdown("## 🎯 BÁO CÁO KẾT QUẢ ĐÁNH GIÁ NĂNG LỰC")
+
+            c_res1, c_res2, c_res3 = st.columns(3)
+            with c_res1:
+                st.metric("Điểm tổng kết", f"{diem} / 10")
+            with c_res2:
+                st.metric("Số câu trả lời đúng", f"{dung} / {tong_so}")
+            with c_res3:
+                ti_le = round((dung / tong_so) * 100, 1)
+                st.metric("Tỉ lệ hoàn thành", f"{ti_le}%")
+
+            if diem >= 8.0:
+                st.success("🌟 **Tuyệt vời!** Em hoàn thành xuất sắc cả phần trắc nghiệm lẫn bài toán tính toán trả lời ngắn.")
+            elif diem >= 6.5:
+                st.info("👍 **Khá tốt!** Hãy rèn luyện thêm kỹ năng tính toán chính xác ở các câu hỏi trả lời ngắn.")
+            else:
+                st.warning("⚠️ **Cần cố gắng:** Em hãy xem kỹ lại hướng dẫn giải các bài toán thực tế bên dưới nhé!")
+
+            # Bảng chi tiết đáp án & lời giải
+            with st.expander("📖 Xem bảng đối chiếu đáp án & Hướng dẫn giải chi tiết", expanded=True):
+                for idx, item in enumerate(exam_list):
+                    q_type = item.get("type", "mcq")
+                    user_val = ans.get(idx)
+                    correct_val = item["correct_answer"]
+                    
+                    if q_type == "mcq":
+                        is_corr = (user_val == correct_val)
+                    else:
+                        is_corr = is_same_number(user_val, correct_val)
+
+                    icon = "✅" if is_corr else "❌"
+                    display_type = "Trắc nghiệm" if q_type == "mcq" else "Trả lời ngắn"
+                    
+                    st.markdown(f"**Câu {idx + 1}** `[{display_type}]`: {icon} Em trả lời: **{user_val if user_val else 'Chưa điền/chọn'}** | Đáp án đúng: **{correct_val}**")
+                    st.caption(f"**Hướng dẫn giải:** {item['explanation']}")
+                    st.divider()
