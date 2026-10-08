@@ -309,12 +309,12 @@ with tab_luyentap:
 # ================= TAB 4: KIỂM TRA ĐÁNH GIÁ (TRẮC NGHIỆM + TRẢ LỜI NGẮN) =================
 with tab_kiemtra:
     st.subheader("Kiểm tra đánh giá năng lực theo cấu trúc đề thi mới (GDPT 2018)")
-    st.write("Đề thi kết hợp dạng **Trắc nghiệm nhiều lựa chọn** và **Câu hỏi trả lời ngắn**, sinh ngẫu nhiên từ ngân hàng 82 câu thực tế:")
+    st.write("Đề thi kết hợp **Trắc nghiệm nhiều lựa chọn** và **Câu hỏi trả lời ngắn**, sinh ngẫu nhiên từ ngân hàng 82 câu thực tế:")
 
     col_m1, col_m2 = st.columns(2)
     with col_m1:
         loai_de = st.selectbox(
-            "Chọn cấu trúc đề kiểm tra:",
+            "Chọn quy mô đề kiểm tra:",
             [
                 "Đề tiêu chuẩn 10 câu (8 Trắc nghiệm A-B-C-D + 2 Trả lời ngắn)",
                 "Đề tổng hợp 20 câu (16 Trắc nghiệm A-B-C-D + 4 Trả lời ngắn)"
@@ -322,18 +322,28 @@ with tab_kiemtra:
         )
     with col_m2:
         st.info("""
-        📋 **Cấu trúc tích hợp:**
-        - **Phần 1 (Trắc nghiệm 4 lựa chọn):** Đo lường kiến thức Nhận biết & Thông hiểu.
-        - **Phần 2 (Trả lời ngắn):** Tự điền đáp số (số thực/nguyên), đo lường năng lực Vận dụng & Vận dụng cao (bài toán thực tế, tìm số nghiệm, giá trị lớn nhất/nhỏ nhất).
+        📋 **Cấu trúc phân bổ:**
+        - **80% Trắc nghiệm 4 lựa chọn (A-B-C-D):** Đo lường kiến thức Nhận biết & Thông hiểu.
+        - **20% Câu hỏi trả lời ngắn (Điền số):** Đo lường năng lực Vận dụng & Vận dụng cao (bài toán thực tế, tìm số nghiệm, GTLN/GTNN).
         """)
 
-    # Đọc dữ liệu kho 82 câu
+    # Đọc dữ liệu kho 82 câu an toàn
     danh_sach_tat_ca_cau = []
-    if os.path.exists("KHO-DE.txt"):
+    ten_file_de = None
+    for fname in ["kho_de.txt", "kho_de.txt.txt", "Kho_de.txt"]:
+        if os.path.exists(fname):
+            ten_file_de = fname
+            break
+
+    if ten_file_de:
         try:
-            with open("KHO-DE.txt", "r", encoding="utf-8") as f:
+            with open(ten_file_de, "r", encoding="utf-8", errors="ignore") as f:
                 raw_text = f.read()
-                danh_sach_tat_ca_cau = [c.strip() for c in raw_text.split("Câu ") if c.strip()]
+                import re
+                cac_doan = re.split(r'(?i)câu\s+\d+[:\.]?', raw_text)
+                danh_sach_tat_ca_cau = [d.strip() for d in cac_doan if len(d.strip()) > 30]
+                if not danh_sach_tat_ca_cau:
+                    danh_sach_tat_ca_cau = [d.strip() for d in raw_text.split("\n\n") if len(d.strip()) > 30]
         except Exception:
             pass
 
@@ -341,33 +351,40 @@ with tab_kiemtra:
     if st.button("🚀 Khởi tạo đề kiểm tra mới (Có câu hỏi trả lời ngắn)"):
         if not client:
             st.error("Chưa cấu hình API Key trong mục Secrets.")
-        elif not danh_sach_tat_ca_cau:
-            st.warning("Chưa tìm thấy nội dung trong file kho_de.txt.")
         else:
-            tong_cau = 6 if "6 câu" in loai_de else 10
-            so_mcq = 4 if tong_cau == 6 else 7
-            so_sa = tong_cau - so_mcq
+            # Thiết lập tỉ lệ đúng theo yêu cầu:
+            if "10 câu" in loai_de:
+                tong_cau = 10
+                so_mcq = 8
+                so_sa = 2
+            else:
+                tong_cau = 20
+                so_mcq = 16
+                so_sa = 4
 
-            import random
-            so_mau = min(tong_cau, len(danh_sach_tat_ca_cau))
-            cac_cau_mau = random.sample(danh_sach_tat_ca_cau, so_mau)
-            mau_context = "\n---\n".join([f"Mẫu {i+1}: Câu " + c for i, c in enumerate(cac_cau_mau)])
+            # Bốc ngẫu nhiên câu mẫu từ kho để định hướng AI
+            mau_context = ""
+            if danh_sach_tat_ca_cau:
+                import random
+                cac_cau_chon = random.sample(danh_sach_tat_ca_cau, min(3, len(danh_sach_tat_ca_cau)))
+                mau_context = "\n---\n".join(cac_cau_chon)
 
-            with st.spinner(f"AI đang biên soạn đề gồm {so_mcq} câu trắc nghiệm và {so_sa} câu trả lời ngắn..."):
+            with st.spinner(f"⚡ Đang khởi tạo đề kiểm tra {tong_cau} câu ({so_mcq} trắc nghiệm + {so_sa} trả lời ngắn)..."):
                 prompt_matrix = f"""
                 Bạn là Trưởng ban Khảo thí môn Toán THPT Việt Nam (Chương trình GDPT 2018).
-                Dưới đây là {so_mau} câu trích mẫu từ ngân hàng đề kiểm tra thực tế (có cả câu trắc nghiệm và câu tính toán trả lời ngắn):
+                Dưới đây là một số câu mẫu từ ngân hàng đề kiểm tra thực tế:
                 ---
                 {mau_context}
                 ---
 
                 Nhiệm vụ:
-                Hãy tạo 1 ĐỀ KIỂM TRA CHƯƠNG 1 TOÁN 11 gồm đúng {tong_cau} câu:
-                - {so_mcq} câu TRẮC NGHIỆM 4 PHƯƠNG ÁN (type: "mcq"): mức độ Nhận biết, Thông hiểu.
-                - {so_sa} câu TRẢ LỜI NGẮN (type: "short_answer"): mức độ Vận dụng, Vận dụng cao (yêu cầu học sinh tính ra con số cụ thể, ví dụ: số nghiệm, chiều rộng mét, thời điểm t...). Đáp án đúng bắt buộc là MỘT CON SỐ CỤ THỂ (ví dụ: "28.3", "4", "-1", "12").
-                - Toàn bộ công thức toán học bắt buộc viết bằng LaTeX chuẩn trong cặp $...$ hoặc $$...$$.
+                Hãy tạo 1 đề kiểm tra Chương 1 Toán 11 gồm ĐÚNG {tong_cau} CÂU:
+                - {so_mcq} câu đầu tiên: dạng TRẮC NGHIỆM 4 LỰA CHỌN (type: "mcq"), mức độ Nhận biết, Thông hiểu.
+                - {so_sa} câu tiếp theo: dạng TRẢ LỜI NGẮN (type: "short_answer"), mức độ Vận dụng, Vận dụng cao (bài toán ứng dụng thực tế hoặc tìm số nghiệm, giá trị lớn nhất/nhỏ nhất). Đáp án đúng bắt buộc là MỘT CON SỐ CỤ THỂ (ví dụ: "28.3", "4", "-1", "12").
+                - Công thức toán viết bằng LaTeX trong $...$.
+                - Lời giải (explanation) ngắn gọn, rõ ràng.
 
-                Trả về đúng định dạng JSON thuần là một mảng gồm {tong_cau} đối tượng:
+                Trả về đúng định dạng JSON thuần là danh sách gồm {tong_cau} đối tượng:
                 [
                   {{
                     "id": 1,
@@ -376,16 +393,16 @@ with tab_kiemtra:
                     "question": "Nội dung câu trắc nghiệm...",
                     "options": {{"A": "...", "B": "...", "C": "...", "D": "..."}},
                     "correct_answer": "A",
-                    "explanation": "Giải thích chi tiết..."
+                    "explanation": "Giải thích ngắn gọn..."
                   }},
                   {{
                     "id": {so_mcq + 1},
                     "type": "short_answer",
                     "level": "Vận dụng",
-                    "question": "Nội dung bài toán tính toán ra con số...",
+                    "question": "Nội dung câu hỏi trả lời ngắn...",
                     "options": null,
                     "correct_answer": "28.3",
-                    "explanation": "Giải thích chi tiết các bước tính ra kết quả..."
+                    "explanation": "Giải thích ngắn gọn các bước tính ra đáp số..."
                   }}
                 ]
                 """
@@ -410,22 +427,36 @@ with tab_kiemtra:
                     except Exception:
                         continue
 
+                # Dự phòng nếu máy chủ mạng bận đột xuất
                 if not exam_success:
-                    st.warning("Máy chủ AI tạm thời đang bận xử lý lưu lượng cao. Em hãy thử bấm lại nút nhé!")
+                    st.info("💡 Đường truyền đang bận, hệ thống kích hoạt bộ đề chuẩn 10 câu (8 trắc nghiệm + 2 trả lời ngắn) có sẵn:")
+                    st.session_state["exam_data"] = [
+                        {"id": 1, "type": "mcq", "level": "Nhận biết", "question": "Cho $0 < \\alpha < \\frac{\\pi}{2}$. Khẳng định nào sau đây đúng?", "options": {"A": "$\\sin \\alpha > 0$", "B": "$\\cos \\alpha < 0$", "C": "$\\tan \\alpha < 0$", "D": "$\\cot \\alpha < 0$"}, "correct_answer": "A", "explanation": "Góc phần tư thứ I thì sin, cos, tan, cot đều dương."},
+                        {"id": 2, "type": "mcq", "level": "Nhận biết", "question": "Tập xác định của hàm số $y = \\tan x$ là:", "options": {"A": "$D = \\mathbb{R} \\setminus \\left\\{\\frac{\\pi}{2} + k\\pi, k \\in \\mathbb{Z}\\right\\}$", "B": "$D = \\mathbb{R} \\setminus \\{k\\pi, k \\in \\mathbb{Z}\\}$", "C": "$D = \\mathbb{R} \\setminus \\left\\{\\frac{\\pi}{4} + k\\pi, k \\in \\mathbb{Z}\\right\\}$", "D": "$D = \\mathbb{R}$"}, "correct_answer": "A", "explanation": "$\\cos x \\neq 0 \\Leftrightarrow x \\neq \\frac{\\pi}{2} + k\\pi$."},
+                        {"id": 3, "type": "mcq", "level": "Nhận biết", "question": "Hàm số nào sau đây là hàm số chẵn?", "options": {"A": "$y = \\cos x$", "B": "$y = \\sin x$", "C": "$y = \\tan x$", "D": "$y = \\cot x$"}, "correct_answer": "A", "explanation": "Chỉ có $\\cos(-x) = \\cos x$ là hàm chẵn."},
+                        {"id": 4, "type": "mcq", "level": "Thông hiểu", "question": "Nghiệm của phương trình $\\cos x = 1$ là:", "options": {"A": "$x = k2\\pi$ ($k \\in \\mathbb{Z}$)", "B": "$x = k\\pi$ ($k \\in \\mathbb{Z}$)", "C": "$x = \\frac{\\pi}{2} + k2\\pi$ ($k \\in \\mathbb{Z}$)", "D": "$x = \\pi + k2\\pi$ ($k \\in \\mathbb{Z}$)"}, "correct_answer": "A", "explanation": "$\\cos x = 1 \\Leftrightarrow x = k2\\pi$."},
+                        {"id": 5, "type": "mcq", "level": "Thông hiểu", "question": "Tập giá trị của hàm số $y = 3\\sin 2x - 1$ là:", "options": {"A": "$[-4; 2]$", "B": "$[-3; 3]$", "C": "$[-2; 4]$", "D": "$[-1; 5]$"}, "correct_answer": "A", "explanation": "Vì $-1 \\le \\sin 2x \\le 1$ nên $-4 \\le 3\\sin 2x - 1 \\le 2$."},
+                        {"id": 6, "type": "mcq", "level": "Thông hiểu", "question": "Chu kỳ tuần hoàn của hàm số $y = \\sin 2x$ là:", "options": {"A": "$\\pi$", "B": "$2\\pi$", "C": "$\\frac{\\pi}{2}$", "D": "$4\\pi$"}, "correct_answer": "A", "explanation": "$T = \\frac{2\\pi}{\vert{}a\vert{}} = \\frac{2\\pi}{2} = \\pi$."},
+                        {"id": 7, "type": "mcq", "level": "Thông hiểu", "question": "Phương trình $\\tan x = \\sqrt{3}$ có họ nghiệm là:", "options": {"A": "$x = \\frac{\\pi}{3} + k\\pi$ ($k \\in \\mathbb{Z}$)", "B": "$x = \\frac{\\pi}{6} + k\\pi$ ($k \\in \\mathbb{Z}$)", "C": "$x = \\frac{\\pi}{3} + k2\\pi$ ($k \\in \\mathbb{Z}$)", "D": "$x = -\\frac{\\pi}{3} + k\\pi$ ($k \\in \\mathbb{Z}$)"}, "correct_answer": "A", "explanation": "$\\tan x = \\tan \\frac{\\pi}{3} \\Leftrightarrow x = \\frac{\\pi}{3} + k\\pi$."},
+                        {"id": 8, "type": "mcq", "level": "Thông hiểu", "question": "Giá trị của $\\cos 75^\\circ$ là:", "options": {"A": "$\\frac{\\sqrt{6}-\\sqrt{2}}{4}$", "B": "$\\frac{\\sqrt{6}+\\sqrt{2}}{4}$", "C": "$\\frac{\\sqrt{2}-\\sqrt{6}}{4}$", "D": "$\\frac{1}{2}$"}, "correct_answer": "A", "explanation": "$\\cos(45^\\circ + 30^\\circ) = \\cos 45^\\circ\\cos 30^\\circ - \\sin 45^\\circ\\sin 30^\\circ = \\frac{\\sqrt{6}-\\sqrt{2}}{4}$."},
+                        {"id": 9, "type": "short_answer", "level": "Vận dụng", "question": "Tìm số nghiệm của phương trình $\\sin x = 0$ trên đoạn $[0; 3\\pi]$.", "options": None, "correct_answer": "4", "explanation": "$\\sin x = 0 \\Leftrightarrow x = k\\pi$. Trên $[0; 3\\pi]$ có các nghiệm: $0, \\pi, 2\\pi, 3\\pi$ (tổng cộng 4 nghiệm)."},
+                        {"id": 10, "type": "short_answer", "level": "Vận dụng cao", "question": "Mặt cắt một con kênh có dạng cung đồ thị $y = 4{,}8\\sin\\left(\\frac{x}{9}\\right)$ (với $x$ tính bằng mét). Tính bề rộng mặt kênh giữa hai bờ kề nhau khi mực nước ở mức $y = 0$ (làm tròn kết quả đến hàng phần mười).", "options": None, "correct_answer": "28.3", "explanation": "Khoảng cách giữa hai điểm kề nhau bằng nửa chu kỳ: $9\\pi \\approx 28{,}27 \\approx 28{,}3$ mét."}
+                    ]
+                    st.session_state["exam_submitted"] = False
+                    st.session_state["student_answers"] = {}
 
-    # ================= GIAO DIỆN LÀM BÀI THI =================
+    # ================= GIAO DIỆN LÀM BÀI =================
     if "exam_data" in st.session_state and st.session_state["exam_data"]:
         exam_list = st.session_state["exam_data"]
         st.markdown("---")
-        st.markdown(f"### 📋 BÀI KIỂM TRA ĐÁNH GIÁ NĂNG LỰC ({len(exam_list)} câu)")
+        st.markdown(f"### 📋 BÀI KIỂM TRA ĐÁNH GIÁ NĂNG LỰC ({len(exam_list)} CÂU)")
 
         with st.form("hybrid_exam_form"):
             user_exam_answers = {}
             for idx, item in enumerate(exam_list):
                 q_type = item.get("type", "mcq")
                 level_tag = item.get("level", "Thông hiểu")
-                
-                # Hiển thị câu trắc nghiệm A-B-C-D
+
                 if q_type == "mcq":
                     st.markdown(f"**Câu {idx + 1}** `[Trắc nghiệm - {level_tag}]`: {item['question']}")
                     opts = item["options"]
@@ -436,13 +467,12 @@ with tab_kiemtra:
                         key=f"hybrid_mcq_{idx}",
                         index=None
                     )
-                # Hiển thị câu hỏi trả lời ngắn (Điền số)
                 else:
                     st.markdown(f"**Câu {idx + 1}** `[Trả lời ngắn - {level_tag}]`: {item['question']}")
                     user_exam_answers[idx] = st.text_input(
-                        f"Nhập kết quả câu {idx + 1} (dạng số, ví dụ 28.3 hoặc 4):",
+                        f"Nhập đáp số câu {idx + 1} (dạng số, ví dụ 28.3 hoặc 4):",
                         key=f"hybrid_sa_{idx}",
-                        placeholder="Điền đáp số tại đây..."
+                        placeholder="Điền kết quả vào đây..."
                     )
                 st.write("")
 
@@ -451,13 +481,12 @@ with tab_kiemtra:
                 st.session_state["exam_submitted"] = True
                 st.session_state["student_answers"] = user_exam_answers
 
-        # ================= CHẤM ĐIỂM TỰ ĐỘNG & BÁO CÁO NĂNG LỰC =================
+        # ================= CHẤM ĐIỂM & BÁO CÁO PHÂN TÍCH =================
         if st.session_state.get("exam_submitted", False):
             ans = st.session_state.get("student_answers", {})
             dung = 0
             tong_so = len(exam_list)
 
-            # Hàm chuẩn hóa số để so sánh (chấp nhận cả dấu phẩy và dấu chấm)
             def is_same_number(s1, s2):
                 if not s1 or not s2:
                     return False
@@ -486,25 +515,24 @@ with tab_kiemtra:
             with c_res1:
                 st.metric("Điểm tổng kết", f"{diem} / 10")
             with c_res2:
-                st.metric("Số câu trả lời đúng", f"{dung} / {tong_so}")
+                st.metric("Số câu đúng", f"{dung} / {tong_so}")
             with c_res3:
                 ti_le = round((dung / tong_so) * 100, 1)
                 st.metric("Tỉ lệ hoàn thành", f"{ti_le}%")
 
             if diem >= 8.0:
-                st.success("🌟 **Tuyệt vời!** Em hoàn thành xuất sắc cả phần trắc nghiệm lẫn bài toán tính toán trả lời ngắn.")
+                st.success("🌟 **Xuất sắc!** Em làm chủ rất tốt cả phần trắc nghiệm phương án lẫn giải toán trả lời ngắn.")
             elif diem >= 6.5:
-                st.info("👍 **Khá tốt!** Hãy rèn luyện thêm kỹ năng tính toán chính xác ở các câu hỏi trả lời ngắn.")
+                st.info("👍 **Khá tốt!** Hãy rèn thêm các bài toán ứng dụng thực tế và tính toán cẩn thận hơn.")
             else:
-                st.warning("⚠️ **Cần cố gắng:** Em hãy xem kỹ lại hướng dẫn giải các bài toán thực tế bên dưới nhé!")
+                st.warning("⚠️ **Cần củng cố:** Em nên mở lại **Tab 1 & Tab 2** để xem lại lý thuyết và làm lại bài nhé!")
 
-            # Bảng chi tiết đáp án & lời giải
-            with st.expander("📖 Xem bảng đối chiếu đáp án & Hướng dẫn giải chi tiết", expanded=True):
+            with st.expander("📖 Xem bảng đối chiếu đáp án & Lời giải chi tiết", expanded=True):
                 for idx, item in enumerate(exam_list):
                     q_type = item.get("type", "mcq")
                     user_val = ans.get(idx)
                     correct_val = item["correct_answer"]
-                    
+
                     if q_type == "mcq":
                         is_corr = (user_val == correct_val)
                     else:
@@ -512,7 +540,7 @@ with tab_kiemtra:
 
                     icon = "✅" if is_corr else "❌"
                     display_type = "Trắc nghiệm" if q_type == "mcq" else "Trả lời ngắn"
-                    
-                    st.markdown(f"**Câu {idx + 1}** `[{display_type}]`: {icon} Em trả lời: **{user_val if user_val else 'Chưa điền/chọn'}** | Đáp án đúng: **{correct_val}**")
-                    st.caption(f"**Hướng dẫn giải:** {item['explanation']}")
+
+                    st.markdown(f"**Câu {idx + 1}** `[{display_type}]`: {icon} Em chọn/nhập: **{user_val if user_val else 'Chưa làm'}** | Đáp án đúng: **{correct_val}**")
+                    st.caption(f"**Lời giải:** {item['explanation']}")
                     st.divider()
