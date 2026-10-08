@@ -13,7 +13,7 @@ st.set_page_config(
 )
 
 st.title("ÔN TẬP & KHẢO THÍ CÁ NHÂN HÓA-LỚP TOÁN CÔ HÀ")
-st.caption("Chương 1: Hàm số lượng giác và Phương trình lượng giác | Ứng dụng AI Hỗ trợ Giảng dạy & Tự học")
+st.caption("CHƯƠNG 1: HÀM SỐ LƯỢNG GIÁC VÀ PHƯƠNG TRÌNH LƯỢNG GIÁC | Ứng dụng AI Hỗ trợ Giảng dạy & Tự học")
 
 # 2. Quản lý API Key an toàn
 api_key = None
