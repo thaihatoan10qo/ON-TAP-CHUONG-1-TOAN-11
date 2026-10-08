@@ -309,7 +309,7 @@ with tab_luyentap:
 # ================= TAB 4: KIỂM TRA ĐÁNH GIÁ (TRẮC NGHIỆM + TRẢ LỜI NGẮN) =================
 with tab_kiemtra:
     st.subheader("Kiểm tra đánh giá năng lực theo cấu trúc đề thi mới (GDPT 2018)")
-    st.write("Đề thi kết hợp **Trắc nghiệm nhiều lựa chọn** và **Câu hỏi trả lời ngắn**, sinh ngẫu nhiên từ ngân hàng 82 câu thực tế:")
+    st.write("Đề thi kết hợp **Trắc nghiệm nhiều lựa chọn** và **Câu hỏi trả lời ngắn**")
 
     col_m1, col_m2 = st.columns(2)
     with col_m1:
