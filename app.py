@@ -232,12 +232,18 @@ with tab_luyentap:
         q = st.session_state["quiz"]
         st.markdown("---")
         st.markdown(f"**Câu hỏi:** {q['question']}")
-choice = st.radio(
+# Hàm hiển thị phương án trắc nghiệm chuẩn LaTeX không bị lỗi dấu gạch chéo
+        def hien_thi_lua_chon(k):
+            val = str(q['options'][k]).strip()
+            if not val.startswith('$'):
+                val = f"${val}$"
+            return f"**{k}.** {val}"
+
+        choice = st.radio(
             "Chọn đáp án đúng:",
             options=["A", "B", "C", "D"],
-            format_func=lambda x: f"**{x}.** {q['options'][x] if str(q['options'][x]).strip().startswith('$') else f'${q[\"options\"][x]}$'}"
+            format_func=hien_thi_lua_chon
         )
-       
 
         if st.button("Nộp bài & Kiểm tra đáp án"):
             st.session_state["submitted"] = True
