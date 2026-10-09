@@ -228,7 +228,7 @@ with tab_luyentap:
         choice = st.radio(
             "Chọn đáp án của em:",
             ["A", "B", "C", "D"],
-            format_func=lambda x: f"{x}. {q['options'][x]}"
+            format_func=lambda x, opt_dict=opts: f"**{x}.** {format_latex(opt_dict[x])}",            
         )
 
         if st.button("Nộp bài & Kiểm tra đáp án"):
@@ -306,6 +306,14 @@ with tab_luyentap:
 
                         st.markdown(tutor_reply)
                         st.session_state["chat_history"].append({"role": "assistant", "content": tutor_reply})
+def format_latex(text):
+    if not text:
+        return ""
+    text_str = str(text).strip()
+    # Nếu chuỗi chứa ký tự latex (như \mathbb, \frac, \pi, \setminus...) mà chưa có dấu $ bao quanh
+    if "\\" in text_str and not text_str.startswith("$") and not text_str.endswith("$"):
+        return f"${text_str}$"
+    return text_str
 # ================= TAB 4: KIỂM TRA ĐÁNH GIÁ (TRẮC NGHIỆM + TRẢ LỜI NGẮN) =================
 with tab_kiemtra:
     st.subheader("Kiểm tra đánh giá năng lực theo cấu trúc đề thi mới (GDPT 2018)")
