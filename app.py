@@ -236,7 +236,7 @@ with tab_luyentap:
         choice = st.radio(
             "Chọn đáp án của em:",
             ["A", "B", "C", "D"],
-            format_func=lambda x, opt_dict=opts: f"**{x}.** {format_latex(opt_dict[x])}",            
+            format_func=lambda x, opt_dict=opts: f"**{x}.** {opt_dict[x] if str(opt_dict[x]).strip().startswith('$') else f'${opt_dict[x]}$'}",           
         )
 
         if st.button("Nộp bài & Kiểm tra đáp án"):
