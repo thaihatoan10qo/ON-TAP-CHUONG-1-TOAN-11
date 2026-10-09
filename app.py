@@ -2,6 +2,14 @@ import streamlit as st
 import json
 import os
 import streamlit.components.v1 as components
+def format_latex(text):
+    if not text:
+        return ""
+    text_str = str(text).strip()
+    # Nếu có ký hiệu latex mà chưa bọc trong $...$ thì tự động thêm dấu $
+    if "\\" in text_str and not text_str.startswith("$") and not text_str.endswith("$"):
+        return f"${text_str}$"
+    return text_str
 from google import genai
 from google.genai import types
 
