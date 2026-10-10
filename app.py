@@ -95,7 +95,7 @@ st.markdown("""
 
 <div class="school-banner">
     <h1>HỆ THỐNG ÔN TẬP & KHẢO THÍ CÁ NHÂN HÓA</h1>
-    <p>Lớp Toán Cô Hà</p>
+    <p>LỚP TOÁN CÔ HÀ</p>
 </div>
 """, unsafe_allow_html=True)
 
