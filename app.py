@@ -14,7 +14,99 @@ from google import genai
 from google.genai import types
 
 # 1. Cấu hình giao diện
-st.set_page_config(
+st.set_page_config
+# ================= GIAO DIỆN NÂNG CAO (CUSTOM CSS) =================
+st.markdown("""
+<style>
+    /* 1. Phông chữ và khoảng cách chung */
+    @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap');
+    
+    html, body, [class*="css"] {
+        font-family: 'Be Vietnam Pro', sans-serif;
+    }
+    
+    /* 2. Tiêu đề ứng dụng nổi bật với hiệu ứng Gradient */
+    .main-header {
+        background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+        color: white;
+        padding: 24px 20px;
+        border-radius: 16px;
+        margin-bottom: 25px;
+        box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3);
+        text-align: center;
+    }
+    .main-header h1 {
+        color: #FFFFFF !important;
+        font-weight: 700;
+        font-size: 1.8rem;
+        margin-bottom: 6px;
+    }
+    .main-header p {
+        color: #E0E7FF !important;
+        font-size: 0.95rem;
+        margin-bottom: 0px;
+    }
+
+    /* 3. Thanh Tabs hiện đại */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background-color: #F1F5F9;
+        padding: 6px;
+        border-radius: 12px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-weight: 600;
+        color: #475569;
+        border: none;
+        transition: all 0.2s ease-in-out;
+    }
+    .stTabs [aria-selected="true"] {
+        background-color: #FFFFFF !important;
+        color: #1D4ED8 !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    /* 4. Tùy biến Nút bấm (Button) */
+    .stButton > button {
+        border-radius: 10px;
+        font-weight: 600;
+        border: none;
+        padding: 8px 20px;
+        background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+        transition: all 0.2s ease;
+    }
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
+        color: white;
+    }
+
+    /* 5. Khung thẻ hiển thị câu hỏi (Question Card) */
+    .quiz-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-left: 5px solid #3B82F6;
+        border-radius: 12px;
+        padding: 18px 20px;
+        margin: 15px 0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    /* 6. Hộp kết quả điểm số (Metrics) */
+    div[data-testid="stMetric"] {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 12px 16px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    }
+</style>
+""", unsafe_allow_html=True)
+(
     page_title="Ôn Tập & Luyện Thi Toán 11 - Chương 1",
     page_icon="📐",
     layout="wide"
