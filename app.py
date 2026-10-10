@@ -70,7 +70,6 @@ with tab_mophong:
 with tab_lythuyet:
     # Đoạn mã kiểm tra danh sách file thực tế trong thư mục gốc
     st.write("📂 **Các file hiện có trên máy chủ:**", [f for f in os.listdir(".") if not f.startswith(".")])
-with tab_lythuyet:
     st.subheader("Hệ thống hóa kiến thức trọng tâm bằng Infographic")
     st.write("Học sinh chọn bài học để xem sơ đồ tóm tắt lý thuyết:")
 
