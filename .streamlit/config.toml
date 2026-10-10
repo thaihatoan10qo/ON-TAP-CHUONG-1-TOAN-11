@@ -1,0 +1,6 @@
+[theme]
+primaryColor = "#004085"             # Xanh navy chuẩn học đường
+backgroundColor = "#FDFEFE"          # Nền trắng ngà dịu mắt
+secondaryBackgroundColor = "#F0F4F8" # Nền khung xám lam học thuật
+textColor = "#1C2D42"                # Chữ xanh đen đậm rõ nét
+font = "sans serif"
