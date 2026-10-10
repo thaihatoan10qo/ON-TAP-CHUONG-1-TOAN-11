@@ -13,104 +13,91 @@ def format_latex(text):
 from google import genai
 from google.genai import types
 
-# 1. Cấu hình giao diện
+# 1. Cấu hình trang (bắt buộc phải có đủ dấu đóng ngoặc tròn ')')
 st.set_page_config(
-# ================= GIAO DIỆN NÂNG CAO (CUSTOM CSS) =================
+    page_title="Ôn Tập & Luyện Thi Toán 11 - Chương 1",
+    page_icon="📐",
+    layout="wide"
+)
+
+# 2. Giao diện phong cách học đường (chú ý đúng 3 dấu ngoặc kép """ ở đầu và cuối)
 st.markdown("""
 <style>
-    /* 1. Phông chữ và khoảng cách chung */
     @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap');
     
     html, body, [class*="css"] {
         font-family: 'Be Vietnam Pro', sans-serif;
     }
-    
-    /* 2. Tiêu đề ứng dụng nổi bật với hiệu ứng Gradient */
-    .main-header {
-        background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
-        color: white;
-        padding: 24px 20px;
-        border-radius: 16px;
-        margin-bottom: 25px;
-        box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3);
+
+    /* Banner trường học */
+    .school-banner {
+        background: linear-gradient(135deg, #0A2540 0%, #174268 100%);
+        border-bottom: 4px solid #D97706;
+        color: #FFFFFF;
+        padding: 22px 20px;
+        border-radius: 12px;
+        margin-bottom: 22px;
+        box-shadow: 0 4px 15px rgba(10, 37, 64, 0.15);
         text-align: center;
     }
-    .main-header h1 {
+    .school-banner h1 {
         color: #FFFFFF !important;
         font-weight: 700;
-        font-size: 1.8rem;
+        font-size: 1.7rem;
         margin-bottom: 6px;
     }
-    .main-header p {
-        color: #E0E7FF !important;
+    .school-banner p {
+        color: #FBBF24 !important;
         font-size: 0.95rem;
+        font-weight: 500;
         margin-bottom: 0px;
     }
 
-    /* 3. Thanh Tabs hiện đại */
+    /* Thanh Tabs học vụ */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
-        background-color: #F1F5F9;
-        padding: 6px;
-        border-radius: 12px;
+        gap: 6px;
+        background-color: #E2E8F0;
+        padding: 5px;
+        border-radius: 10px;
+        border: 1px solid #CBD5E1;
     }
     .stTabs [data-baseweb="tab"] {
         border-radius: 8px;
-        padding: 8px 16px;
+        padding: 8px 14px;
         font-weight: 600;
-        color: #475569;
+        color: #334155;
         border: none;
-        transition: all 0.2s ease-in-out;
+        transition: all 0.2s ease;
     }
     .stTabs [aria-selected="true"] {
-        background-color: #FFFFFF !important;
-        color: #1D4ED8 !important;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        background-color: #0A2540 !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.12);
     }
 
-    /* 4. Tùy biến Nút bấm (Button) */
+    /* Nút bấm */
     .stButton > button {
-        border-radius: 10px;
+        border-radius: 8px;
         font-weight: 600;
-        border: none;
-        padding: 8px 20px;
-        background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
-        color: white;
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+        border: 1px solid #B45309;
+        background: linear-gradient(180deg, #1E3A5F 0%, #0F2744 100%);
+        color: #FFFFFF;
+        padding: 8px 18px;
+        box-shadow: 0 2px 6px rgba(15, 39, 68, 0.2);
         transition: all 0.2s ease;
     }
     .stButton > button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
-        color: white;
-    }
-
-    /* 5. Khung thẻ hiển thị câu hỏi (Question Card) */
-    .quiz-card {
-        background: #FFFFFF;
-        border: 1px solid #E2E8F0;
-        border-left: 5px solid #3B82F6;
-        border-radius: 12px;
-        padding: 18px 20px;
-        margin: 15px 0;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    }
-
-    /* 6. Hộp kết quả điểm số (Metrics) */
-    div[data-testid="stMetric"] {
-        background: #F8FAFC;
-        border: 1px solid #E2E8F0;
-        border-radius: 12px;
-        padding: 12px 16px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+        background: linear-gradient(180deg, #254774 0%, #153459 100%);
+        border-color: #F59E0B;
+        color: #FFFFFF;
     }
 </style>
-""", unsafe_allow_html=True)
 
-    page_title="Ôn Tập & Luyện Thi Toán 11 - Chương 1",
-    page_icon="📐",
-    layout="wide"
-)
+<div class="school-banner">
+    <h1>HỆ THỐNG ÔN TẬP & ĐÁNH GIÁ NĂNG LỰC TOÁN 11</h1>
+    <p>Chương trình GDPT 2018 | Lớp Toán Trực Tuyến - Trường THPT</p>
+</div>
+""", unsafe_allow_html=True)
 
 st.title("ÔN TẬP & KHẢO THÍ CÁ NHÂN HÓA-LỚP TOÁN CÔ HÀ")
 st.caption("CHƯƠNG 1: HÀM SỐ LƯỢNG GIÁC VÀ PHƯƠNG TRÌNH LƯỢNG GIÁC | Ứng dụng AI Hỗ trợ Giảng dạy & Tự học")
