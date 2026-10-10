@@ -14,7 +14,7 @@ from google import genai
 from google.genai import types
 
 # 1. Cấu hình giao diện
-st.set_page_config
+st.set_page_config(
 # ================= GIAO DIỆN NÂNG CAO (CUSTOM CSS) =================
 st.markdown("""
 <style>
@@ -106,7 +106,7 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
-(
+
     page_title="Ôn Tập & Luyện Thi Toán 11 - Chương 1",
     page_icon="📐",
     layout="wide"
