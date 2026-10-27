@@ -623,11 +623,10 @@ if btn_gen:
       for c in ngan_hang_toan_bo
       if c["chu_de"] == topic and c["muc_do"] == level
   ]
-
-  import random
+import random
 
 if danh_sach_loc:
-    # Khởi tạo câu hỏi ngẫu nhiên trong session_state để cố định câu hỏi khi học sinh làm bài
+    # Khởi tạo câu hỏi ngẫu nhiên trong session_state
     if "current_question" not in st.session_state or st.session_state.get("selected_topic_cache") != topic or st.session_state.get("selected_level_cache") != level:
         st.session_state.current_question = random.choice(danh_sach_loc)
         st.session_state.selected_topic_cache = topic
@@ -647,14 +646,16 @@ if danh_sach_loc:
             if options.get(key):
                 st.write(options[key])
                 
-        # Nút bấm để đổi sang câu hỏi khác trong danh sách đã lọc
+        # Nút bấm để đổi sang câu hỏi khác
         if st.button("🔄 Đổi câu hỏi khác"):
             st.session_state.current_question = random.choice(danh_sach_loc)
             st.rerun()
             
         st.markdown("---")
 else:
+    # Khối else nằm ở tận cùng, không bị lệnh elif nào bám theo sau nữa
     st.warning("Không tìm thấy câu hỏi phù hợp với chủ đề và mức độ này trong ngân hàng!")
+  
 
 # 2. XỬ LÝ NÚT: Tạo câu tương tự (DÙNG AI GEMINI)
 elif btn_clone:
