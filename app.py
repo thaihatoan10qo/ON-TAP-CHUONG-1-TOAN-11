@@ -588,6 +588,9 @@ danh_sach_loc = [
     and (selected_diff_clean == c["muc_do"].replace(" ", "").lower())
 ]
 
+# Dòng kiểm tra nhanh xem file đã đọc được bao nhiêu câu
+st.write("Tổng số câu đọc được từ file:", len(ngan_hang_toan_bo))
+
   # 1. XỬ LÝ NÚT: Lấy câu hỏi trực tiếp từ ngân hàng đề (KHÔNG DÙNG AI)
 if btn_gen:
   ngan_hang_toan_bo = tai_va_loc_ngan_hang_de("kho_de.txt")
