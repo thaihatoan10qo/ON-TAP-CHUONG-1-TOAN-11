@@ -497,7 +497,7 @@ with tab_luyentap:
     with col_btn2:
         btn_clone = st.button("🔁 Tạo câu tương tự dạng vừa làm")
 
-   import os
+import os
 import random
 import re
 
