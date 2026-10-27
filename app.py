@@ -608,8 +608,7 @@ Quy trình tư duy bắt buộc (Chain-of-Thought) khi thiết kế câu hỏi:
 7. Luôn trả về đúng định dạng JSON thuần, không bao bọc trong ký hiệu markdown ```json.
 """
 
-                if btn_clone:
-                    prompt = f"""
+    prompt = f"""
 Câu hỏi gốc học sinh vừa làm:
 "{st.session_state['current_question']}"
 
