@@ -5,6 +5,7 @@ import streamlit.components.v1 as components
 import requests
 import time
 import re
+import random
 def chuan_hoa(s):
     # Hàm loại bỏ toàn bộ khoảng trắng, dấu câu, ký tự đặc biệt, chỉ giữ lại chữ và số
     return re.sub(r'[^a-zA-Z0-9à-ỹÀ-Ỹ]', '', str(s).lower())
