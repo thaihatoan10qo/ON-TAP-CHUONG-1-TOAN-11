@@ -727,19 +727,19 @@ with tab_luyentap:
                                 )
                             )
                             
-                        new_q = json.loads(response.text)
-                        st.session_state.current_question = {
-                            "chu_de": topic,
-                            "muc_do": level,
-                            "noi_dung": new_q.get("noi_dung"),
-                            "options": new_q.get("options"),
-                            "dap_an": new_q.get("dap_an"),
-                            "loi_giai": new_q.get("loi_giai")
-                        }
-                        st.session_state.started_practice = True
-                        q_hash_new = hash(str(st.session_state.current_question['noi_dung']))
-                        st.session_state[f"submitted_{q_hash_new}"] = False
-                        st.success("✨ AI đã sáng tác thành công câu hỏi tương tự dựa trên kho đề cho em!")
+                            new_q = json.loads(response.text)
+                            st.session_state.current_question = {
+                                "chu_de": topic,
+                                "muc_do": level,
+                                "noi_dung": new_q.get("noi_dung"),
+                                "options": new_q.get("options"),
+                                "dap_an": new_q.get("dap_an"),
+                                "loi_giai": new_q.get("loi_giai")
+                            }
+                            st.session_state.started_practice = True
+                            q_hash_new = hash(str(st.session_state.current_question['noi_dung']))
+                            st.session_state[f"submitted_{q_hash_new}"] = False
+                            st.success("✨ AI đã sáng tác thành công câu hỏi tương tự dựa trên kho đề cho em!")
                         except Exception:
                         st.warning("💡 Hệ thống AI đang bận, em lấy câu hỏi tiếp theo từ kho đề nhé!")
 
