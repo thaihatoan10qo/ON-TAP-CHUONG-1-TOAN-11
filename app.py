@@ -501,7 +501,7 @@ import os
 import random
 import re
 
-def tai_va_loc_ngan_hang_de(file_path="kho_de.txt"):
+def tai_va_loc_ngan_hang_de(file_path="KHO-DE.txt"):
     danh_sach_cau_hoi = []
     if not os.path.exists(file_path):
         return danh_sach_cau_hoi
@@ -597,7 +597,7 @@ st.write("Tổng số câu đọc được từ file:", len(ngan_hang_toan_bo))
 
   # 1. XỬ LÝ NÚT: Lấy câu hỏi trực tiếp từ ngân hàng đề (KHÔNG DÙNG AI)
 if btn_gen:
-  ngan_hang_toan_bo = tai_va_loc_ngan_hang_de("kho_de.txt")
+  ngan_hang_toan_bo = tai_va_loc_ngan_hang_de("KHO-DE.txt")
 
   # Lọc theo đúng Chủ đề và Mức độ đang chọn trên giao diện
   danh_sach_loc = [
