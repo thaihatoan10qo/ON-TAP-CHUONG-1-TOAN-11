@@ -596,7 +596,7 @@ with tab_luyentap:
     # 2. Hai nút chức năng nằm ngang gọn gàng
     col_btn1, col_btn2 = st.columns(2)
     # Xử lý hiển thị phần nhập đáp án (Trắc nghiệm hoặc Trả lời ngắn)
-        is_short_answer = (len(op_list) == 0)
+    is_short_answer = (len(op_list) == 0)
 
         if not is_short_answer:
             choice = st.radio("Chọn đáp án của em:", op_list, index=None, key=radio_key)
