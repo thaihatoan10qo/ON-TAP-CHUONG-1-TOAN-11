@@ -595,129 +595,98 @@ with tab_luyentap:
 
     # 2. Hai nút chức năng nằm ngang gọn gàng
     col_btn1, col_btn2 = st.columns(2)
-    # --- HIỂN THỊ CÂU HỎI VÀ GIAO DIỆN LÀM BÀI NẾU ĐÃ CÓ CÂU HỎI ---
-    if "current_question" in st.session_state and st.session_state.current_question:
-            cau = st.session_state.current_question
-            
-            st.markdown(f"**Mức độ:** {cau.get('muc_do', level)}")
-            st.markdown(f"### {format_latex(cau['noi_dung'])}")
-            
-            # Xử lý phương án trắc nghiệm hoặc trả lời ngắn
-            options = cau.get("options", {})
-            op_list = []
-            op_mapping = {}
-            for key in ["A", "B", "C", "D"]:
-                val = options.get(key)
-                if val:
-                    val_clean = str(val).strip()
-                    pattern = rf'^(?:{key}|[A-Da-d])[\s\.\:\)\-]+'
-                    val_clean = re.sub(pattern, '', val_clean, flags=re.IGNORECASE).strip()
-                    val_clean = format_latex(val_clean)
-                    text_opt = f"**{key}.** {val_clean}"
-                    op_list.append(text_opt)
-                    op_mapping[text_opt] = key
+   
+    with col_btn1:
+        if st.button("🎲 Lấy câu hỏi từ kho đề", key="btn_lay_tu_kho"):
+            if danh_sach_loc:
+                raw_cau = random.choice(danh_sach_loc)
+                with st.spinner("🤖 Gia sư AI đang chuẩn hóa câu hỏi và biên soạn lời giải..."):
+                    prompt_chuan_hoa = f"""
+                    Bạn là một chuyên gia khảo thí Toán 11 và giáo viên giỏi.
+                    Dưới đây là một câu hỏi trắc nghiệm được lấy từ kho đề:
+                    "{raw_cau['noi_dung']}"
+                    Các phương án lựa chọn trong kho: {raw_cau['options']}
                     
-            dap_an_dung = str(cau.get("dap_an", "")).strip()
-
-            q_hash = hash(str(cau['noi_dung']))
-            submit_key = f"submitted_{q_hash}"
-            chosen_cache_key = f"chosen_{q_hash}"
-            radio_key = f"radio_{q_hash}"
-            input_key = f"input_{q_hash}"
-
-            is_short_answer = (len(op_list) == 0)
-
-            if not is_short_answer:
-                choice = st.radio("Chọn đáp án của em:", op_list, index=None, key=radio_key)
-            else:
-                choice = st.text_input("Nhập đáp số của em (ví dụ: -9.4 hoặc 20):", key=input_key, placeholder="Điền kết quả vào đây...")
-
-            col1, col2 = st.columns([1, 3])
-            with col1:
-                if st.button("✨ Nộp bài & Kiểm tra", key=f"submit_{q_hash}"):
-                    if choice is None or (is_short_answer and not str(choice).strip()):
-                        st.warning("⚠️ Em vui lòng chọn hoặc nhập đáp án trước khi bấm nộp bài nhé!")
-                    else:
-                        st.session_state[submit_key] = True
-                        st.session_state[chosen_cache_key] = choice
-
-                        # Chấm điểm đúng / sai
-                        if not is_short_answer:
-                            chosen_key = op_mapping.get(choice, "")
-                            is_correct = (chosen_key.upper() == dap_an_dung.upper())
-                        else:
-                            def is_same_number(s1, s2):
-                                if not s1 or not s2:
-                                    return False
-                                clean1 = str(s1).strip().replace(",", ".")
-                                clean2 = str(s2).strip().replace(",", ".")
-                                try:
-                                    return abs(float(clean1) - float(clean2)) < 0.05
-                                except ValueError:
-                                    return clean1.lower() == clean2.lower()
-                            is_correct = is_same_number(choice, dap_an_dung)
-
-                        st.session_state["practice_total"] = st.session_state.get("practice_total", 0) + 1
-                        tong_da_luyen = st.session_state["practice_total"]
-
-                        if is_correct:
-                            st.session_state["practice_correct"] = st.session_state.get("practice_correct", 0) + 1
-                        else:
-                            st.session_state["practice_wrong"] = st.session_state.get("practice_wrong", 0) + 1
-                        
-                        so_dung = st.session_state.get("practice_correct", 0)
-                        so_sai = st.session_state.get("practice_wrong", 0)
-                        chu_de_hien_tai = st.session_state.get("cur_question_topic", topic)
-
-                        # Gửi dữ liệu sang Google Sheet
-                        da_gui = send_data_to_gsheet(
-                            action_type=f"Luyện tập (câu {tong_da_luyen})",
-                            student_name=st.session_state.get("student_name", "-"),
-                            student_class=st.session_state.get("student_class", "-"),
-                            score=f"Đúng: {so_dung} câu | Sai: {so_sai} câu",
-                            note=f"Câu {tong_da_luyen}: {'Đúng' if is_correct else 'Sai'} (Chủ đề: {chu_de_hien_tai})"
+                    Nhiệm vụ của bạn:
+                    1. Xác định chính xác đáp án đúng (A, B, C hoặc D) hoặc đáp án số (nếu là câu trả lời ngắn).
+                    2. Biên soạn lời giải chi tiết từng bước (viết bằng LaTeX trong $...$).
+                    3. Chỉ rõ nguyên nhân học sinh hay sập bẫy ở câu này.
+                    
+                    Trả về ĐÚNG định dạng JSON thuần theo mẫu sau (tuyệt đối không bọc trong markdown ```json):
+                    {{
+                        "noi_dung": "Nội dung câu hỏi đã được chuẩn hóa rõ ràng...",
+                        "options": {{"A": "...", "B": "...", "C": "...", "D": "..."}},
+                        "dap_an": "A",
+                        "loi_giai": "Lời giải chi tiết từng bước và phân tích bẫy sai lầm..."
+                    }}
+                    """
+                    ai_data = None
+                    try:
+                        response = client.models.generate_content(
+                            model='gemini-2.5-flash',
+                            contents=prompt_chuan_hoa,
+                            config=types.GenerateContentConfig(temperature=0.2)
                         )
-                        if da_gui:
-                            st.toast(f"✅ Đã lưu kết quả câu thứ {tong_da_luyen} vào Google Sheet!", icon="📊")
-
-            # Hiển thị kết quả, phân tích bẫy & lời giải sau khi nộp
-            if st.session_state.get(submit_key, False):
-                user_val = st.session_state.get(chosen_cache_key, "")
-                if not is_short_answer:
-                    chosen_key = op_mapping.get(user_val, "")
-                    is_corr = (chosen_key.upper() == dap_an_dung.upper())
-                else:
-                    is_corr = is_same_number(user_val, dap_an_dung)
-                
-                if is_corr:
-                    st.success("🎉 Chính xác tuyệt vời! Em đã làm chủ câu hỏi này.")
-                else:
-                    st.error(f"❌ Rất tiếc, chưa chính xác. Đáp án đúng là: **{dap_an_dung}**")
+                        text_resp = response.text.strip()
+                        if text_resp.startswith("```json"): text_resp = text_resp[7:]
+                        elif text_resp.startswith("```"): text_resp = text_resp[3:]
+                        if text_resp.endswith("```"): text_resp = text_resp[:-3]
+                        ai_data = json.loads(text_resp.strip())
+                    except Exception:
+                        ai_data = None
                     
-                    with st.spinner("🤖 Gia sư AI đang phân tích nguyên nhân sập bẫy của em..."):
-                        prompt_trap = f"""
-                        Bạn là một giáo viên Toán 11 tâm lý và giàu kinh nghiệm.
-                        Câu hỏi: {cau['noi_dung']}
-                        Đáp án đúng là: {dap_an_dung}
-                        Học sinh đã trả lời là: {user_val}.
-                        
-                        Hãy phân tích ngắn gọn, dễ hiểu:
-                        1. Vì sao học sinh lại ra kết quả đó (lỗi tính toán, nhầm chiều quay góc lượng giác, đổi đơn vị)?
-                        2. Lời khuyên giúp học sinh tránh lặp lại lỗi này.
-                        """
-                        try:
-                            trap_response = client.models.generate_content(model='gemini-2.5-flash', contents=prompt_trap)
-                            st.warning(f"⚠️ **Phân tích bẫy sai lầm dành cho em:**\n\n{trap_response.text}")
-                        except Exception:
-                            st.warning("⚠️ Em hãy xem lại kỹ các bước tính toán và công thức nhé!")
-
-                with st.expander("📖 Xem lời giải chi tiết từng bước", expanded=True):
-                    loi_giai_file = cau.get("loi_giai", "")
-                    if loi_giai_file and loi_giai_file != "Lời giải chi tiết đang được cập nhật.":
-                        st.write(format_latex(loi_giai_file))
+                    if ai_data and isinstance(ai_data, dict):
+                        noi_dung_q = ai_data.get("noi_dung", raw_cau['noi_dung'])
+                        options_dict = ai_data.get("options", raw_cau['options'])
+                        dap_an_dung_chu = str(ai_data.get("dap_an", "A")).strip().upper()
+                        loi_giai_txt = ai_data.get("loi_giai", "Lời giải chi tiết đang được cập nhật.")
                     else:
-                        st.write("Lời giải chi tiết: Áp dụng các định nghĩa và công thức lượng giác cơ bản trong chương trình Toán 11 để suy ra kết quả.")
-     
+                        noi_dung_q = raw_cau['noi_dung']
+                        options_dict = raw_cau['options']
+                        match_da = re.search(r'(?:đáp án|đáp án đúng|đ/a)[:\s]*([A-Da-d0-9\.\-]+)', noi_dung_q, re.IGNORECASE)
+                        if match_da:
+                            dap_an_dung_chu = match_da.group(1).upper()
+                        else:
+                            dap_an_dung_chu = "A"
+                        loi_giai_txt = "Lời giải chi tiết: Áp dụng các định nghĩa và công thức lượng giác cơ bản trong chương trình Toán 11."
+
+                    # Xáo trộn đáp án nếu là trắc nghiệm
+                    if options_dict:
+                        keys_list = ["A", "B", "C", "D"]
+                        vals_list = [str(options_dict.get(k, "")).strip() for k in keys_list]
+                        dung_idx = ord(dap_an_dung_chu) - ord('A') if dap_an_dung_chu in keys_list else 0
+                        combined = list(zip(vals_list, [k == dap_an_dung_chu for k in keys_list]))
+                        random.shuffle(combined)
+                        new_options = {}
+                        new_correct_key = "A"
+                        for i, (val_t, is_corr) in enumerate(combined):
+                            new_key = keys_list[i]
+                            new_options[new_key] = val_t
+                            if is_corr: new_correct_key = new_key
+                        options_final = new_options
+                        dap_an_final = new_correct_key
+                    else:
+                        options_final = {}
+                        dap_an_final = dap_an_dung_chu
+
+                    st.session_state.current_question = {
+                        "chu_de": topic,
+                        "muc_do": level,
+                        "noi_dung": noi_dung_q,
+                        "options": options_final,
+                        "dap_an": dap_an_final,
+                        "loi_giai": loi_giai_txt
+                    }
+                st.session_state.started_practice = True
+                st.success("✨ Đã tải thành công câu hỏi từ kho đề kèm lời giải từ Gia sư AI!")
+                st.rerun()
+            else:
+                st.warning("⚠️ Không tìm thấy câu hỏi phù hợp với chủ đề và mức độ này trong ngân hàng đề!")
+
+    with col_btn2:
+        if st.button("🔄 AI sinh câu tương tự dạng vừa làm", key="btn_ai_sinh"):
+            # (Giữ nguyên logic sinh câu tương tự hiện tại của cô ở đây)
+            pass
     with col_btn2:
         btn_clone = st.button("🔄 AI sinh câu tương tự dạng vừa làm", key="btn_clone_tu_kho")
         if btn_clone:
