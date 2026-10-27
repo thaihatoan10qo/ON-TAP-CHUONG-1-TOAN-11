@@ -609,7 +609,7 @@ if btn_gen:
       if c["chu_de"] == topic and c["muc_do"] == level
   ]
 
- import random
+import random
 import re
 
 if danh_sach_loc:
