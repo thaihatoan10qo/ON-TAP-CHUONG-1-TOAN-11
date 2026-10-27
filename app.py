@@ -574,8 +574,12 @@ def tai_va_loc_ngan_hang_de(file_path="kho_de.txt"):
         
     return danh_sach_cau_hoi
 
-# Tải toàn bộ ngân hàng đề
-ngan_hang_toan_bo = tai_va_loc_ngan_hang_de("kho_de.txt")
+# Tải toàn bộ ngân hàng đề bằng đường dẫn tuyệt đối
+thu_muc_hien_tai = os.path.dirname(os.path.abspath(__file__))
+duong_dan_kho_de = os.path.join(thu_muc_hien_tai, "kho_de.txt")
+
+ngan_hang_toan_bo = tai_va_loc_ngan_hang_de(duong_dan_kho_de)
+st.write("Tổng số câu đọc được từ file:", len(ngan_hang_toan_bo))
 
 # Lọc danh sách câu hỏi chính xác theo Chủ đề và Mức độ đang chọn trên giao diện Streamlit
 # Lọc danh sách loại bỏ khoảng trắng và viết thường để khớp 100%
