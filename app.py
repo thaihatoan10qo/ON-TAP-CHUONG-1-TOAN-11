@@ -607,7 +607,8 @@ Quy trình tư duy bắt buộc (Chain-of-Thought) khi thiết kế câu hỏi:
 6. Explanation (lời giải): Trình bày ngắn gọn, chỉ rõ logic chọn đáp án đúng và cảnh báo bẫy sai lầm để hỗ trợ gia sư AI phản hồi học sinh.
 7. Luôn trả về đúng định dạng JSON thuần, không bao bọc trong ký hiệu markdown ```json.
 """
-    elif btn_clone:
+   
+elif btn_clone:
     if not client:
         st.error("Chưa cấu hình API Key trong mục Secrets của Streamlit.")
     elif "current_question" not in st.session_state:
@@ -679,7 +680,6 @@ Trả về đúng định dạng JSON:
                 st.session_state["submitted"] = False
                 st.session_state["last_q"] = st.session_state["quiz"]["question"]
                 st.session_state["current_question"] = st.session_state["quiz"]["question"]
-
     # Hiển thị câu hỏi làm bài
     if "quiz" in st.session_state:
         q = st.session_state["quiz"]
