@@ -502,53 +502,80 @@ import random
 import re
 
 
-# Hàm đọc và phân loại chi tiết ngân hàng đề từ file text
+# Hàm đọc và phân tích chi tiết ngân hàng đề từ file text
 def tai_va_loc_ngan_hang_de(file_path="kho_de.txt"):
-  danh_sach_cau = []
-  if not os.path.exists(file_path):
-    return danh_sach_cau
-
-  try:
-    with open(file_path, "r", encoding="utf-8") as f:
-      noi_dung = f.read()
-
-    # Tách các câu hỏi dựa theo từ khóa "Câu "
-    raw_cautrucs = noi_dung.split("Câu ")
-    for item in raw_cautrucs:
-      if not item.strip():
-        continue
-      cau_text = "Câu " + item.strip()
-      text_lower = cau_text.lower()
-
-      # 1. Nhận diện Chủ đề (Phần I, II, III, IV) dựa vào nội dung bên trong
-      chu_de = "1. Giá trị lượng giác của góc lượng giác & Công thức lượng giác"
-      if "phần ii" in text_lower or "hàm số lượng giác" in text_lower:
-        chu_de = "2. Hàm số lượng giác"
-      elif "phần iii" in text_lower or "phương trình lượng giác" in text_lower:
-        chu_de = "3. Phương trình lượng giác"
-      elif "phần iv" in text_lower or "câu hỏi thực tế" in text_lower:
-        chu_de = "4. Câu hỏi thực tế"
-
-      # 2. Nhận diện Mức độ tư duy
-      muc_do = "Nhận biết"
-      if "vận dụng cao" in text_lower or "1.4" in text_lower or "2.4" in text_lower or "3.4" in text_lower or "4.3" in text_lower:
-        muc_do = "Vận dụng cao"
-      elif "vận dụng" in text_lower or "1.3" in text_lower or "2.3" in text_lower or "3.3" in text_lower or "4.2" in text_lower:
-        muc_do = "Vận dụng"
-      elif "thông hiểu" in text_lower or "1.2" in text_lower or "2.2" in text_lower or "3.2" in text_lower or "4.1" in text_lower:
-        muc_do = "Thông hiểu"
-      elif "nhận biết" in text_lower or "1.1" in text_lower or "2.1" in text_lower or "3.1" in text_lower:
-        muc_do = "Nhận biết"
-
-      danh_sach_cau.append({
-          "noi_dung": cau_text,
-          "chu_de": chu_de,
-          "muc_do": muc_do,
-      })
-  except Exception as e:
-    print(f"Lỗi đọc file ngân hàng đề: {e}")
-
-  return danh_sach_cau
+    danh_sach_cau_hoi = []
+    if not os.path.exists(file_path):
+        return danh_sach_cau_hoi
+    
+    current_chu_de = "Chưa phân loại"
+    current_muc_do = "Nhận biết"
+    current_question_text = ""
+    current_options = {"A": "", "B": "", "C": "", "D": ""}
+    
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+            
+        for line in lines:
+            line_str = line.strip()
+            if not line_str:
+                continue
+                
+            # 1. Nhận diện Chủ đề (Dòng bắt đầu bằng chữ PHẦN I, II, III...)
+            if line_str.startswith("PHẦN") and ("GÓC" in line_str.upper() or "HÀM SỐ" in line_str.upper() or "PHƯƠNG TRÌNH" in line_str.upper() or "DÃY SỐ" in line_str.upper() or "GIỚI HẠN" in line_str.upper()):
+                current_chu_de = line_str
+                continue
+                
+            # 2. Nhận diện Mức độ (Chứa từ khóa mức độ)
+            line_lower = line_str.lower()
+            if "mức độ" in line_lower or "nhận biết" in line_lower or "thông hiểu" in line_lower or "vận dụng" in line_lower:
+                if "nhận biết" in line_lower:
+                    current_muc_do = "Nhận biết"
+                elif "thông hiểu" in line_lower:
+                    current_muc_do = "Thông hiểu"
+                elif "vận dụng cao" in line_lower:
+                    current_muc_do = "Vận dụng cao"
+                elif "vận dụng" in line_lower:
+                    current_muc_do = "Vận dụng"
+                continue
+                
+            # 3. Nhận diện bắt đầu một câu mới (ví dụ: "Câu 1:")
+            if line_str.lower().startswith("câu"):
+                # Lưu câu trước đó vào danh sách nếu có
+                if current_question_text:
+                    danh_sach_cau_hoi.append({
+                        "chu_de": current_chu_de,
+                        "muc_do": current_muc_do,
+                        "noi_dung": current_question_text,
+                        "options": current_options
+                    })
+                current_question_text = line_str
+                current_options = {"A": "", "B": "", "C": "", "D": ""}
+            elif line_str.startswith("A."):
+                current_options["A"] = line_str
+            elif line_str.startswith("B."):
+                current_options["B"] = line_str
+            elif line_str.startswith("C."):
+                current_options["C"] = line_str
+            elif line_str.startswith("D."):
+                current_options["D"] = line_str
+            else:
+                if current_question_text:
+                    current_question_text += "\n" + line_str
+                    
+        # Thêm câu cuối cùng sau khi duyệt hết file
+        if current_question_text:
+            danh_sach_cau_hoi.append({
+                "chu_de": current_chu_de,
+                "muc_do": current_muc_do,
+                "noi_dung": current_question_text,
+                "options": current_options
+            })
+    except Exception as e:
+        print(f"Lỗi đọc kho đề: {e}")
+        
+    return danh_sach_cau_hoi
 
 
 # Tải toàn bộ ngân hàng đề
@@ -557,9 +584,9 @@ ngan_hang_toan_bo = tai_va_loc_ngan_hang_de("kho_de.txt")
 # Lọc danh sách câu hỏi chính xác theo Chủ đề và Mức độ đang chọn trên giao diện Streamlit
 # (selected_topic và selected_difficulty là biến lấy từselectbox của cô trên giao diện)
 danh_sach_loc = [
-    c
-    for c in ngan_hang_toan_bo
-    if c["chu_de"] == selected_topic and c["muc_do"] == selected_difficulty
+    c for c in ngan_hang_toan_bo
+    if (selected_topic.lower() in c["chu_de"].lower()) 
+    and (selected_difficulty.lower() == c["muc_do"].lower())
 ]
 
   # 1. XỬ LÝ NÚT: Lấy câu hỏi trực tiếp từ ngân hàng đề (KHÔNG DÙNG AI)
