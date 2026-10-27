@@ -8,34 +8,30 @@ import re
 def chuan_hoa(s):
     # Hàm loại bỏ toàn bộ khoảng trắng, dấu câu, ký tự đặc biệt, chỉ giữ lại chữ và số
     return re.sub(r'[^a-zA-Z0-9à-ỹÀ-Ỹ]', '', str(s).lower())
-# Tải toàn bộ ngân hàng đề từ file KHO-DE.txt
-thu_muc_hien_tai = os.path.dirname(os.path.abspath(__file__))
-duong_dan_kho_de = os.path.join(thu_muc_hien_tai, "KHO-DE.txt")
-
-ngan_hang_toan_bo = tai_va_loc_ngan_hang_de(duong_dan_kho_de)
+    
 def tai_va_loc_ngan_hang_de(file_path="KHO-DE.txt"):
     danh_sach_cau_hoi = []
     if not os.path.exists(file_path):
         return danh_sach_cau_hoi
-    
+
     current_chu_de = "Chưa phân loại"
     current_muc_do = "Nhận biết"
     current_question_text = ""
     current_options = {"A": "", "B": "", "C": "", "D": ""}
-    
+
     try:
         with open(file_path, "r", encoding="utf-8") as f:
             lines = f.readlines()
-            
+
         for line in lines:
             line_str = line.strip()
             if not line_str:
                 continue
-                
+
             if line_str[0].isdigit() and "." in line_str[:3] and "mức độ" not in line_str.lower() and not line_str.lower().startswith("câu"):
                 current_chu_de = line_str
                 continue
-                
+
             line_lower = line_str.lower()
             if "mức độ" in line_lower or "nhận biết" in line_lower or "thông hiểu" in line_lower or "vận dụng" in line_lower:
                 if "nhận biết" in line_lower:
@@ -47,7 +43,7 @@ def tai_va_loc_ngan_hang_de(file_path="KHO-DE.txt"):
                 elif "vận dụng" in line_lower:
                     current_muc_do = "Vận dụng"
                 continue
-                
+
             if line_str.lower().startswith("câu"):
                 if current_question_text:
                     danh_sach_cau_hoi.append({
@@ -69,7 +65,7 @@ def tai_va_loc_ngan_hang_de(file_path="KHO-DE.txt"):
             else:
                 if current_question_text:
                     current_question_text += "\n" + line_str
-                    
+
         if current_question_text:
             danh_sach_cau_hoi.append({
                 "chu_de": current_chu_de,
@@ -79,8 +75,14 @@ def tai_va_loc_ngan_hang_de(file_path="KHO-DE.txt"):
             })
     except Exception as e:
         print(f"Lỗi đọc kho đề: {e}")
-        
+
     return danh_sach_cau_hoi
+# Tải toàn bộ ngân hàng đề từ file KHO-DE.txt
+thu_muc_hien_tai = os.path.dirname(os.path.abspath(__file__))
+duong_dan_kho_de = os.path.join(thu_muc_hien_tai, "KHO-DE.txt")
+
+ngan_hang_toan_bo = tai_va_loc_ngan_hang_de(duong_dan_kho_de)
+
 # Dán đường link URL bạn vừa sao chép vào giữa 2 dấu ngoặc kép dưới đây:
 GOOGLE_SHEET_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwdEHCrjYoQfFeKPXXf8rp-Xvcgj3_q7hey4QZC5_W8LDi7b__MmzWSL0zC_-0892DdyQ/exec"
 def send_data_to_gsheet(action_type, student_name, student_class, score=None, correct_ratio="", note="", completion_time=""):
