@@ -600,19 +600,19 @@ with tab_luyentap:
         if btn_gen:
             if danh_sach_loc:
             # 1. Bốc ngẫu nhiên 1 câu từ kho
-            raw_cau = random.choice(danh_sach_loc)
+                raw_cau = random.choice(danh_sach_loc)
             
             # 2. Dùng AI Gemini chuẩn hóa lại câu hỏi, tìm đáp án đúng và viết lời giải chi tiết
-            with st.spinner("🤖 Gia sư AI đang chuẩn hóa câu hỏi và biên soạn lời giải..."):
-                prompt_chuan_hoa = f"""
+                with st.spinner("🤖 Gia sư AI đang chuẩn hóa câu hỏi và biên soạn lời giải..."):
+                    prompt_chuan_hoa = f"""
                 Bạn là một chuyên gia khảo thí Toán 11 và giáo viên giỏi.
                 Dưới đây là một câu hỏi trắc nghiệm được lấy từ kho đề:
-                "{raw_cau['noi_dung']}"
+                    "{raw_cau['noi_dung']}"
                 Các phương án lựa chọn trong kho: {raw_cau['options']}
                 
                 Nhiệm vụ của bạn:
-                1. Xác định chính xác đáp án đúng (A, B, C hoặc D).
-                2. Biên soạn lời giải chi tiết từng bước (viết bằng LaTeX trong $...$).
+                1. Biên soạn lời giải chi tiết từng bước (viết bằng LaTeX trong $...$).
+                2. Xác định chính xác đáp án đúng (A, B, C hoặc D).
                 3. Chỉ rõ nguyên nhân học sinh hay sập bẫy ở câu này.
                 
                 Trả về ĐÚNG định dạng JSON thuần theo mẫu sau (tuyệt đối không bọc trong markdown ```json):
