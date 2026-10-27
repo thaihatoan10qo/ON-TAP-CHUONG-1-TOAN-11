@@ -501,8 +501,6 @@ import os
 import random
 import re
 
-
-# Hàm đọc và phân tích chi tiết ngân hàng đề từ file text
 def tai_va_loc_ngan_hang_de(file_path="kho_de.txt"):
     danh_sach_cau_hoi = []
     if not os.path.exists(file_path):
@@ -522,12 +520,12 @@ def tai_va_loc_ngan_hang_de(file_path="kho_de.txt"):
             if not line_str:
                 continue
                 
-            # 1. Nhận diện Chủ đề (Dòng bắt đầu bằng chữ PHẦN I, II, III...)
-            if line_str.startswith("PHẦN") and ("GÓC" in line_str.upper() or "HÀM SỐ" in line_str.upper() or "PHƯƠNG TRÌNH" in line_str.upper() or "DÃY SỐ" in line_str.upper() or "GIỚI HẠN" in line_str.upper()):
+            # 1. Nhận diện Chủ đề: Dòng bắt đầu bằng số + dấu chấm (VD: "1.Giá trị...") nhưng không phải mức độ hay câu hỏi
+            if line_str[0].isdigit() and "." in line_str[:3] and "mức độ" not in line_str.lower() and not line_str.lower().startswith("câu"):
                 current_chu_de = line_str
                 continue
                 
-            # 2. Nhận diện Mức độ (Chứa từ khóa mức độ)
+            # 2. Nhận diện Mức độ: Dòng chứa từ khóa mức độ (VD: "1.1.Mức độ nhận biết:")
             line_lower = line_str.lower()
             if "mức độ" in line_lower or "nhận biết" in line_lower or "thông hiểu" in line_lower or "vận dụng" in line_lower:
                 if "nhận biết" in line_lower:
@@ -540,9 +538,8 @@ def tai_va_loc_ngan_hang_de(file_path="kho_de.txt"):
                     current_muc_do = "Vận dụng"
                 continue
                 
-            # 3. Nhận diện bắt đầu một câu mới (ví dụ: "Câu 1:")
+            # 3. Nhận diện bắt đầu câu hỏi mới
             if line_str.lower().startswith("câu"):
-                # Lưu câu trước đó vào danh sách nếu có
                 if current_question_text:
                     danh_sach_cau_hoi.append({
                         "chu_de": current_chu_de,
@@ -564,7 +561,7 @@ def tai_va_loc_ngan_hang_de(file_path="kho_de.txt"):
                 if current_question_text:
                     current_question_text += "\n" + line_str
                     
-        # Thêm câu cuối cùng sau khi duyệt hết file
+        # Thêm câu cuối cùng
         if current_question_text:
             danh_sach_cau_hoi.append({
                 "chu_de": current_chu_de,
@@ -577,16 +574,18 @@ def tai_va_loc_ngan_hang_de(file_path="kho_de.txt"):
         
     return danh_sach_cau_hoi
 
-
 # Tải toàn bộ ngân hàng đề
 ngan_hang_toan_bo = tai_va_loc_ngan_hang_de("kho_de.txt")
 
 # Lọc danh sách câu hỏi chính xác theo Chủ đề và Mức độ đang chọn trên giao diện Streamlit
-# (selected_topic và selected_difficulty là biến lấy từselectbox của cô trên giao diện)
+# Lọc danh sách loại bỏ khoảng trắng và viết thường để khớp 100%
+selected_topic_clean = selected_topic.replace(" ", "").lower()
+selected_diff_clean = selected_difficulty.replace(" ", "").lower()
+
 danh_sach_loc = [
     c for c in ngan_hang_toan_bo
-    if (selected_topic.lower() in c["chu_de"].lower()) 
-    and (selected_difficulty.lower() == c["muc_do"].lower())
+    if (selected_topic_clean in c["chu_de"].replace(" ", "").lower() or c["chu_de"].replace(" ", "").lower() in selected_topic_clean)
+    and (selected_diff_clean == c["muc_do"].replace(" ", "").lower())
 ]
 
   # 1. XỬ LÝ NÚT: Lấy câu hỏi trực tiếp từ ngân hàng đề (KHÔNG DÙNG AI)
