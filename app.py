@@ -716,9 +716,11 @@ with tab_luyentap:
                     """
                     try:
                         response = client.models.generate_content(
-                            model='gemini-3.1-flash-lite', 'gemini-3.8-flash',
+                            model='gemini-3.1-flash-lite',
                             contents=prompt_clone,
-                            config=types.GenerateContentConfig(response_mime_type="application/json", temperature=0.7)
+                            config=types.GenerateContentConfig(
+                            response_mime_type="application/json", 
+                            temperature=0.7)
                         )
                         new_q = json.loads(response.text)
                         st.session_state.current_question = {
