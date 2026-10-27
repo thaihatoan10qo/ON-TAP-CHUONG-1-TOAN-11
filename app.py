@@ -601,10 +601,10 @@ with tab_luyentap:
         if btn_gen:
             if danh_sach_loc:
             # 1. Bốc ngẫu nhiên 1 câu từ kho
-            raw_cau = random.choice(danh_sach_loc)
+                raw_cau = random.choice(danh_sach_loc)
             
             # 2. Dùng AI Gemini chuẩn hóa lại câu hỏi, tìm đáp án đúng và viết lời giải chi tiết + phân tích bẫy ngay lập tức
-            with st.spinner("🤖 Gia sư AI đang chuẩn hóa câu hỏi và biên soạn lời giải..."):
+                with st.spinner("🤖 Gia sư AI đang chuẩn hóa câu hỏi và biên soạn lời giải..."):
                 prompt_chuan_hoa = f"""
                 Bạn là một chuyên gia khảo thí Toán 11 và giáo viên giỏi.
                 Dưới đây là một câu hỏi trắc nghiệm được lấy từ kho đề:
