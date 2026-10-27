@@ -596,15 +596,60 @@ with tab_luyentap:
     # 2. Hai nút chức năng nằm ngang gọn gàng
     col_btn1, col_btn2 = st.columns(2)
     with col_btn1:
-        btn_gen = st.button("🎲 Lấy câu hỏi từ kho đề", key="btn_lay_tu_kho")
-        if btn_gen:
-            if danh_sach_loc:
-                st.session_state.current_question = random.choice(danh_sach_loc)
-                st.session_state.started_practice = True
-                q_hash_new = hash(str(st.session_state.current_question['noi_dung']))
-                st.session_state[f"submitted_{q_hash_new}"] = False
-            else:
-                st.warning("⚠️ Không tìm thấy câu hỏi phù hợp với chủ đề và mức độ này trong ngân hàng đề!")
+       with col_btn1:
+    btn_gen = st.button("🎲 Lấy câu hỏi từ kho đề", key="btn_lay_tu_kho")
+    if btn_gen:
+        if danh_sach_loc:
+            # 1. Bốc ngẫu nhiên 1 câu từ kho
+            raw_cau = random.choice(danh_sach_loc)
+            
+            # 2. Dùng AI Gemini chuẩn hóa lại câu hỏi, tìm đáp án đúng và viết lời giải chi tiết + phân tích bẫy ngay lập tức
+            with st.spinner("🤖 Gia sư AI đang chuẩn hóa câu hỏi và biên soạn lời giải..."):
+                prompt_chuan_hoa = f"""
+                Bạn là một chuyên gia khảo thí Toán 11 và giáo viên giỏi.
+                Dưới đây là một câu hỏi trắc nghiệm được lấy từ kho đề:
+                "{raw_cau['noi_dung']}"
+                Các phương án lựa chọn trong kho: {raw_cau['options']}
+                
+                Nhiệm vụ của bạn:
+                1. Xác định chính xác đáp án đúng (A, B, C hoặc D).
+                2. Biên soạn lời giải chi tiết từng bước (viết bằng LaTeX trong $...$).
+                3. Chỉ rõ nguyên nhân học sinh hay sập bẫy ở câu này.
+                
+                Trả về ĐÚNG định dạng JSON thuần (không bọc trong markdown ```json):
+                {{
+                    "noi_dung": "Nội dung câu hỏi đã được chuẩn hóa rõ ràng...",
+                    "options": {{"A": "...", "B": "...", "C": "...", "D": "..."}},
+                    "dap_an": "Chữ cái đáp án đúng (A, B, C hoặc D)",
+                    "loi_giai": "Lời giải chi tiết từng bước và phân tích bẫy sai lầm..."
+                }}
+                """
+                try:
+                    response = client.models.generate_content(
+                        model='gemini-2.5-flash',
+                        contents=prompt_chuan_hoa,
+                        config=types.GenerateContentConfig(response_mime_type="application/json", temperature=0.2)
+                    )
+                    ai_data = json.loads(response.text)
+                    
+                    st.session_state.current_question = {
+                        "chu_de": topic,
+                        "muc_do": level,
+                        "noi_dung": ai_data.get("noi_dung", raw_cau['noi_dung']),
+                        "options": ai_data.get("options", raw_cau['options']),
+                        "dap_an": ai_data.get("dap_an", "A"),
+                        "loi_giai": ai_data.get("loi_giai", "Lời giải đang được cập nhật.")
+                    }
+                except Exception:
+                    # Dự phòng nếu AI bận thì lấy trực tiếp từ kho
+                    st.session_state.current_question = raw_cau
+                    
+            st.session_state.started_practice = True
+            q_hash_new = hash(str(st.session_state.current_question['noi_dung']))
+            st.session_state[f"submitted_{q_hash_new}"] = False
+            st.success("✨ Đã tải thành công câu hỏi chuẩn từ kho đề!")
+        else:
+            st.warning("⚠️ Không tìm thấy câu hỏi phù hợp với chủ đề và mức độ này trong ngân hàng đề!")
 
     with col_btn2:
         btn_clone = st.button("🔄 AI sinh câu tương tự dạng vừa làm", key="btn_clone_tu_kho")
