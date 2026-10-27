@@ -623,7 +623,7 @@ with tab_luyentap:
                     ai_data = None
                     try:
                         response = client.models.generate_content(
-                            model='gemini-2.5-flash',
+                            model='gemini-3.1-flash-Lite',
                             contents=prompt_chuan_hoa,
                             config=types.GenerateContentConfig(temperature=0.2)
                         )
