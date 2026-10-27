@@ -596,10 +596,9 @@ with tab_luyentap:
     # 2. Hai nút chức năng nằm ngang gọn gàng
     col_btn1, col_btn2 = st.columns(2)
     with col_btn1:
-        with col_btn1:
-    btn_gen = st.button("🎲 Lấy câu hỏi từ kho đề", key="btn_lay_tu_kho")
-    if btn_gen:
-        if danh_sach_loc:
+        btn_gen = st.button("🎲 Lấy câu hỏi từ kho đề", key="btn_lay_tu_kho")
+        if btn_gen:
+            if danh_sach_loc:
             # 1. Bốc ngẫu nhiên 1 câu từ kho
             raw_cau = random.choice(danh_sach_loc)
             
@@ -702,8 +701,7 @@ with tab_luyentap:
             st.success("✨ Đã tải thành công câu hỏi từ kho đề kèm lời giải từ Gia sư AI!")
         else:
             st.warning("⚠️ Không tìm thấy câu hỏi phù hợp với chủ đề và mức độ này trong ngân hàng đề!")
-       
-       
+     
      
     with col_btn2:
         btn_clone = st.button("🔄 AI sinh câu tương tự dạng vừa làm", key="btn_clone_tu_kho")
