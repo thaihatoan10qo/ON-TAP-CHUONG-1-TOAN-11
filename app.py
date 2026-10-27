@@ -576,7 +576,7 @@ def tai_va_loc_ngan_hang_de(file_path="KHO-DE.txt"):
 
 # Tải toàn bộ ngân hàng đề bằng đường dẫn tuyệt đối
 thu_muc_hien_tai = os.path.dirname(os.path.abspath(__file__))
-duong_dan_kho_de = os.path.join(thu_muc_hien_tai, "kho_de.txt")
+duong_dan_kho_de = os.path.join(thu_muc_hien_tai, "KHO-DE.txt")
 
 ngan_hang_toan_bo = tai_va_loc_ngan_hang_de(duong_dan_kho_de)
 st.write("Tổng số câu đọc được từ file:", len(ngan_hang_toan_bo))
@@ -695,7 +695,7 @@ Trả về đúng định dạng JSON:
                     cau_chon = random.choice(danh_sach_loc)
                     cau_du_phong = cau_chon["noi_dung"]
                 else:
-                    ngan_hang_tam = tai_va_loc_ngan_hang_de("kho_de.txt")
+                    ngan_hang_tam = tai_va_loc_ngan_hang_de("KHO-DE.txt")
                     cau_du_phong = random.choice(ngan_hang_tam)["noi_dung"] if ngan_hang_tam else "Tìm tập xác định của hàm số lượng giác."
 
                 st.info("💡 Đường truyền AI đang bận, hệ thống trích xuất ngay 1 câu hỏi chuẩn **cùng chủ đề và mức độ** từ ngân hàng đề cho em:")
@@ -1094,7 +1094,7 @@ with tab_kiemtra:
         unsafe_allow_html=True
     )
 
-    # Đọc dữ liệu kho câu hỏi mẫu (nếu có file kho_de.txt)
+    # Đọc dữ liệu kho câu hỏi mẫu (nếu có file KHO-DE.txt)
     danh_sach_tat_ca_cau = []
     ten_file_de = None
     for fname in ["kho_de.txt", "kho_de.txt.txt", "Kho_de.txt"]:
