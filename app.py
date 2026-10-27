@@ -603,7 +603,7 @@ if btn_gen:
   danh_sach_loc = [
       c
       for c in ngan_hang_toan_bo
-      if c["chu_de"] == selected_topic and c["muc_do"] == selected_difficulty
+      if c["chu_de"] == topic and c["muc_do"] == level
   ]
 
   if danh_sach_loc:
