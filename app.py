@@ -596,7 +596,7 @@ elif btn_clone:
       st.session_state["chat_history"] = []
       # (Đoạn code gọi API Gemini để sáng tác câu tương tự giữ nguyên ở đây)
 
-                gem_instructions = """
+    gem_instructions = """
 Bạn là Trợ lý Chuyên gia Khảo thí Toán 11 THPT (Chương trình GDPT 2018).
 Quy trình tư duy bắt buộc (Chain-of-Thought) khi thiết kế câu hỏi:
 1. Thiết kế đề bài rõ ràng, tự chứa đầy đủ dữ kiện toán học (tuyệt đối KHÔNG ra đề yêu cầu quan sát hình vẽ bên/đồ thị đính kèm).
