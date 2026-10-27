@@ -726,6 +726,9 @@ with tab_luyentap:
                                     temperature=0.7
                                 )
                             )
+                            break  # Nếu gọi thành công thì thoát vòng lặp
+                        except Exception as e:
+                            continue  # Nếu model này lỗi/bận thì thử model tiếp theo trong danh sách
                         new_q = json.loads(response.text)
                         st.session_state.current_question = {
                             "chu_de": topic,
