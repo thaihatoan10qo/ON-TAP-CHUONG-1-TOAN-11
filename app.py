@@ -596,15 +596,16 @@ with tab_luyentap:
     # 2. Hai nút chức năng nằm ngang gọn gàng
     col_btn1, col_btn2 = st.columns(2)
     # Xử lý hiển thị phần nhập đáp án (Trắc nghiệm hoặc Trả lời ngắn)
-    is_short_answer = (len(op_list) == 0)
+    # Xử lý hiển thị phần nhập đáp án (Trắc nghiệm hoặc Trả lời ngắn)
+        is_short_answer = (len(op_list) == 0)
 
-    if not is_short_answer:
-        choice = st.radio("Chọn đáp án của em:", op_list, index=None, key=radio_key)
-    else:
-        choice = st.text_input("Nhập đáp số của em (ví dụ: -9.4 hoặc 20):", key=input_key, placeholder="Điền kết quả vào đây...")
+        if not is_short_answer:
+            choice = st.radio("Chọn đáp án của em:", op_list, index=None, key=radio_key)
+        else:
+            choice = st.text_input("Nhập đáp số của em (ví dụ: -9.4 hoặc 20):", key=input_key, placeholder="Điền kết quả vào đây...")
 
-    col1, col2 = st.columns([1, 3])
-    with col1:
+        col1, col2 = st.columns([1, 3])
+        with col1:
             if st.button("✨ Nộp bài & Kiểm tra", key=f"submit_{q_hash}"):
                 if choice is None or (is_short_answer and not str(choice).strip()):
                     st.warning("⚠️ Em vui lòng chọn hoặc nhập đáp án trước khi bấm nộp bài nhé!")
@@ -654,20 +655,18 @@ with tab_luyentap:
                         st.toast(f"✅ Đã lưu kết quả câu thứ {tong_da_luyen} vào Google Sheet!", icon="📊")
 
         # --- HIỂN THỊ KẾT QUẢ, PHÂN TÍCH BẪY & LỜI GIẢI SAU KHI NỘP ---
-    user_val = st.session_state.get(chosen_cache_key, "")
-    if not is_short_answer:
+        if st.session_state.get(submit_key, False):
+            user_val = st.session_state.get(chosen_cache_key, "")
+            if not is_short_answer:
                 chosen_key = op_mapping.get(user_val, "")
                 is_corr = (chosen_key.upper() == dap_an_dung.upper())
-    else:
+            else:
                 is_corr = is_same_number(user_val, dap_an_dung)
             
-    if is_corr:
+            if is_corr:
                 st.success(f"🎉 Chính xác tuyệt vời! Em đã làm chủ câu hỏi này.")
-    else:
-        if not is_short_answer:
-                    st.error(f"❌ Rất tiếc, chưa chính xác. Đáp án đúng là: **{dap_an_dung}**")
-        else:
-                    st.error(f"❌ Rất tiếc, chưa chính xác. Đáp án đúng là: **{dap_an_dung}**")
+            else:
+                st.error(f"❌ Rất tiếc, chưa chính xác. Đáp án đúng là: **{dap_an_dung}**")
                 
                 # Phân tích bẫy sai lầm
                 with st.spinner("🤖 Gia sư AI đang phân tích nguyên nhân sập bẫy của em..."):
