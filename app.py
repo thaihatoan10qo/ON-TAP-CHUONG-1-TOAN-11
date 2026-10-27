@@ -491,11 +491,22 @@ with tab_luyentap:
             key="tab3_level_select"
         )
  
-    col_btn1, col_btn2 = st.columns(2)
-    with col_btn1:
-        btn_gen = st.button("🎲 AI tạo câu hỏi từ ngân hàng đề")
-    with col_btn2:
-        btn_clone = st.button("🔁 Tạo câu tương tự dạng vừa làm")
+  col_btn1, col_btn2 = st.columns(2)
+with col_btn1:
+    btn_gen = st.button("🎲 AI tạo câu hỏi từ ngân hàng đề")
+    # BẮT SỰ KIỆN CHO NÚT NÀY NGAY TẠI ĐÂY:
+    if btn_gen:
+        if danh_sach_loc:
+            st.session_state.current_question = random.choice(danh_sach_loc)
+            st.session_state.started_practice = True
+            q_hash_new = hash(str(st.session_state.current_question['noi_dung']))
+            if f"submitted_{q_hash_new}" in st.session_state:
+                st.session_state[f"submitted_{q_hash_new}"] = False
+        else:
+            st.warning("Không tìm thấy câu hỏi phù hợp với chủ đề và mức độ này trong ngân hàng!")
+
+with col_btn2:
+    btn_clone = st.button("🔄 Tạo câu tương tự dạng vừa làm")
 
 import os
 import random
