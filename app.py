@@ -599,17 +599,17 @@ with tab_luyentap:
     # Xử lý hiển thị phần nhập đáp án (Trắc nghiệm hoặc Trả lời ngắn)
     is_short_answer = (len(op_list) == 0)
 
-        if not is_short_answer:
+    if not is_short_answer:
             choice = st.radio("Chọn đáp án của em:", op_list, index=None, key=radio_key)
-        else:
+    else:
             choice = st.text_input("Nhập đáp số của em (ví dụ: -9.4 hoặc 20):", key=input_key, placeholder="Điền kết quả vào đây...")
 
-        col1, col2 = st.columns([1, 3])
-        with col1:
-            if st.button("✨ Nộp bài & Kiểm tra", key=f"submit_{q_hash}"):
-                if choice is None or (is_short_answer and not str(choice).strip()):
+    col1, col2 = st.columns([1, 3])
+    with col1:
+        if st.button("✨ Nộp bài & Kiểm tra", key=f"submit_{q_hash}"):
+            if choice is None or (is_short_answer and not str(choice).strip()):
                     st.warning("⚠️ Em vui lòng chọn hoặc nhập đáp án trước khi bấm nộp bài nhé!")
-                else:
+            else:
                     st.session_state[submit_key] = True
                     st.session_state[chosen_cache_key] = choice
 
