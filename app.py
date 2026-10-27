@@ -580,7 +580,7 @@ ngan_hang_toan_bo = tai_va_loc_ngan_hang_de("kho_de.txt")
 # Lọc danh sách câu hỏi chính xác theo Chủ đề và Mức độ đang chọn trên giao diện Streamlit
 # Lọc danh sách loại bỏ khoảng trắng và viết thường để khớp 100%
 selected_topic_clean = topic.replace(" ", "").lower()
-selected_diff_clean = selected_difficulty.replace(" ", "").lower()
+selected_diff_clean = level.replace(" ", "").lower()
 
 danh_sach_loc = [
     c for c in ngan_hang_toan_bo
