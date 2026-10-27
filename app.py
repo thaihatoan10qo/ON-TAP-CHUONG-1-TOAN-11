@@ -664,9 +664,9 @@ with tab_luyentap:
     if is_corr:
                 st.success(f"🎉 Chính xác tuyệt vời! Em đã làm chủ câu hỏi này.")
     else:
-    if not is_short_answer:
+        if not is_short_answer:
                     st.error(f"❌ Rất tiếc, chưa chính xác. Đáp án đúng là: **{dap_an_dung}**")
-    else:
+        else:
                     st.error(f"❌ Rất tiếc, chưa chính xác. Đáp án đúng là: **{dap_an_dung}**")
                 
                 # Phân tích bẫy sai lầm
