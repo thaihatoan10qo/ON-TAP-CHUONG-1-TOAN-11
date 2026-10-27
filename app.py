@@ -607,8 +607,16 @@ Quy trình tư duy bắt buộc (Chain-of-Thought) khi thiết kế câu hỏi:
 6. Explanation (lời giải): Trình bày ngắn gọn, chỉ rõ logic chọn đáp án đúng và cảnh báo bẫy sai lầm để hỗ trợ gia sư AI phản hồi học sinh.
 7. Luôn trả về đúng định dạng JSON thuần, không bao bọc trong ký hiệu markdown ```json.
 """
-
-    prompt = f"""
+    elif btn_clone:
+    if not client:
+        st.error("Chưa cấu hình API Key trong mục Secrets của Streamlit.")
+    elif "current_question" not in st.session_state:
+        st.warning("Em cần tạo và làm thử 1 câu trước khi chọn tạo câu tương tự!")
+    else:
+        with st.spinner("AI đang thiết kế bài tập tương tự..."):
+            st.session_state["chat_history"] = []
+            
+            prompt = f"""
 Câu hỏi gốc học sinh vừa làm:
 "{st.session_state['current_question']}"
 
@@ -624,66 +632,53 @@ Trả về đúng định dạng JSON:
     "explanation": "Lời giải chi tiết từng bước và lưu ý bẫy sai lầm..."
 }}
 """
-                else:
-                    prompt = f"""
-Tham khảo câu hỏi mẫu từ kho đề:
-{mau_cau_hoi}
 
-Nhiệm vụ: Tạo 1 câu hỏi trắc nghiệm Toán 11 mới có cấu trúc và độ khó tương đương các câu mẫu trên.
-YÊU CẦU ĐẶC BIỆT: Vị trí đáp án đúng PHẢI được chọn ngẫu nhiên giữa A, B, C hoặc D (không được mặc định luôn là A).
-
-Trả về đúng định dạng JSON:
-{{
-    "question": "Nội dung câu hỏi (chứa LaTeX)...",
-    "step_by_step_solve": "Giải nháp chi tiết từng bước để tìm ra đáp án đúng chính xác tuyệt đối",
-    "options": {{"A": "...", "B": "...", "C": "...", "D": "..."}},
-    "correct_answer": "Chữ cái đáp án đúng (chọn ngẫu nhiên A, B, C hoặc D)",
-    "explanation": "Lời giải chi tiết từng bước và lưu ý bẫy sai lầm..."
-}}
-"""
-
-                success = False
-                cac_model = ['gemini-3.1-flash-lite', 'gemini-3.8-flash']
-                for ten_model in cac_model:
-                    try:
-                        response = client.models.generate_content(
-                            model=ten_model,
-                            contents=prompt,
-                            config=types.GenerateContentConfig(
-                                system_instruction=gem_instructions,
-                                response_mime_type="application/json",
-                                temperature=0.7
-                            )
+            success = False
+            cac_model = ['gemini-3.1-flash-lite', 'gemini-3.8-flash']
+            for ten_model in cac_model:
+                try:
+                    response = client.models.generate_content(
+                        model=ten_model,
+                        contents=prompt,
+                        config=types.GenerateContentConfig(
+                            system_instruction=gem_instructions,
+                            response_mime_type="application/json",
+                            temperature=0.7
                         )
-                        st.session_state["quiz"] = json.loads(response.text)
-                        st.session_state["submitted"] = False
-                        st.session_state["last_q"] = st.session_state["quiz"]["question"]
-                        success = True
-                        break
-                    except Exception:
-                        continue
-
-                if not success:
-                    import random
-                    cau_du_phong = "Tìm tập xác định của hàm số $y = \\tan\\left(x - \\frac{\\pi}{3}\\right)$."
-                    if danh_sach_tat_ca_cau:
-                        cau_ngau_nhien = random.choice(danh_sach_tat_ca_cau)
-                        cau_du_phong = "Câu " + cau_ngau_nhien
-
-                    st.info("💡 Đường truyền AI đang bận, hệ thống trích xuất câu chuẩn từ ngân hàng để em luyện tập ngay:")
-                    st.session_state["quiz"] = {
-                        "question": cau_du_phong,
-                        "options": {
-                            "A": "$D = \\mathbb{R} \\setminus \\left\\{\\frac{5\\pi}{6} + k\\pi, k \\in \\mathbb{Z}\\right\\}$",
-                            "B": "$D = \\mathbb{R} \\setminus \\left\\{\\frac{\\pi}{3} + k\\pi, k \\in \\mathbb{Z}\\right\\}$",
-                            "C": "$D = \\mathbb{R} \\setminus \\left\\{\\frac{5\\pi}{6} + k2\\pi, k \\in \\mathbb{Z}\\right\\}$",
-                            "D": "$D = \\mathbb{R} \\setminus \\left\\{\\frac{\\pi}{2} + k\\pi, k \\in \\mathbb{Z}\\right\\}$"
-                        },
-                        "correct_answer": "A",
-                        "explanation": "Hàm số xác định khi $x - \\frac{\\pi}{3} \\neq \\frac{\\pi}{2} + k\\pi \\Leftrightarrow x \\neq \\frac{5\\pi}{6} + k\\pi$ ($k \\in \\mathbb{Z}$)."
-                    }
+                    )
+                    st.session_state["quiz"] = json.loads(response.text)
                     st.session_state["submitted"] = False
                     st.session_state["last_q"] = st.session_state["quiz"]["question"]
+                    success = True
+                    break
+                except Exception:
+                    continue
+                    
+            # Nếu AI bận, tự động bốc 1 câu chuẩn cùng Chủ đề & Mức độ từ ngân hàng đề
+            if not success:
+                import random
+                if 'danh_sach_loc' in locals() and danh_sach_loc:
+                    cau_chon = random.choice(danh_sach_loc)
+                    cau_du_phong = cau_chon["noi_dung"]
+                else:
+                    ngan_hang_tam = tai_va_loc_ngan_hang_de("kho_de.txt")
+                    cau_du_phong = random.choice(ngan_hang_tam)["noi_dung"] if ngan_hang_tam else "Tìm tập xác định của hàm số lượng giác."
+
+                st.info("💡 Đường truyền AI đang bận, hệ thống trích xuất ngay 1 câu hỏi chuẩn **cùng chủ đề và mức độ** từ ngân hàng đề cho em:")
+                st.session_state["quiz"] = {
+                    "question": cau_du_phong,
+                    "options": {
+                        "A": "Xem nội dung chi tiết trong đề bài",
+                        "B": "",
+                        "C": "",
+                        "D": ""
+                    },
+                    "correct_answer": "A",
+                    "explanation": "Câu hỏi được trích xuất trực tiếp từ ngân hàng đề chuẩn của giáo viên."
+                }
+                st.session_state["submitted"] = False
+                st.session_state["last_q"] = st.session_state["quiz"]["question"]
+                st.session_state["current_question"] = st.session_state["quiz"]["question"]
 
     # Hiển thị câu hỏi làm bài
     if "quiz" in st.session_state:
