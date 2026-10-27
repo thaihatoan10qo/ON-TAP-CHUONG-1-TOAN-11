@@ -652,8 +652,9 @@ if danh_sach_loc:
             st.rerun()
             
         st.markdown("---")
-else:
-    # Khối else nằm ở tận cùng, không bị lệnh elif nào bám theo sau nữa
+
+# Dùng if độc lập thế cho else để không bao giờ bị lỗi đụng độ với các nút elif phía dưới
+if not danh_sach_loc:
     st.warning("Không tìm thấy câu hỏi phù hợp với chủ đề và mức độ này trong ngân hàng!")
   
 
