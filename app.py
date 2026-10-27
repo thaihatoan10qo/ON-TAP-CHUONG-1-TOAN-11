@@ -582,15 +582,24 @@ ngan_hang_toan_bo = tai_va_loc_ngan_hang_de(duong_dan_kho_de)
 st.write("Tổng số câu đọc được từ file:", len(ngan_hang_toan_bo))
 
 # Lọc danh sách câu hỏi chính xác theo Chủ đề và Mức độ đang chọn trên giao diện Streamlit
-# Lọc danh sách loại bỏ khoảng trắng và viết thường để khớp 100%
-selected_topic_clean = topic.replace(" ", "").lower()
-selected_diff_clean = level.replace(" ", "").lower()
+import re
+
+def chuan_hoa(s):
+    # Hàm loại bỏ toàn bộ khoảng trắng, dấu câu, ký tự đặc biệt (&, ., ...), chỉ giữ lại chữ và số
+    return re.sub(r'[^a-zA-Z0-9à-ỹÀ-Ỹ]', '', str(s).lower())
+
+# Chuẩn hóa giá trị từ giao diện và từ file
+selected_topic_clean = chuan_hoa(topic)
+selected_diff_clean = chuan_hoa(level)
 
 danh_sach_loc = [
     c for c in ngan_hang_toan_bo
-    if (selected_topic_clean in c["chu_de"].replace(" ", "").lower() or c["chu_de"].replace(" ", "").lower() in selected_topic_clean)
-    and (selected_diff_clean == c["muc_do"].replace(" ", "").lower())
+    if selected_topic_clean in chuan_hoa(c["chu_de"])
+    and selected_diff_clean == chuan_hoa(c["muc_do"])
 ]
+
+# Kiểm tra sau khi lọc chuẩn hóa
+st.write("Số lượng câu hỏi sau khi lọc thành công:", len(danh_sach_loc))
 
 # Dòng kiểm tra nhanh xem file đã đọc được bao nhiêu câu
 st.write("Tổng số câu đọc được từ file:", len(ngan_hang_toan_bo))
