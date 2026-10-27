@@ -654,9 +654,8 @@ with tab_luyentap:
                         st.toast(f"✅ Đã lưu kết quả câu thứ {tong_da_luyen} vào Google Sheet!", icon="📊")
 
         # --- HIỂN THỊ KẾT QUẢ, PHÂN TÍCH BẪY & LỜI GIẢI SAU KHI NỘP ---
-        if st.session_state.get(submit_key, False):
-            user_val = st.session_state.get(chosen_cache_key, "")
-            if not is_short_answer:
+    user_val = st.session_state.get(chosen_cache_key, "")
+    if not is_short_answer:
                 chosen_key = op_mapping.get(user_val, "")
                 is_corr = (chosen_key.upper() == dap_an_dung.upper())
             else:
