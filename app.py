@@ -636,24 +636,82 @@ if danh_sach_loc:
 
     st.success(f"Đã chọn ngẫu nhiên 1 câu hỏi từ {len(danh_sach_loc)} câu phù hợp để học sinh luyện tập!")
     
+   
+import random
+
+if danh_sach_loc:
+    # Khởi tạo cố định 1 câu hỏi ngẫu nhiên trong session_state cho đến khi đổi chủ đề hoặc mức độ
+    if "current_question" not in st.session_state or st.session_state.get("selected_topic_cache") != topic or st.session_state.get("selected_level_cache") != level:
+        st.session_state.current_question = random.choice(danh_sach_loc)
+        st.session_state.selected_topic_cache = topic
+        st.session_state.selected_level_cache = level
+
+    cau = st.session_state.current_question
+
+    st.success("Đã tải thành công câu hỏi để học sinh luyện tập!")
+    
     with st.container():
         st.markdown(f"**Mức độ: {cau['muc_do']}**")
         st.write(cau["noi_dung"])
         
-        # Hiển thị các lựa chọn A, B, C, D nếu có
+        # Thu thập các đáp án A, B, C, D để đưa vào ô chọn trắc nghiệm
         options = cau.get("options", {})
+        op_list = []
+        op_mapping = {}
         for key in ["A", "B", "C", "D"]:
             if options.get(key):
-                st.write(options[key])
+                text_opt = f"{key}. {options[key]}"
+                op_list.append(text_opt)
+                op_mapping[text_opt] = key
                 
-        # Nút bấm để đổi sang câu hỏi khác
-        if st.button("🔄 Đổi câu hỏi khác"):
-            st.session_state.current_question = random.choice(danh_sach_loc)
-            st.rerun()
+        dap_an_dung = str(cau.get("dap_an", "")).strip().upper()
+        if not dap_an_dung and "Đáp án:" in cau["noi_dung"]:
+            parts = cau["noi_dung"].split("Đáp án:")
+            if len(parts) > 1:
+                dap_an_dung = parts[1].strip()[:1].upper()
+
+        if op_list:
+            # Tạo ô chọn trắc nghiệm tương tác cho học sinh
+            choice = st.radio("Chọn đáp án của em:", op_list, key=f"radio_{hash(cau['noi_dung'])}")
+            
+            col1, col2 = st.columns([1, 3])
+            with col1:
+                if st.button("✨ Nộp bài", key=f"submit_{hash(cau['noi_dung'])}"):
+                    chosen_key = op_mapping.get(choice, "")
+                            
+                    # Kiểm tra kết quả
+                    if chosen_key == dap_an_dung:
+                        st.success(f"🎉 Chính xác! Em đã chọn đúng đáp án {dap_an_dung}.")
+                    else:
+                        st.error(f"❌ Rất tiếc, đáp án chưa đúng. Đáp án chính xác là: **{dap_an_dung}**")
+        
+        # --- TÍNH NĂNG GIA SƯ AI GIẢI ĐÁP THẮC MẮC ---
+        with st.expander("🤖 Hỏi Gia sư AI về câu hỏi này"):
+            user_question = st.text_input("Em có thắc mắc gì về bài này (VD: Tại sao ra công thức này?, Cách giải khác là gì?...):", key=f"ai_tutor_{hash(cau['noi_dung'])}")
+            if st.button("✨ Gửi hỏi Gia sư AI", key=f"btn_ai_{hash(cau['noi_dung'])}"):
+                if user_question.strip():
+                    with st.spinner("Gia sư AI đang phân tích và hướng dẫn em..."):
+                        prompt_gia_su = f"""
+                        Bạn là một giáo viên Toán 11 tận tâm, thân thiện. 
+                        Học sinh đang luyện tập câu hỏi sau:
+                        {cau['noi_dung']}
+                        Đáp án đúng của câu này là: {dap_an_dung}
+                        
+                        Học sinh có thắc mắc: "{user_question}"
+                        
+                        Hãy giải thích chi tiết, dễ hiểu, khích lệ và không làm thay học sinh toàn bộ tư duy nếu chưa cần thiết.
+                        """
+                        try:
+                            response = model.generate_content(prompt_gia_su)
+                            st.markdown("### 💡 Gia sư AI giải đáp:")
+                            st.write(response.text)
+                        except Exception as e:
+                            st.warning("Gia sư AI đang bận một chút, em hỏi lại câu này sau ít phút nhé hoặc trao đổi trực tiếp với thầy cô!")
+                else:
+                    st.warning("Em vui lòng nhập nội dung thắc mắc để Gia sư AI hỗ trợ nhé!")
             
         st.markdown("---")
 
-# Dùng if độc lập thế cho else để không bao giờ bị lỗi đụng độ với các nút elif phía dưới
 if not danh_sach_loc:
     st.warning("Không tìm thấy câu hỏi phù hợp với chủ đề và mức độ này trong ngân hàng!")
   
