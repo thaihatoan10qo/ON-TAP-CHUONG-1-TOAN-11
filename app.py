@@ -658,7 +658,7 @@ with tab_luyentap:
     if not is_short_answer:
                 chosen_key = op_mapping.get(user_val, "")
                 is_corr = (chosen_key.upper() == dap_an_dung.upper())
-            else:
+    else:
                 is_corr = is_same_number(user_val, dap_an_dung)
             
             if is_corr:
