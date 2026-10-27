@@ -655,12 +655,19 @@ if danh_sach_loc:
         st.write(cau["noi_dung"])
         
         # Thu thập các đáp án A, B, C, D để đưa vào ô chọn trắc nghiệm
+       # Xử lý options: làm sạch triệt để, loại bỏ hoàn toàn chữ cái bị lặp ở đầu
         options = cau.get("options", {})
         op_list = []
         op_mapping = {}
         for key in ["A", "B", "C", "D"]:
-            if options.get(key):
-                text_opt = f"{key}. {options[key]}"
+            val = options.get(key)
+            if val:
+                val_clean = str(val).strip()
+                # Tự động quét và xóa bỏ chữ cái A, B, C, D (hoặc chính bằng key đang xét) kèm theo dấu chấm, hai chấm, ngoặc ở đầu
+                pattern = rf'^(?:{key}|[A-Da-d])[\s\.\:\)\-]+'
+                val_clean = re.sub(pattern, '', val_clean, flags=re.IGNORECASE).strip()
+                
+                text_opt = f"{key}. {val_clean}"
                 op_list.append(text_opt)
                 op_mapping[text_opt] = key
                 
