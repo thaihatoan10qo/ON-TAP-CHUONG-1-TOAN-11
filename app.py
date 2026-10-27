@@ -683,10 +683,7 @@ with tab_luyentap:
             else:
                 st.warning("⚠️ Không tìm thấy câu hỏi phù hợp với chủ đề và mức độ này trong ngân hàng đề!")
 
-    with col_btn2:
-        if st.button("🔄 AI sinh câu tương tự dạng vừa làm", key="btn_ai_sinh"):
-            # (Giữ nguyên logic sinh câu tương tự hiện tại của cô ở đây)
-            pass
+   
     with col_btn2:
         btn_clone = st.button("🔄 AI sinh câu tương tự dạng vừa làm", key="btn_clone_tu_kho")
         if btn_clone:
