@@ -607,7 +607,9 @@ st.write("Tổng số câu đọc được từ file:", len(ngan_hang_toan_bo))
 st.write("--- KẾT QUẢ ĐỐI CHÍNH ---")
 st.write("UI đang chọn - Chủ đề (clean):", selected_topic_clean)
 st.write("UI đang chọn - Mức độ (clean):", selected_diff_clean)
-
+# Kiểm tra danh sách các mức độ có trong kho đề thuộc chủ đề đang chọn
+cac_muc_do_trong_file = set(c["muc_do"] for c in ngan_hang_toan_bo if selected_topic_clean in chuan_hoa(c["chu_de"]))
+st.write("Các mức độ thực tế có trong file cho chủ đề này:", list(cac_muc_do_trong_file))
 if ngan_hang_toan_bo:
     st.write("Ví dụ chủ đề câu đầu tiên trong file:", repr(ngan_hang_toan_bo[0]["chu_de"]))
     st.write("Ví dụ mức độ câu đầu tiên trong file:", repr(ngan_hang_toan_bo[0]["muc_do"]))
