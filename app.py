@@ -491,7 +491,7 @@ with tab_luyentap:
             key="tab3_level_select"
         )
  
-  col_btn1, col_btn2 = st.columns(2)
+col_btn1, col_btn2 = st.columns(2)
 with col_btn1:
     btn_gen = st.button("🎲 AI tạo câu hỏi từ ngân hàng đề")
     # BẮT SỰ KIỆN CHO NÚT NÀY NGAY TẠI ĐÂY:
