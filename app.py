@@ -608,28 +608,19 @@ if btn_gen:
       for c in ngan_hang_toan_bo
       if c["chu_de"] == topic and c["muc_do"] == level
   ]
-import random
+
+ import random
+import re
 
 if danh_sach_loc:
-    # Khởi tạo câu hỏi ngẫu nhiên trong session_state
+    # Khởi tạo cố định 1 câu hỏi ngẫu nhiên trong session_state
     if "current_question" not in st.session_state or st.session_state.get("selected_topic_cache") != topic or st.session_state.get("selected_level_cache") != level:
         st.session_state.current_question = random.choice(danh_sach_loc)
         st.session_state.selected_topic_cache = topic
         st.session_state.selected_level_cache = level
-
-    cau = st.session_state.current_question
-
-    st.success(f"Đã chọn ngẫu nhiên 1 câu hỏi từ {len(danh_sach_loc)} câu phù hợp để học sinh luyện tập!")
-    
-   
-import random
-
-if danh_sach_loc:
-    # Khởi tạo cố định 1 câu hỏi ngẫu nhiên trong session_state cho đến khi đổi chủ đề hoặc mức độ
-    if "current_question" not in st.session_state or st.session_state.get("selected_topic_cache") != topic or st.session_state.get("selected_level_cache") != level:
-        st.session_state.current_question = random.choice(danh_sach_loc)
-        st.session_state.selected_topic_cache = topic
-        st.session_state.selected_level_cache = level
+        q_old_hash = hash(str(st.session_state.current_question['noi_dung']))
+        if f"submitted_{q_old_hash}" in st.session_state:
+            st.session_state[f"submitted_{q_old_hash}"] = False
 
     cau = st.session_state.current_question
 
@@ -639,8 +630,7 @@ if danh_sach_loc:
         st.markdown(f"**Mức độ: {cau['muc_do']}**")
         st.write(cau["noi_dung"])
         
-        # Thu thập các đáp án A, B, C, D để đưa vào ô chọn trắc nghiệm
-       # Xử lý options: làm sạch triệt để, loại bỏ hoàn toàn chữ cái bị lặp ở đầu
+        # Xử lý options: làm sạch triệt để các tiền tố A., B., C., D. ở đầu chuỗi
         options = cau.get("options", {})
         op_list = []
         op_mapping = {}
@@ -648,7 +638,6 @@ if danh_sach_loc:
             val = options.get(key)
             if val:
                 val_clean = str(val).strip()
-                # Tự động quét và xóa bỏ chữ cái A, B, C, D (hoặc chính bằng key đang xét) kèm theo dấu chấm, hai chấm, ngoặc ở đầu
                 pattern = rf'^(?:{key}|[A-Da-d])[\s\.\:\)\-]+'
                 val_clean = re.sub(pattern, '', val_clean, flags=re.IGNORECASE).strip()
                 
@@ -662,31 +651,35 @@ if danh_sach_loc:
             if len(parts) > 1:
                 dap_an_dung = parts[1].strip()[:1].upper()
 
+        q_hash = hash(str(cau['noi_dung']))
+        submit_key = f"submitted_{q_hash}"
+        chosen_cache_key = f"chosen_{q_hash}"
+        radio_key = f"radio_{q_hash}"
+
         if op_list:
-            # Tạo ô chọn trắc nghiệm tương tác cho học sinh
-            choice = st.radio("Chọn đáp án của em:", op_list, key=f"radio_{hash(cau['noi_dung'])}")
-            
-            # Sử dụng session_state để lưu trạng thái đã nộp của câu này
-            submit_key = f"submitted_{hash(cau['noi_dung'])}"
-            chosen_cache_key = f"chosen_{hash(cau['noi_dung'])}"
+            # SỬ DỤNG index=None ĐỂ KHÔNG BỊ TỰ ĐỘNG CHỌN SẴN ĐÁP ÁN A
+            choice = st.radio("Chọn đáp án của em:", op_list, index=None, key=radio_key)
             
             col1, col2 = st.columns([1, 3])
             with col1:
-                if st.button("✨ Nộp bài & Kiểm tra", key=f"submit_{hash(cau['noi_dung'])}"):
-                    chosen_key = op_mapping.get(choice, "")
-                    st.session_state[submit_key] = True
-                    st.session_state[chosen_cache_key] = chosen_key
+                if st.button("✨ Nộp bài & Kiểm tra", key=f"submit_{q_hash}"):
+                    if choice is None:
+                        st.warning("⚠️ Em vui lòng chọn một đáp án trước khi bấm nộp bài nhé!")
+                    else:
+                        st.session_state[submit_key] = True
+                        st.session_state[chosen_cache_key] = choice
 
-            # Sau khi học sinh bấm nộp bài, hiển thị kết quả, phân tích bẫy và lời giải
+            # Nếu học sinh đã bấm nộp bài thành công
             if st.session_state.get(submit_key, False):
-                chosen_key = st.session_state.get(chosen_cache_key, "")
+                chosen_choice = st.session_state.get(chosen_cache_key, "")
+                chosen_key = op_mapping.get(chosen_choice, "")
                 
                 if chosen_key == dap_an_dung:
                     st.success(f"🎉 Chính xác tuyệt vời! Em đã chọn đúng đáp án **{dap_an_dung}**.")
                 else:
                     st.error(f"❌ Rất tiếc, chưa chính xác. Đáp án đúng của câu này là: **{dap_an_dung}**")
                     
-                    # --- PHÂN TÍCH BẪY SAI LẦM DỰA TRÊN ĐÁP ÁN HỌC SINH CHỌN ---
+                    # --- PHÂN TÍCH BẪY SAI LẦM ---
                     with st.spinner("🤖 Gia sư AI đang phân tích nguyên nhân sập bẫy của em..."):
                         prompt_trap = f"""
                         Bạn là một giáo viên Toán 11 tâm lý và giàu kinh nghiệm.
@@ -704,19 +697,48 @@ if danh_sach_loc:
                         except Exception:
                             st.warning(f"⚠️ Em đã mắc bẫy ở câu này. Hãy xem lại kỹ các bước biến đổi công thức và điều kiện xác định nhé!")
 
-                # --- HIỂN THỊ LỜI GIẢI CHI TIẾT ---
+                # --- LỜI GIẢI CHI TIẾT ---
                 with st.expander("📖 Xem lời giải chi tiết từng bước", expanded=True):
                     loi_giai_file = cau.get("loi_giai", "")
                     if loi_giai_file:
                         st.write(loi_giai_file)
                     else:
-                        # Nếu file chưa có sẵn lời giải, gọi AI sinh lời giải chuẩn
                         prompt_lg = f"Hãy trình bày lời giải chi tiết, chuẩn mực theo chương trình Toán 11 cho bài toán sau:\n{cau['noi_dung']}\nĐáp án đúng: {dap_an_dung}"
                         try:
                             res_lg = model.generate_content(prompt_lg)
                             st.write(res_lg.text)
                         except:
                             st.write("Lời giải chi tiết đang được cập nhật.")
+
+        # --- TÍNH NĂNG GIA SƯ AI HỎI ĐÁP ---
+        with st.expander("🤖 Hỏi Gia sư AI về câu hỏi này"):
+            user_question = st.text_input("Em có thắc mắc gì về bài này (VD: Tại sao ra công thức này?, Cách giải khác là gì?...):", key=f"ai_tutor_{q_hash}")
+            if st.button("✨ Gửi hỏi Gia sư AI", key=f"btn_ai_{q_hash}"):
+                if user_question.strip():
+                    with st.spinner("Gia sư AI đang phân tích và hướng dẫn em..."):
+                        prompt_gia_su = f"""
+                        Bạn là một giáo viên Toán 11 tận tâm, thân thiện. 
+                        Học sinh đang luyện tập câu hỏi sau:
+                        {cau['noi_dung']}
+                        Đáp án đúng của câu này là: {dap_an_dung}
+                        
+                        Học sinh có thắc mắc: "{user_question}"
+                        
+                        Hãy giải thích chi tiết, dễ hiểu, khích lệ và không làm thay học sinh toàn bộ tư duy nếu chưa cần thiết.
+                        """
+                        try:
+                            response = model.generate_content(prompt_gia_su)
+                            st.markdown("### 💡 Gia sư AI giải đáp:")
+                            st.write(response.text)
+                        except Exception as e:
+                            st.warning("💡 Hệ thống AI đang bận tải một chút, em bấm gửi lại ngay để Gia sư AI giải đáp cho em nhé!")
+                else:
+                    st.warning("Em vui lòng nhập nội dung thắc mắc để Gia sư AI hỗ trợ nhé!")
+            
+        st.markdown("---")
+
+if not danh_sach_loc:
+    st.warning("Không tìm thấy câu hỏi phù hợp với chủ đề và mức độ này trong ngân hàng!")
   
 
 # 2. XỬ LÝ NÚT: Tạo câu tương tự (DÙNG AI GEMINI)
