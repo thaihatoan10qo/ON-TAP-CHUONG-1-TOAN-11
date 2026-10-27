@@ -605,7 +605,7 @@ with tab_luyentap:
             
             # 2. Dùng AI Gemini chuẩn hóa lại câu hỏi, tìm đáp án đúng và viết lời giải chi tiết + phân tích bẫy ngay lập tức
                 with st.spinner("🤖 Gia sư AI đang chuẩn hóa câu hỏi và biên soạn lời giải..."):
-                prompt_chuan_hoa = f"""
+                    prompt_chuan_hoa = f"""
                 Bạn là một chuyên gia khảo thí Toán 11 và giáo viên giỏi.
                 Dưới đây là một câu hỏi trắc nghiệm được lấy từ kho đề:
                 "{raw_cau['noi_dung']}"
