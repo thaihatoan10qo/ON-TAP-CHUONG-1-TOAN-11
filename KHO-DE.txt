@@ -1,7 +1,7 @@
 BỘ CÂU HỎI ÔN TẬP VÀ KIỂM TRA
 TOÁN 11 CHƯƠNG 1
-PHẦN I. GÓC LƯỢNG GIÁC VÀ CÔNG THỨC LƯỢNG GIÁC
-PHẦN 1.1.Mức độ nhận biết:
+1.Giá trị lượng giác của góc lượng giác & Công thức lượng giác
+1.1.Mức độ nhận biết:
 Câu 1: Trong các khẳng định sau, khẳng định nào sai?
 A. $\sin x + \cos x = \sqrt{2}\sin(x + \frac{\pi}{4})$
 B. $\sin x - \cos x = -\sqrt{2}\cos(x + \frac{\pi}{4})$
@@ -88,7 +88,7 @@ B. $\cos(\pi + x) = -\cos x$
 C. $\cos(\pi + x) = \cos x$
 D. $\cot(\pi + x) = \tan x$
 Đáp án:B
-Phần 1.2.Mức độ thông hiểu:
+1.2.Mức độ thông hiểu:
 Câu 15: Góc lượng giác $750^\circ$ có cùng điểm biểu diễn trên đường tròn lượng giác với góc lượng giác nào sau đây?
 A. $135^\circ$
 B. $175^\circ$
@@ -190,7 +190,7 @@ B. $M = \sin x$
 C. $M = \sin 2x$
 D. $M = \cos 2x$
 Đáp án:C
-Phần 1.3. Mức độ vận dung
+1.3. Mức độ vận dụng
 Câu 31: Cho $\sin x = \frac{1}{5}$ với $\frac{\pi}{2} < x < \pi$. Khi đó $\cot 2x = -\frac{23\sqrt{m}}{24}$. Tìm $m$?
 Đáp án: 6
 Lời giải: Vì $\frac{\pi}{2} < x < \pi$ nên $\cos x = -\sqrt{1 - \sin^2 x} = -\sqrt{1 - \frac{1}{25}} = -\frac{2\sqrt{6}}{5}$.
@@ -216,7 +216,7 @@ Câu 34: Cho $\cos \alpha = -0,6$ và $\frac{\pi}{2} < \alpha < \pi$. Tính $\si
 Lời giải: Vì $\frac{\pi}{2} < \alpha < \pi$ nên $\sin \alpha > 0$. Ta có:
 $\sin \alpha = \sqrt{1 - \cos^2 \alpha} = \sqrt{1 - (-0,6)^2} = \sqrt{0,64} = 0,8$.
 Biến đổi: $\sin(\alpha - \pi) = -\sin(\pi - \alpha) = -\sin \alpha = -0,8$.
-Phần 1.4. Mức độ vận dung cao
+1.4. Mức độ vận dụng cao
 Câu 35: Cho hai góc thực $x, y$ thỏa mãn hệ thức:$$\begin{cases} \sin x + \sin y = \frac{\sqrt{6}}{2} \\ \cos x + \cos y = \frac{\sqrt{2}}{2} \end{cases}$$Tính giá trị của biểu thức $P = \cos(x - y)$.
 Đáp án: 0
 Câu 36: Tìm giá trị nhỏ nhất của biểu thức $P = \frac{1}{\sin^2 x} + \frac{4}{\cos^2 x}$ với điều kiện các biểu thức đều có nghĩa.
@@ -230,8 +230,8 @@ Lời giải chi tiết:
 Biểu diễn biểu thức $P$ theo một hàm số lượng giác duy nhất là $\sin x$ bằng cách sử dụng công thức nhân đôi $\cos 2x = 1 - 2\sin^2 x$:$$P = 1 - 2\sin^2 x + 2\sin x$$Đặt $t = \sin x$. Vì $x \in \mathbb{R}$, ta có điều kiện $t \in [-1; 1]$.
 Biểu thức trở thành hàm số bậc hai theo biến $t$:$$f(t) = -2t^2 + 2t + 1 \quad (\text{với } t \in [-1; 1])$$Đỉnh của parabol $f(t)$ có hoành độ $t = -\frac{b}{2a} = -\frac{2}{2(-2)} = \frac{1}{2} \in [-1; 1]$.
 Tính giá trị của hàm số tại đỉnh và tại các đầu mút của đoạn $[-1; 1]$:$f\left(\frac{1}{2}\right) = -2\left(\frac{1}{2}\right)^2 + 2\left(\frac{1}{2}\right) + 1 = -\frac{1}{2} + 1 + 1 = \frac{3}{2}$$f(-1) = -2(-1)^2 + 2(-1) + 1 = -2 - 2 + 1 = -3$$f(1) = -2(1)^2 + 2(1) + 1 = -2 + 2 + 1 = 1$So sánh các giá trị trên, ta suy ra:$\max P = \frac{3}{2}$ (đạt được khi $\sin x = \frac{1}{2}$)
-PHẦN II. HÀM SỐ LƯỢNG GIÁC
-Phần 2.1. Mức độ nhận biết
+2.Hàm số lượng giác (Tập xác định, tính chẵn lẻ, chu kỳ, đồ thị)
+2.1. Mức độ nhận biết
 Câu 38: Tập xác định của hàm số $y = \tan x$ là:
 A. $D = \mathbb{R} \setminus \{\frac{\pi}{4} + k\frac{\pi}{2} \mid k \in \mathbb{Z}\}$
 B. $D = \mathbb{R} \setminus \{\frac{\pi}{4} + k\pi \mid k \in \mathbb{Z}\}$
@@ -245,7 +245,7 @@ C. $2\pi$
 D. $\frac{2\pi}{3}$
 Đáp án:C
 
-Phần 2.2. Mức độ thông hiểu
+2.2. Mức độ thông hiểu
 Câu 40: Giá trị nhỏ nhất và giá trị lớn nhất của hàm số $y = 7 - 2\cos(x + \frac{\pi}{4})$ lần lượt là:
 A. $-2$ và $2$
 B. $-2$ và $7$
@@ -288,7 +288,7 @@ B. Hàm số chẵn trên tập xác định
 C. Hàm số không lẻ trên tập xác định
 D. Hàm số lẻ trên tập xác định
 Đáp án:D
-Phần 2.3. Mức độ vận dung
+2.3. Mức độ vận dụng
 Câu 47: Có bao nhiêu giá trị $m$ nguyên nhỏ hơn 10 để hàm số $y = \sqrt{m - 2\sin x}$ xác định trên $\mathbb{R}$:
 Đáp án: 8
 Câu 48: Trong mặt phẳng tọa độ $Oxy$, cho hình chữ nhật $ABCD$ biết rằng hai điểm $A, B$ nằm trên trục $Ox$ và $x_A < x_B$, còn hai điểm $C, D$ nằm trên đồ thị hàm số $y = \cos x + 1$ trên đoạn $[0; 2\pi]$. Biết rằng $AB = \frac{4\pi}{3}$, tính độ dài đoạn $AD$.
@@ -301,7 +301,7 @@ $x_B = \pi + \frac{AB}{2} = \pi + \frac{2\pi}{3} = \frac{5\pi}{3}$.
 Vì $AD$ vuông góc với trục $Ox$ tại $A$ và $D$ thuộc đồ thị hàm số nên độ dài đoạn $AD$ bằng tung độ của điểm $D$ (có hoành độ $x_D = x_A = \frac{\pi}{3}$):
 $AD = y\left(\frac{\pi}{3}\right) = \cos\frac{\pi}{3} + 1 = \frac{1}{2} + 1 = 1,5$.
 
-Phần 2.4. Mức độ vận dung cao
+2.4. Mức độ vận dụng cao
 Câu 49: Hàm số $y = 2\cos x + \sin(x + \frac{\pi}{4})$ đạt giá trị lớn nhất là (làm tròn đến hàng phần chục):
 Đáp án: 2,8
 Lời giải: Ta có: $\sin(x + \frac{\pi}{4}) = \sin x \cos\frac{\pi}{4} + \cos x \sin\frac{\pi}{4} = \frac{\sqrt{2}}{2}\sin x + \frac{\sqrt{2}}{2}\cos x$.
@@ -315,8 +315,8 @@ Ta có: $y = 5 + 4\sin 2x \cos 2x = 5 + 2\sin 4x$.
 Vì $-1 \le \sin 4x \le 1 \Leftrightarrow -2 \le 2\sin 4x \le 2 \Leftrightarrow 3 \le 5 + 2\sin 4x \le 7 \Leftrightarrow 3 \le y \le 7$.
 Vậy tập giá trị của hàm số là $T = [3; 7] \Rightarrow a = 3, b = 7 \Rightarrow S = a + b = 3 + 7 = 10$.
 
-PHẦN III. PHƯƠNG TRÌNH LƯỢNG GIÁC
-Phần 3.1. Mức độ nhận biết
+3.Phương trình lượng giác cơ bản & Điều kiện nghiệm
+3.1. Mức độ nhận biết
 Câu 51: Nghiệm của phương trình $\sin x = 0$ là:
 A. $x = k2\pi$
 B. $x = \pi + k2\pi$
@@ -360,7 +360,7 @@ C. $x = 20^\circ + k90^\circ, k \in \mathbb{Z}$
 D. $x = 20^\circ + k180^\circ, k \in \mathbb{Z}$
 Đáp án:A
 
-Phần 3.2. Mức độ thông hiểu
+3.2. Mức độ thông hiểu
 Câu 58: Phương trình $\sin^2 x = \cos^2 x$ có nghiệm là:
 A. $x = \frac{\pi}{4} + k\pi, k \in \mathbb{Z}$
 B. $x = -\frac{\pi}{4} + k2\pi, k \in \mathbb{Z}$
@@ -387,7 +387,7 @@ C. $x = \frac{3\pi}{4} + k2\pi, k \in \mathbb{Z}$
 D. $x = \frac{\pi}{4} + k2\pi, k \in \mathbb{Z}$
 Đáp án:D
 
-Phần 3.3. Mức độ vận dung.
+3.3. Mức độ vận dung.
 Câu 62: Số nghiệm của phương trình $3\sin x - 1 = 0$ trên đoạn $[0; 4\pi]$ là:
 A. $4$
 B. $3$
@@ -413,7 +413,7 @@ C. $2 \le m \le 6$
 D. $0 \le m \le 2$
 Đáp án:A
 
-Phần 3.4. Mức độ vận dung cao
+3.4. Mức độ vận dung cao
 
 Câu 66: Hằng ngày, mực nước của một con kênh lên xuống theo thuỷ triều. Độ sâu $h$ của mực nước tính theo thời gian $t$ trong một ngày cho bởi công thức $h = 3\cos(\frac{\pi t}{6} + 1) + 12$. Độ sâu của mực nước là $15\text{ m}$ vào lúc mấy giờ?
 A. $20$ giờ
@@ -433,31 +433,35 @@ $x = -\frac{\pi}{2} \approx -1,57; \; x = -\frac{\pi}{6} \approx -0,52; \; x = \
 Cùng với 2 nghiệm biên $x = -2$ và $x = 2$ (đều không trùng với các nghiệm trên), ta có tổng cộng $4 + 2 = 6$ nghiệm.
 
 
-PHẦN IV. CÂU HỎI THỰC TẾ
-Phần 4.1. Mức độ thông hiểu
-Câu 68: Một cái đồng hồ treo tường có đường kính bằng $60\text{ cm}$, ta xem vành ngoài chiếc đồng hồ là một đường tròn với các điểm $A, B$ lần lượt tương ứng với vị trí các số $2$ và $9$. Tính độ dài cung nhỏ $AB$ (làm tròn đến hàng phần chục).
+4.Ứng dụng thực tế của hàm số và phương trình lượng giác
+4.1. Mức độ nhận biết
+Câu 68: Huyết áp tâm trương của một người ở trạng thái nghỉ ngơi tại thời điểm $t$ (tính bằng giờ, kể từ nửa đêm) được mô hình hóa bởi hàm số $B(t) = 80 + 7\sin\dfrac{\pi t}{12}$ (mmHg)1. Tại thời điểm nửa đêm ($t = 0$), huyết áp tâm trương của người này bằng bao nhiêu?A. $80\text{ mmHg}$.B. $87\text{ mmHg}$.C. $73\text{ mmHg}$.D. $80 + 7\sqrt{3}\text{ mmHg}$.Đáp án đúng: A
+Câu 69: Vận tốc luồng khí trong một chu kỳ hô hấp của một người ở trạng thái nghỉ ngơi được cho bởi công thức $v(t) = 0,85\sin\dfrac{\pi t}{3}$ (lít/giây), trong đó $t$ là thời gian tính bằng giây2. Chu kỳ tuần hoàn $T$ của hàm số vận tốc luồng khí này bằng bao nhiêu?A. $T = 3\text{ giây}$.B. $T = 6\text{ giây}$.C. $T = \pi\text{ giây}$.D. $T = 2\pi\text{ giây}$.Đáp án đúng: B
+
+4.2. Mức độ thông hiểu
+Câu 70: Một cái đồng hồ treo tường có đường kính bằng $60\text{ cm}$, ta xem vành ngoài chiếc đồng hồ là một đường tròn với các điểm $A, B$ lần lượt tương ứng với vị trí các số $2$ và $9$. Tính độ dài cung nhỏ $AB$ (làm tròn đến hàng phần chục).
 Đáp án: 78,5
 Lời giải: Bán kính đường tròn vành ngoài đồng hồ là $R = \frac{60}{2} = 30\text{ cm}$.
 Mỗi khoảng giữa hai số liên tiếp trên mặt đồng hồ ứng với góc $\frac{360^\circ}{12} = 30^\circ$.
 Khoảng cách từ số 2 đến số 9 theo chiều kim đồng hồ gồm $9 - 2 = 7$ khoảng; ngược chiều kim đồng hồ gồm $12 - 7 = 5$ khoảng.
 Do đó cung nhỏ $AB$ tương ứng với $5$ khoảng, tức có số đo góc là $\alpha = 5 \times 30^\circ = 150^\circ = \frac{5\pi}{6}\text{ rad}$.
 Độ dài cung nhỏ $AB$ là: $l = R\alpha = 30 \cdot \frac{5\pi}{6} = 25\pi \approx 78,5398\text{ cm} \approx 78,5\text{ cm}$.
-Câu 69: Từ 6h30 đến 8h sáng cùng ngày, kim phút đã quay một góc lượng giác là bao nhiêu radian (làm tròn đến hàng phần chục)?
+Câu 71: Từ 6h30 đến 8h sáng cùng ngày, kim phút đã quay một góc lượng giác là bao nhiêu radian (làm tròn đến hàng phần chục)?
 Đáp án: -9,4
 Lời giải: Khoảng thời gian từ 6h30 đến 8h00 là $1,5$ giờ.
 Trong 1 giờ, kim phút quay đúng một vòng theo chiều âm (cùng chiều kim đồng hồ), ứng với góc lượng giác $-2\pi\text{ rad}$.
 Trong $1,5$ giờ, kim phút quay được $1,5$ vòng theo chiều âm, ứng với góc lượng giác:
 $\alpha = -1,5 \cdot 2\pi = -3\pi \approx -3 \times 3,14159 \approx -9,42477\text{ rad} \approx -9,4\text{ rad}$.
-Phần 4.2. Mức độ vận dụng
-Câu 70: Trong một thí nghiệm, một quả cầu được gắn vào một đầu dây đàn hồi, đầu kia của sợi dây được gắn cố định vào một thanh treo nằm ngang. Sau khi quả cầu được kéo xuống và thả ra, nó bắt đầu di chuyển lên xuống. Khi đó, chiều cao $h$ của quả cầu so với mặt đất theo thời gian $t$ được cho bởi công thức $h = 100 - 30\cos 20t\text{ (cm)}$. Tính thời điểm đầu tiên mà quả cầu đạt chiều cao cực đại kể từ khi quả cầu được thả ra (làm tròn đến hàng phần trăm).
+4.3. Mức độ vận dụng
+Câu 72: Trong một thí nghiệm, một quả cầu được gắn vào một đầu dây đàn hồi, đầu kia của sợi dây được gắn cố định vào một thanh treo nằm ngang. Sau khi quả cầu được kéo xuống và thả ra, nó bắt đầu di chuyển lên xuống. Khi đó, chiều cao $h$ của quả cầu so với mặt đất theo thời gian $t$ được cho bởi công thức $h = 100 - 30\cos 20t\text{ (cm)}$. Tính thời điểm đầu tiên mà quả cầu đạt chiều cao cực đại kể từ khi quả cầu được thả ra (làm tròn đến hàng phần trăm).
 Đáp án: 0,16
 Lời giải: Ta có: $h = 100 - 30\cos 20t\text{ (cm)}$.
 Vì $-1 \le \cos 20t \le 1$ nên chiều cao $h$ đạt giá trị cực đại khi $\cos 20t = -1$.
 Khi đó: $20t = \pi + k2\pi \Leftrightarrow t = \frac{\pi}{20} + k\frac{\pi}{10} \; (k \in \mathbb{Z})$.
 Thời điểm đầu tiên mà quả cầu đạt chiều cao cực đại sau khi thả ứng với $k = 0$:
 $t = \frac{\pi}{20} \approx \frac{3,14159}{20} \approx 0,157\text{ giây} \approx 0,16\text{ giây}$.
-Phần 4.3. Mức độ vận dung cao
-Câu 71: Số giờ chiếu sáng của một thành phố ở vĩ độ $40^\circ$ Bắc trong ngày thứ $t$ của một năm không nhuận được cho bởi hàm số: $d(t) = 3\sin\left(\frac{\pi t}{182} - \frac{40\pi}{91}\right) + 12$ với $t \in \mathbb{Z}$ và $0 < t \le 365$. Vào ngày thứ bao nhiêu trong năm thì thành phố có nhiều giờ sáng nhất?
+4.4. Mức độ vận dụng cao
+Câu 73: Số giờ chiếu sáng của một thành phố ở vĩ độ $40^\circ$ Bắc trong ngày thứ $t$ của một năm không nhuận được cho bởi hàm số: $d(t) = 3\sin\left(\frac{\pi t}{182} - \frac{40\pi}{91}\right) + 12$ với $t \in \mathbb{Z}$ và $0 < t \le 365$. Vào ngày thứ bao nhiêu trong năm thì thành phố có nhiều giờ sáng nhất?
 Đáp án: 171
 Lời giải: Hàm số $d(t)$ đạt giá trị lớn nhất khi $\sin\left(\frac{\pi t}{182} - \frac{40\pi}{91}\right) = 1$.
 Khi đó: $\frac{\pi t}{182} - \frac{40\pi}{91} = \frac{\pi}{2} + k2\pi \; (k \in \mathbb{Z})$.
@@ -466,7 +470,7 @@ $\frac{t}{182} - \frac{40}{91} = \frac{1}{2} + 2k \Leftrightarrow \frac{t}{182} 
 Suy ra: $t = 171 + 364k$.
 Vì $0 < t \le 365$ và $t \in \mathbb{Z}$ nên chọn $k = 0$, ta được $t = 171$.
 Vậy vào ngày thứ 171 trong năm thì thành phố có nhiều giờ sáng nhất.
-Câu 72: Mực nước cao nhất tại một cảng biển là $16\text{ m}$ khi thủy triều lên cao và sau $12$ giờ khi thủy triều xuống thấp thì mực nước thấp nhất là $10\text{ m}$. Đồ thị mô tả sự thay đổi chiều cao của mực nước tại cảng trong vòng $24$ giờ tính từ lúc nửa đêm. Biết chiều cao của mực nước $h\text{ (m)}$ theo thời gian $t\text{ (h)}$ ($0 \le t \le 24$) được cho bởi công thức $h = m + a\cos(\frac{\pi}{12}t)$ với $m, a$ là các số thực dương. Tìm thời điểm $t$ sớm nhất trong ngày để chiều cao của mực nước là $11,5\text{ m}$.
+Câu 74: Mực nước cao nhất tại một cảng biển là $16\text{ m}$ khi thủy triều lên cao và sau $12$ giờ khi thủy triều xuống thấp thì mực nước thấp nhất là $10\text{ m}$. Đồ thị mô tả sự thay đổi chiều cao của mực nước tại cảng trong vòng $24$ giờ tính từ lúc nửa đêm. Biết chiều cao của mực nước $h\text{ (m)}$ theo thời gian $t\text{ (h)}$ ($0 \le t \le 24$) được cho bởi công thức $h = m + a\cos(\frac{\pi}{12}t)$ với $m, a$ là các số thực dương. Tìm thời điểm $t$ sớm nhất trong ngày để chiều cao của mực nước là $11,5\text{ m}$.
 Đáp án: 8
 Lời giải: Từ đồ thị và giả thiết:
 Chiều cao cực đại: $h_{\max} = m + a = 16\text{ m}$.
@@ -481,14 +485,14 @@ Với điều kiện $0 \le t \le 24$:
 •	Nhánh $t = 8 + 24k$ với $k = 0 \Rightarrow t = 8$.
 •	Nhánh $t = -8 + 24k$ với $k = 1 \Rightarrow t = 16$.
 Thời điểm sớm nhất trong ngày là $t = 8$ giờ (lúc 8 giờ sáng).
-Câu 73: Mực nước cao nhất tại một cảng biển là $16\text{ m}$ khi thủy triều lên cao và sau $12$ giờ khi thủy triều xuống thấp thì mực nước thấp nhất là $10\text{ m}$. Đồ thị mô tả sự thay đổi chiều cao của mực nước tại cảng trong vòng $24$ giờ tính từ lúc nửa đêm. Biết chiều cao của mực nước $h\text{ (m)}$ theo thời gian $t\text{ (h)}$ ($0 \le t \le 24$) được cho bởi công thức $h = m + a\cos(\frac{\pi}{12}t)$ với $m, a$ là các số thực dương. Tìm thời điểm $t$ muộn nhất trong ngày để chiều cao của mực nước là $11,5\text{ m}$.
+Câu 75: Mực nước cao nhất tại một cảng biển là $16\text{ m}$ khi thủy triều lên cao và sau $12$ giờ khi thủy triều xuống thấp thì mực nước thấp nhất là $10\text{ m}$. Đồ thị mô tả sự thay đổi chiều cao của mực nước tại cảng trong vòng $24$ giờ tính từ lúc nửa đêm. Biết chiều cao của mực nước $h\text{ (m)}$ theo thời gian $t\text{ (h)}$ ($0 \le t \le 24$) được cho bởi công thức $h = m + a\cos(\frac{\pi}{12}t)$ với $m, a$ là các số thực dương. Tìm thời điểm $t$ muộn nhất trong ngày để chiều cao của mực nước là $11,5\text{ m}$.
 Đáp án: 16
 Lời giải: Tương tự Câu 79, ta có $m = 13, a = 3$ và phương trình:
 $\cos\left(\frac{\pi}{12}t\right) = -\frac{1}{2} \Leftrightarrow t = \pm 8 + 24k \; (k \in \mathbb{Z})$.
 Trong khoảng thời gian của ngày ($0 \le t \le 24$), các thời điểm mực nước đạt $11,5\text{ m}$ là $t = 8$ và $t = 16$.
 Thời điểm muộn nhất trong ngày là $t = 16$ giờ (lúc 16 giờ chiều hay 4 giờ chiều).
 
-Câu 74: Một cây cầu có dạng cung $OA$ của đồ thị hàm số $y = 4,8\sin\frac{x}{9}$ với $O$ là gốc tọa độ, $A$ nằm trên nửa dương của trục hoành,hệ trục tọa độ với đơn vị trục là mét. Đoạn thẳng $OA$ nằm trên trục $Ox$ biểu diễn chiều rộng mặt sông. Tính chiều rộng mặt sông theo đơn vị mét và làm tròn đến hàng phần chục.
+Câu 76: Một cây cầu có dạng cung $OA$ của đồ thị hàm số $y = 4,8\sin\frac{x}{9}$ với $O$ là gốc tọa độ, $A$ nằm trên nửa dương của trục hoành,hệ trục tọa độ với đơn vị trục là mét. Đoạn thẳng $OA$ nằm trên trục $Ox$ biểu diễn chiều rộng mặt sông. Tính chiều rộng mặt sông theo đơn vị mét và làm tròn đến hàng phần chục.
 Đáp án: 28,3
 Lời giải: Mặt sông nằm trên trục $Ox$ (ứng với $y = 0$). Chiều rộng mặt sông bằng độ dài đoạn thẳng $OA$, trong đó $O$ là gốc toạ độ ($x_O = 0$) và $A$ là giao điểm kế tiếp của đồ thị với trục hoành về phía dương.
 Phương trình hoành độ giao điểm với trục hoành:
