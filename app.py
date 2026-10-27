@@ -594,7 +594,14 @@ danh_sach_loc = [
 
 # Dòng kiểm tra nhanh xem file đã đọc được bao nhiêu câu
 st.write("Tổng số câu đọc được từ file:", len(ngan_hang_toan_bo))
+# In ra để kiểm tra giá trị thực tế đang so sánh
+st.write("--- KẾT QUẢ ĐỐI CHÍNH ---")
+st.write("UI đang chọn - Chủ đề (clean):", selected_topic_clean)
+st.write("UI đang chọn - Mức độ (clean):", selected_diff_clean)
 
+if ngan_hang_toan_bo:
+    st.write("Ví dụ chủ đề câu đầu tiên trong file:", repr(ngan_hang_toan_bo[0]["chu_de"]))
+    st.write("Ví dụ mức độ câu đầu tiên trong file:", repr(ngan_hang_toan_bo[0]["muc_do"]))
   # 1. XỬ LÝ NÚT: Lấy câu hỏi trực tiếp từ ngân hàng đề (KHÔNG DÙNG AI)
 if btn_gen:
   ngan_hang_toan_bo = tai_va_loc_ngan_hang_de("KHO-DE.txt")
