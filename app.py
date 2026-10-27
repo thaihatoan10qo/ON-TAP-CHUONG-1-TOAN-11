@@ -661,12 +661,12 @@ with tab_luyentap:
     else:
                 is_corr = is_same_number(user_val, dap_an_dung)
             
-            if is_corr:
+    if is_corr:
                 st.success(f"🎉 Chính xác tuyệt vời! Em đã làm chủ câu hỏi này.")
-            else:
-                if not is_short_answer:
+    else:
+    if not is_short_answer:
                     st.error(f"❌ Rất tiếc, chưa chính xác. Đáp án đúng là: **{dap_an_dung}**")
-                else:
+    else:
                     st.error(f"❌ Rất tiếc, chưa chính xác. Đáp án đúng là: **{dap_an_dung}**")
                 
                 # Phân tích bẫy sai lầm
