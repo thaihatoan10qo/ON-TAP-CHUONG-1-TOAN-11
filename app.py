@@ -624,17 +624,37 @@ if btn_gen:
       if c["chu_de"] == topic and c["muc_do"] == level
   ]
 
-  if danh_sach_loc:
-    cau_chon = random.choice(danh_sach_loc)
-    st.session_state["current_question"] = cau_chon["noi_dung"]
-    st.session_state["chat_history"] = []  # Reset lịch sử chat với gia sư AI
-    st.success("Đã tải câu hỏi trực tiếp từ ngân hàng đề chuẩn!")
-    st.rerun()
-  else:
-    st.warning(
-        "Không tìm thấy câu hỏi phù hợp với chủ đề và mức độ này trong ngân"
-        " hàng!"
-    )
+  import random
+
+if danh_sach_loc:
+    # Khởi tạo câu hỏi ngẫu nhiên trong session_state để cố định câu hỏi khi học sinh làm bài
+    if "current_question" not in st.session_state or st.session_state.get("selected_topic_cache") != topic or st.session_state.get("selected_level_cache") != level:
+        st.session_state.current_question = random.choice(danh_sach_loc)
+        st.session_state.selected_topic_cache = topic
+        st.session_state.selected_level_cache = level
+
+    cau = st.session_state.current_question
+
+    st.success(f"Đã chọn ngẫu nhiên 1 câu hỏi từ {len(danh_sach_loc)} câu phù hợp để học sinh luyện tập!")
+    
+    with st.container():
+        st.markdown(f"**Mức độ: {cau['muc_do']}**")
+        st.write(cau["noi_dung"])
+        
+        # Hiển thị các lựa chọn A, B, C, D nếu có
+        options = cau.get("options", {})
+        for key in ["A", "B", "C", "D"]:
+            if options.get(key):
+                st.write(options[key])
+                
+        # Nút bấm để đổi sang câu hỏi khác trong danh sách đã lọc
+        if st.button("🔄 Đổi câu hỏi khác"):
+            st.session_state.current_question = random.choice(danh_sach_loc)
+            st.rerun()
+            
+        st.markdown("---")
+else:
+    st.warning("Không tìm thấy câu hỏi phù hợp với chủ đề và mức độ này trong ngân hàng!")
 
 # 2. XỬ LÝ NÚT: Tạo câu tương tự (DÙNG AI GEMINI)
 elif btn_clone:
