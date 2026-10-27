@@ -579,7 +579,6 @@ thu_muc_hien_tai = os.path.dirname(os.path.abspath(__file__))
 duong_dan_kho_de = os.path.join(thu_muc_hien_tai, "KHO-DE.txt")
 
 ngan_hang_toan_bo = tai_va_loc_ngan_hang_de(duong_dan_kho_de)
-st.write("Tổng số câu đọc được từ file:", len(ngan_hang_toan_bo))
 
 # Lọc danh sách câu hỏi chính xác theo Chủ đề và Mức độ đang chọn trên giao diện Streamlit
 import re
@@ -612,19 +611,33 @@ if btn_gen:
 import random
 import re
 
-if danh_sach_loc:
-    # Khởi tạo cố định 1 câu hỏi ngẫu nhiên trong session_state
-    if "current_question" not in st.session_state or st.session_state.get("selected_topic_cache") != topic or st.session_state.get("selected_level_cache") != level:
-        st.session_state.current_question = random.choice(danh_sach_loc)
-        st.session_state.selected_topic_cache = topic
-        st.session_state.selected_level_cache = level
-        q_old_hash = hash(str(st.session_state.current_question['noi_dung']))
-        if f"submitted_{q_old_hash}" in st.session_state:
-            st.session_state[f"submitted_{q_old_hash}"] = False
+# Khởi tạo trạng thái ban đầu nếu chưa có
+if "started_practice" not in st.session_state:
+    st.session_state.started_practice = False
 
+# Nếu đổi chủ đề hoặc mức độ thì ẩn câu hỏi cũ đi để chờ bấm nút tạo mới
+if st.session_state.get("selected_topic_cache") != topic or st.session_state.get("selected_level_cache") != level:
+    st.session_state.started_practice = False
+    st.session_state.selected_topic_cache = topic
+    st.session_state.selected_level_cache = level
+
+# Bắt sự kiện khi bấm nút AI tạo câu hỏi từ ngân hàng đề
+if st.button("🎲 AI tạo câu hỏi từ ngân hàng đề", key="btn_tao_cau_hoi_moi"):
+    if danh_sach_loc:
+        st.session_state.current_question = random.choice(danh_sach_loc)
+        st.session_state.started_practice = True
+        # Reset trạng thái nộp bài cho câu hỏi mới
+        q_hash_new = hash(str(st.session_state.current_question['noi_dung']))
+        if f"submitted_{q_hash_new}" in st.session_state:
+            st.session_state[f"submitted_{q_hash_new}"] = False
+    else:
+        st.warning("Không tìm thấy câu hỏi phù hợp với chủ đề và mức độ này trong ngân hàng!")
+
+# CHỈ HIỂN THỊ CÂU HỎI KHI HỌC SINH ĐÃ BẤM NÚT VÀ CÓ CÂU HỎI TRONG HỆ THỐNG
+if st.session_state.started_practice and "current_question" in st.session_state and danh_sach_loc:
     cau = st.session_state.current_question
 
-    st.success("Đã tải thành công câu hỏi để học sinh luyện tập!")
+    st.success(f"Đã tải thành công 1 câu hỏi từ kho (Tổng số: {len(danh_sach_loc)} câu phù hợp)!")
     
     with st.container():
         st.markdown(f"**Mức độ: {cau['muc_do']}**")
@@ -657,7 +670,7 @@ if danh_sach_loc:
         radio_key = f"radio_{q_hash}"
 
         if op_list:
-            # SỬ DỤNG index=None ĐỂ KHÔNG BỊ TỰ ĐỘNG CHỌN SẴN ĐÁP ÁN A
+            # index=None giúp ô chọn để trống hoàn toàn, học sinh buộc phải tự tích chọn
             choice = st.radio("Chọn đáp án của em:", op_list, index=None, key=radio_key)
             
             col1, col2 = st.columns([1, 3])
@@ -710,9 +723,9 @@ if danh_sach_loc:
                         except:
                             st.write("Lời giải chi tiết đang được cập nhật.")
 
-        # --- TÍNH NĂNG GIA SƯ AI HỎI ĐÁP ---
+        # --- TÍNH NĂNG GIA SƯ AI HỎI ĐÁP 24/7 ---
         with st.expander("🤖 Hỏi Gia sư AI về câu hỏi này"):
-            user_question = st.text_input("Em có thắc mắc gì về bài này (VD: Tại sao ra công thức này?, Cách giải khác là gì?...):", key=f"ai_tutor_{q_hash}")
+            user_question = st.text_input("Em có thắc mắc gì về bài này (VD: Tại sao lại biến đổi như vậy? Em muốn gợi ý cách nhớ? Cách giải khác là gì?...):", key=f"ai_tutor_{q_hash}")
             if st.button("✨ Gửi hỏi Gia sư AI", key=f"btn_ai_{q_hash}"):
                 if user_question.strip():
                     with st.spinner("Gia sư AI đang phân tích và hướng dẫn em..."):
@@ -731,7 +744,7 @@ if danh_sach_loc:
                             st.markdown("### 💡 Gia sư AI giải đáp:")
                             st.write(response.text)
                         except Exception as e:
-                            st.warning("💡 Hệ thống AI đang bận tải một chút, em bấm gửi lại ngay để Gia sư AI giải đáp cho em nhé!")
+                            st.warning("💡 Hệ thống AI đang bận một chút, em bấm gửi lại ngay để Gia sư AI giải đáp cho em nhé!")
                 else:
                     st.warning("Em vui lòng nhập nội dung thắc mắc để Gia sư AI hỗ trợ nhé!")
             
