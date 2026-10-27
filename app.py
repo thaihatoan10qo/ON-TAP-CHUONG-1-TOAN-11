@@ -596,7 +596,7 @@ with tab_luyentap:
     # 2. Hai nút chức năng nằm ngang gọn gàng
     col_btn1, col_btn2 = st.columns(2)
     # --- HIỂN THỊ CÂU HỎI VÀ GIAO DIỆN LÀM BÀI NẾU ĐÃ CÓ CÂU HỎI ---
-        if "current_question" in st.session_state and st.session_state.current_question:
+    if "current_question" in st.session_state and st.session_state.current_question:
             cau = st.session_state.current_question
             
             st.markdown(f"**Mức độ:** {cau.get('muc_do', level)}")
