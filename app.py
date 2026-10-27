@@ -497,31 +497,104 @@ with tab_luyentap:
     with col_btn2:
         btn_clone = st.button("🔁 Tạo câu tương tự dạng vừa làm")
 
-    # Đọc và bốc mẫu ngắn gọn từ file kho_de.txt
-    danh_sach_tat_ca_cau = []
-    mau_cau_hoi = ""
-    if os.path.exists("kho_de.txt"):
-        try:
-            with open("kho_de.txt", "r", encoding="utf-8") as f:
-                noi_dung = f.read()
-                danh_sach_tat_ca_cau = [c.strip() for c in noi_dung.split("Câu ") if c.strip()]
-                import random
-                if danh_sach_tat_ca_cau:
-                    so_luong = min(3, len(danh_sach_tat_ca_cau))
-                    mau_cau_hoi = "Câu " + "\n\nCâu ".join(random.sample(danh_sach_tat_ca_cau, so_luong))
-        except Exception:
-            mau_cau_hoi = ""
+   import os
+import random
+import re
 
-    # Xử lý sinh câu hỏi
-    if btn_gen or btn_clone:
-        if not client:
-            st.error("Chưa cấu hình API Key trong mục Secrets của Streamlit.")
-        elif btn_clone and "last_q" not in st.session_state:
-            st.warning("Em cần tạo và làm thử 1 câu trước khi chọn tạo câu tương tự!")
-        else:
-            with st.spinner("AI đang thiết kế bài tập..."):
-                # Reset lịch sử chat khi đổi sang câu hỏi mới
-                st.session_state["chat_history"] = []
+
+# Hàm đọc và phân loại chi tiết ngân hàng đề từ file text
+def tai_va_loc_ngan_hang_de(file_path="kho_de.txt"):
+  danh_sach_cau = []
+  if not os.path.exists(file_path):
+    return danh_sach_cau
+
+  try:
+    with open(file_path, "r", encoding="utf-8") as f:
+      noi_dung = f.read()
+
+    # Tách các câu hỏi dựa theo từ khóa "Câu "
+    raw_cautrucs = noi_dung.split("Câu ")
+    for item in raw_cautrucs:
+      if not item.strip():
+        continue
+      cau_text = "Câu " + item.strip()
+      text_lower = cau_text.lower()
+
+      # 1. Nhận diện Chủ đề (Phần I, II, III, IV) dựa vào nội dung bên trong
+      chu_de = "1. Giá trị lượng giác của góc lượng giác & Công thức lượng giác"
+      if "phần ii" in text_lower or "hàm số lượng giác" in text_lower:
+        chu_de = "2. Hàm số lượng giác"
+      elif "phần iii" in text_lower or "phương trình lượng giác" in text_lower:
+        chu_de = "3. Phương trình lượng giác"
+      elif "phần iv" in text_lower or "câu hỏi thực tế" in text_lower:
+        chu_de = "4. Câu hỏi thực tế"
+
+      # 2. Nhận diện Mức độ tư duy
+      muc_do = "Nhận biết"
+      if "vận dụng cao" in text_lower or "1.4" in text_lower or "2.4" in text_lower or "3.4" in text_lower or "4.3" in text_lower:
+        muc_do = "Vận dụng cao"
+      elif "vận dụng" in text_lower or "1.3" in text_lower or "2.3" in text_lower or "3.3" in text_lower or "4.2" in text_lower:
+        muc_do = "Vận dụng"
+      elif "thông hiểu" in text_lower or "1.2" in text_lower or "2.2" in text_lower or "3.2" in text_lower or "4.1" in text_lower:
+        muc_do = "Thông hiểu"
+      elif "nhận biết" in text_lower or "1.1" in text_lower or "2.1" in text_lower or "3.1" in text_lower:
+        muc_do = "Nhận biết"
+
+      danh_sach_cau.append({
+          "noi_dung": cau_text,
+          "chu_de": chu_de,
+          "muc_do": muc_do,
+      })
+  except Exception as e:
+    print(f"Lỗi đọc file ngân hàng đề: {e}")
+
+  return danh_sach_cau
+
+
+# Tải toàn bộ ngân hàng đề
+ngan_hang_toan_bo = tai_va_loc_ngan_hang_de("kho_de.txt")
+
+# Lọc danh sách câu hỏi chính xác theo Chủ đề và Mức độ đang chọn trên giao diện Streamlit
+# (selected_topic và selected_difficulty là biến lấy từselectbox của cô trên giao diện)
+danh_sach_loc = [
+    c
+    for c in ngan_hang_toan_bo
+    if c["chu_de"] == selected_topic and c["muc_do"] == selected_difficulty
+]
+
+  # 1. XỬ LÝ NÚT: Lấy câu hỏi trực tiếp từ ngân hàng đề (KHÔNG DÙNG AI)
+if btn_gen:
+  ngan_hang_toan_bo = tai_va_loc_ngan_hang_de("kho_de.txt")
+
+  # Lọc theo đúng Chủ đề và Mức độ đang chọn trên giao diện
+  danh_sach_loc = [
+      c
+      for c in ngan_hang_toan_bo
+      if c["chu_de"] == selected_topic and c["muc_do"] == selected_difficulty
+  ]
+
+  if danh_sach_loc:
+    cau_chon = random.choice(danh_sach_loc)
+    st.session_state["current_question"] = cau_chon["noi_dung"]
+    st.session_state["chat_history"] = []  # Reset lịch sử chat với gia sư AI
+    st.success("Đã tải câu hỏi trực tiếp từ ngân hàng đề chuẩn!")
+    st.rerun()
+  else:
+    st.warning(
+        "Không tìm thấy câu hỏi phù hợp với chủ đề và mức độ này trong ngân"
+        " hàng!"
+    )
+
+# 2. XỬ LÝ NÚT: Tạo câu tương tự (DÙNG AI GEMINI)
+elif btn_clone:
+  if not client:
+    st.error("Chưa cấu hình API Key trong mục Secrets của Streamlit.")
+  elif "current_question" not in st.session_state:
+    st.warning("Em cần tạo và làm thử 1 câu trước khi chọn tạo câu tương tự!")
+  else:
+    with st.spinner("AI đang thiết kế bài tập tương tự..."):
+      st.session_state["chat_history"] = []
+      # (Đoạn code gọi API Gemini để sáng tác câu tương tự giữ nguyên ở đây)
 
                 gem_instructions = """
 Bạn là Trợ lý Chuyên gia Khảo thí Toán 11 THPT (Chương trình GDPT 2018).
@@ -538,7 +611,7 @@ Quy trình tư duy bắt buộc (Chain-of-Thought) khi thiết kế câu hỏi:
                 if btn_clone:
                     prompt = f"""
 Câu hỏi gốc học sinh vừa làm:
-"{st.session_state['last_q']}"
+"{st.session_state['current_question']}"
 
 Nhiệm vụ: Tạo 1 câu hỏi MỚI CÙNG DẠNG (thay đổi số liệu/hàm số, giữ nguyên mô hình tư duy).
 YÊU CẦU ĐẶC BIỆT: Vị trí đáp án đúng PHẢI được chọn ngẫu nhiên giữa A, B, C hoặc D (không được mặc định luôn là A).
