@@ -470,6 +470,9 @@ with tab_lythuyet:
         st.warning(f"Chưa tìm thấy file '{file_anh}' trên hệ thống. Hãy kiểm tra lại tên file trên GitHub.")
 # ================= TAB 3: LUYỆN TẬP THÍCH ỨNG & GIA SƯ AI TRỰC TIẾP =================
 # ================= TAB 3: LUYỆN TẬP THÔNG MINH & GIA SƯ AI TRỰC TIẾP =================
+def chuan_hoa(s):
+    # Hàm loại bỏ toàn bộ khoảng trắng, dấu câu, ký tự đặc biệt, chỉ giữ lại chữ và số
+    return re.sub(r'[^a-zA-Z0-9à-ỹÀ-Ỹ]', '', str(s).lower())
 with tab_luyentap:
     st.subheader("Luyện tập thông minh & Gia sư AI đồng hành")
     st.write("Em hãy lựa chọn chủ đề kiến thức và mức độ tư duy. Sau khi nộp bài, em có thể xem lời giải chi tiết, phân tích bẫy sai lầm hoặc trò chuyện trực tiếp với Gia sư AI:")
