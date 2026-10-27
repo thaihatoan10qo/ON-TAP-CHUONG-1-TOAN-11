@@ -741,7 +741,7 @@ with tab_luyentap:
                             st.session_state[f"submitted_{q_hash_new}"] = False
                             st.success("✨ AI đã sáng tác thành công câu hỏi tương tự dựa trên kho đề cho em!")
                         except Exception:
-                        st.warning("💡 Hệ thống AI đang bận, em lấy câu hỏi tiếp theo từ kho đề nhé!")
+                            st.warning("💡 Hệ thống AI đang bận, em lấy câu hỏi tiếp theo từ kho đề nhé!")
 
     # 3. HIỂN THỊ CÂU HỎI VÀ TƯƠNG TÁC LÀM BÀI
     if st.session_state.started_practice and "current_question" in st.session_state:
