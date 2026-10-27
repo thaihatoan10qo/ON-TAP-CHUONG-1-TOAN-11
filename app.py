@@ -598,21 +598,6 @@ danh_sach_loc = [
     and selected_diff_clean == chuan_hoa(c["muc_do"])
 ]
 
-# Kiểm tra sau khi lọc chuẩn hóa
-st.write("Số lượng câu hỏi sau khi lọc thành công:", len(danh_sach_loc))
-
-# Dòng kiểm tra nhanh xem file đã đọc được bao nhiêu câu
-st.write("Tổng số câu đọc được từ file:", len(ngan_hang_toan_bo))
-# In ra để kiểm tra giá trị thực tế đang so sánh
-st.write("--- KẾT QUẢ ĐỐI CHÍNH ---")
-st.write("UI đang chọn - Chủ đề (clean):", selected_topic_clean)
-st.write("UI đang chọn - Mức độ (clean):", selected_diff_clean)
-# Kiểm tra danh sách các mức độ có trong kho đề thuộc chủ đề đang chọn
-cac_muc_do_trong_file = set(c["muc_do"] for c in ngan_hang_toan_bo if selected_topic_clean in chuan_hoa(c["chu_de"]))
-st.write("Các mức độ thực tế có trong file cho chủ đề này:", list(cac_muc_do_trong_file))
-if ngan_hang_toan_bo:
-    st.write("Ví dụ chủ đề câu đầu tiên trong file:", repr(ngan_hang_toan_bo[0]["chu_de"]))
-    st.write("Ví dụ mức độ câu đầu tiên trong file:", repr(ngan_hang_toan_bo[0]["muc_do"]))
   # 1. XỬ LÝ NÚT: Lấy câu hỏi trực tiếp từ ngân hàng đề (KHÔNG DÙNG AI)
 if btn_gen:
   ngan_hang_toan_bo = tai_va_loc_ngan_hang_de("KHO-DE.txt")
@@ -681,46 +666,57 @@ if danh_sach_loc:
             # Tạo ô chọn trắc nghiệm tương tác cho học sinh
             choice = st.radio("Chọn đáp án của em:", op_list, key=f"radio_{hash(cau['noi_dung'])}")
             
+            # Sử dụng session_state để lưu trạng thái đã nộp của câu này
+            submit_key = f"submitted_{hash(cau['noi_dung'])}"
+            chosen_cache_key = f"chosen_{hash(cau['noi_dung'])}"
+            
             col1, col2 = st.columns([1, 3])
             with col1:
-                if st.button("✨ Nộp bài", key=f"submit_{hash(cau['noi_dung'])}"):
+                if st.button("✨ Nộp bài & Kiểm tra", key=f"submit_{hash(cau['noi_dung'])}"):
                     chosen_key = op_mapping.get(choice, "")
-                            
-                    # Kiểm tra kết quả
-                    if chosen_key == dap_an_dung:
-                        st.success(f"🎉 Chính xác! Em đã chọn đúng đáp án {dap_an_dung}.")
-                    else:
-                        st.error(f"❌ Rất tiếc, đáp án chưa đúng. Đáp án chính xác là: **{dap_an_dung}**")
-        
-        # --- TÍNH NĂNG GIA SƯ AI GIẢI ĐÁP THẮC MẮC ---
-        with st.expander("🤖 Hỏi Gia sư AI về câu hỏi này"):
-            user_question = st.text_input("Em có thắc mắc gì về bài này (VD: Tại sao ra công thức này?, Cách giải khác là gì?...):", key=f"ai_tutor_{hash(cau['noi_dung'])}")
-            if st.button("✨ Gửi hỏi Gia sư AI", key=f"btn_ai_{hash(cau['noi_dung'])}"):
-                if user_question.strip():
-                    with st.spinner("Gia sư AI đang phân tích và hướng dẫn em..."):
-                        prompt_gia_su = f"""
-                        Bạn là một giáo viên Toán 11 tận tâm, thân thiện. 
-                        Học sinh đang luyện tập câu hỏi sau:
-                        {cau['noi_dung']}
-                        Đáp án đúng của câu này là: {dap_an_dung}
+                    st.session_state[submit_key] = True
+                    st.session_state[chosen_cache_key] = chosen_key
+
+            # Sau khi học sinh bấm nộp bài, hiển thị kết quả, phân tích bẫy và lời giải
+            if st.session_state.get(submit_key, False):
+                chosen_key = st.session_state.get(chosen_cache_key, "")
+                
+                if chosen_key == dap_an_dung:
+                    st.success(f"🎉 Chính xác tuyệt vời! Em đã chọn đúng đáp án **{dap_an_dung}**.")
+                else:
+                    st.error(f"❌ Rất tiếc, chưa chính xác. Đáp án đúng của câu này là: **{dap_an_dung}**")
+                    
+                    # --- PHÂN TÍCH BẪY SAI LẦM DỰA TRÊN ĐÁP ÁN HỌC SINH CHỌN ---
+                    with st.spinner("🤖 Gia sư AI đang phân tích nguyên nhân sập bẫy của em..."):
+                        prompt_trap = f"""
+                        Bạn là một giáo viên Toán 11 tâm lý và giàu kinh nghiệm.
+                        Câu hỏi: {cau['noi_dung']}
+                        Đáp án đúng là: {dap_an_dung}
+                        Học sinh đã chọn nhầm đáp án: {chosen_key}.
                         
-                        Học sinh có thắc mắc: "{user_question}"
-                        
-                        Hãy giải thích chi tiết, dễ hiểu, khích lệ và không làm thay học sinh toàn bộ tư duy nếu chưa cần thiết.
+                        Hãy phân tích ngắn gọn, dễ hiểu:
+                        1. Vì sao học sinh lại chọn đáp án {chosen_key} (lỗi sai phổ biến, bẫy trong đề, nhầm công thức, tính toán nhầm)?
+                        2. Lời khuyên giúp học sinh tránh lặp lại lỗi này ở lần sau.
                         """
                         try:
-                            response = model.generate_content(prompt_gia_su)
-                            st.markdown("### 💡 Gia sư AI giải đáp:")
-                            st.write(response.text)
-                        except Exception as e:
-                            st.warning("Gia sư AI đang bận một chút, em hỏi lại câu này sau ít phút nhé hoặc trao đổi trực tiếp với thầy cô!")
-                else:
-                    st.warning("Em vui lòng nhập nội dung thắc mắc để Gia sư AI hỗ trợ nhé!")
-            
-        st.markdown("---")
+                            trap_response = model.generate_content(prompt_trap)
+                            st.warning(f"⚠️ **Phân tích bẫy sai lầm dành cho em:**\n\n{trap_response.text}")
+                        except Exception:
+                            st.warning(f"⚠️ Em đã mắc bẫy ở câu này. Hãy xem lại kỹ các bước biến đổi công thức và điều kiện xác định nhé!")
 
-if not danh_sach_loc:
-    st.warning("Không tìm thấy câu hỏi phù hợp với chủ đề và mức độ này trong ngân hàng!")
+                # --- HIỂN THỊ LỜI GIẢI CHI TIẾT ---
+                with st.expander("📖 Xem lời giải chi tiết từng bước", expanded=True):
+                    loi_giai_file = cau.get("loi_giai", "")
+                    if loi_giai_file:
+                        st.write(loi_giai_file)
+                    else:
+                        # Nếu file chưa có sẵn lời giải, gọi AI sinh lời giải chuẩn
+                        prompt_lg = f"Hãy trình bày lời giải chi tiết, chuẩn mực theo chương trình Toán 11 cho bài toán sau:\n{cau['noi_dung']}\nĐáp án đúng: {dap_an_dung}"
+                        try:
+                            res_lg = model.generate_content(prompt_lg)
+                            st.write(res_lg.text)
+                        except:
+                            st.write("Lời giải chi tiết đang được cập nhật.")
   
 
 # 2. XỬ LÝ NÚT: Tạo câu tương tự (DÙNG AI GEMINI)
