@@ -714,14 +714,18 @@ with tab_luyentap:
                         "loi_giai": "Lời giải chi tiết từng bước..."
                     }}
                     """
-                    try:
-                        response = client.models.generate_content(
-                            model='gemini-3.1-flash-lite',
-                            contents=prompt_clone,
-                            config=types.GenerateContentConfig(
-                            response_mime_type="application/json", 
-                            temperature=0.7)
-                        )
+                    cac_model = ['gemini-3.1-flash-lite', 'gemini-3.8-flash']
+                    for ten_model in cac_model:
+                        try:
+                            response = client.models.generate_content(
+                                model=ten_model,
+                                contents=prompt,
+                                config=types.GenerateContentConfig(
+                                    system_instruction=gem_instructions,
+                                    response_mime_type="application/json",
+                                    temperature=0.7
+                                )
+                            )
                         new_q = json.loads(response.text)
                         st.session_state.current_question = {
                             "chu_de": topic,
