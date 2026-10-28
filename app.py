@@ -749,7 +749,9 @@ with tab_luyentap:
                             st.warning("💡 Hệ thống AI đang bận, em lấy câu hỏi tiếp theo từ kho đề nhé!")
 
     # 3. HIỂN THỊ CÂU HỎI VÀ TƯƠNG TÁC LÀM BÀI
-    if st.session_state.started_practice and "current_question" in st.session_state:
+    # Sửa từ: if st.session_state.started_practice and "current_question" in st.session_state:
+    # Thành dòng an toàn sau:
+    if st.session_state.get("started_practice", False) and "current_question" in st.session_state:
         cau = st.session_state.current_question
 
         st.markdown(f"**Mức độ: {cau.get('muc_do', level)}**")
