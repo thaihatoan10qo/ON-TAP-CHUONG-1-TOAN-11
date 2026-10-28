@@ -573,7 +573,7 @@ with tab_luyentap:
             Hãy ghi nhớ toàn bộ hệ thống các dạng toán, chủ đề và phân loại mức độ (Nhận biết, Thông hiểu, Vận dụng, Vận dụng cao) có trong kho đề này để làm cơ sở ra đề sau.
             """
             try:
-                client.models.generate_content(model="gemini-3.1-flash-Lite", contents=prompt_phan_tich)
+                client.models.generate_content(model="gemini-3.5-flash-Lite", contents=prompt_phan_tich)
                 st.session_state["ai_matrix_kho_de"] = "Đã nạp và hiểu trọn vẹn kho đề"
             except Exception:
                 st.session_state["ai_matrix_kho_de"] = "Sử dụng kho đề chuẩn"
