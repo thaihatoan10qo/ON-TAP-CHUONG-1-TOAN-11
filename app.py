@@ -549,12 +549,36 @@ with tab_lythuyet:
     else:
         st.warning(f"Chưa tìm thấy file '{file_anh}' trên hệ thống. Hãy kiểm tra lại tên file trên GitHub.")
 # ================= TAB 3: LUYỆN TẬP THÍCH ỨNG & GIA SƯ AI TRỰC TIẾP =================
-
-
-with tab_luyentap:
-    st.subheader("Luyện tập thông minh & Gia sư AI đồng hành")
-    st.write("Em hãy lựa chọn chủ đề kiến thức và mức độ tư duy. Sau khi nộp bài, em có thể xem lời giải chi tiết, phân tích bẫy sai lầm hoặc trò chuyện trực tiếp với Gia sư AI:")
+# --- TAB 3: LUYỆN TẬP THÔNG MINH & GIA SƯ AI ĐỒNG HÀNH ---
     
+    st.subheader("✍️ Luyện tập thông minh & Gia sư AI đồng hành")
+    st.markdown("Em hãy lựa chọn chủ đề và mức độ tư duy. AI sẽ đọc kho đề, giao bài toán chuẩn ma trận, chấm điểm, phân tích bẫy sai lầm và đồng hành giải đáp thắc mắc cùng em!")
+
+    # 1. AI đọc toàn bộ file kho_de.txt MỘT LẦN DUY NHẤT ngay khi vào Tab 3 để làm nền tảng ngữ liệu
+    if "ai_matrix_kho_de" not in st.session_state:
+        with st.spinner("🤖 Gia sư AI đang đọc toàn bộ kho đề (KHO-DE.txt) để nắm bắt ma trận và phân loại dạng bài..."):
+            noi_dung_file = ""
+            if os.path.exists("KHO-DE.txt"):
+                try:
+                    with open("KHO-DE.txt", "r", encoding="utf-8") as f:
+                        noi_dung_file = f.read()
+                except Exception:
+                    noi_dung_file = ""
+            
+            prompt_phan_tich = f"""
+            Bạn là chuyên gia khảo thí Toán 11. Dưới đây là toàn bộ ngân hàng đề thi:
+            ---
+            {noi_dung_file[:20000]}
+            ---
+            Hãy ghi nhớ toàn bộ hệ thống các dạng toán, chủ đề và phân loại mức độ (Nhận biết, Thông hiểu, Vận dụng, Vận dụng cao) có trong kho đề này để làm cơ sở ra đề sau.
+            """
+            try:
+                client.models.generate_content(model="gemini-3.1-flash-Lite", contents=prompt_phan_tich)
+                st.session_state["ai_matrix_kho_de"] = "Đã nạp và hiểu trọn vẹn kho đề"
+            except Exception:
+                st.session_state["ai_matrix_kho_de"] = "Sử dụng kho đề chuẩn"
+
+    # 2. Giao diện lựa chọn Chủ đề & Mức độ tư duy
     c1, c2 = st.columns(2)
     with c1:
         topic = st.selectbox(
@@ -572,317 +596,256 @@ with tab_luyentap:
             "Mức độ tư duy:",
             ["Nhận biết", "Thông hiểu", "Vận dụng", "Vận dụng cao"],
             key="tab3_level_select"
-    # 1. AI Đọc và lập bản đồ toàn bộ kho đề MỘT LẦN DUY NHẤT và lưu vào bộ nhớ tạm
-    if "ai_matrix_kho_de" not in st.session_state:
-        with st.spinner("🤖 Gia sư AI đang đọc toàn bộ kho đề để nắm bắt ma trận phân loại của giáo viên..."):
-            noi_dung_file = ""
-            if os.path.exists("kho_de.txt"):
-                try:
-                    with open("kho_de.txt", "r", encoding="utf-8") as f:
-                        noi_dung_file = f.read()
-                except Exception:
-                    noi_dung_file = ""
-            
-            # Gửi kho đề cho AI phân tích cấu trúc
-            prompt_phan_tich = f"""
-            Bạn là chuyên gia khảo thí Toán 11. Dưới đây là ngân hàng đề thi do giáo viên cung cấp:
-            ---
-            {noi_dung_file[:15000]}
-            ---
-            Hãy ghi nhớ toàn bộ hệ thống các dạng toán, chủ đề và cách phân loại mức độ (Nhận biết, Thông hiểu, Vận dụng, Vận dụng cao) có trong kho đề này. Trả lời ngắn gọn: "Đã nắm trọn ma trận kho đề."
-            """
-            try:
-                res = client.models.generate_content(model="gemini-2.5-flash", contents=prompt_phan_tich)
-                st.session_state["ai_matrix_kho_de"] = res.text if res else "Đã phân tích"
-            except Exception:
-                st.session_state["ai_matrix_kho_de"] = "Sử dụng kho đề chuẩn"
+        )
 
-    # 2. Hai nút bấm chức năng mượt mà
+    # 3. Hai nút bấm chức năng chính
     col_btn1, col_btn2 = st.columns(2)
-    
     with col_btn1:
-        if st.button("🎲 AI tạo câu hỏi chuẩn ma trận kho đề", key="btn_ai_matrix"):
-            with st.spinner(f"🤖 Gia sư AI đang trích xuất/sáng tác câu hỏi đúng chuẩn [{topic}] - [{level}]..."):
-                
-                # AI đã hiểu kho đề, giờ chỉ việc ra đề đúng yêu cầu học sinh chọn
-                prompt_tao = f"""
-                Dựa trên ma trận kho đề Toán 11 mà bạn đã phân tích trước đó, hãy cung cấp hoặc sáng tác MỘT câu hỏi trắc nghiệm (hoặc trả lời ngắn) thỏa mãn đúng:
-                - Chủ đề: "{topic}"
-                - Mức độ tư duy: "{level}"
-                - Cung cấp đầy đủ phương án A, B, C, D (nếu là trắc nghiệm) hoặc để trống options nếu là câu trả lời ngắn.
-                - Nêu rõ đáp án đúng và lời giải chi tiết từng bước (dùng LaTeX trong $...$).
-                
-                Trả về ĐÚNG định dạng JSON thuần (tuyệt đối không bọc trong markdown ```json):
-                {{
-                    "noi_dung": "...",
-                    "options": {{"A": "...", "B": "...", "C": "...", "D": "..."}},
-                    "dap_an": "A",
-                    "loi_giai": "..."
-                }}
-                """
-                
-                ai_data = None
-                for m in ["gemini-3.1-flash-Lite", "gemini-3.8-flash"]:
+        btn_gen = st.button("🎲 AI tạo câu hỏi từ kho đề theo lựa chọn", key="btn_gen_tab3")
+    with col_btn2:
+        btn_clone = st.button("🔁 Tạo câu tương tự dạng vừa làm", key="btn_clone_tab3")
+
+    # Đọc danh sách thô từ kho_de.txt làm phương án dự phòng an toàn (fallback)
+    danh_sach_tat_ca_cau = []
+    if os.path.exists("kho_de.txt"):
+        try:
+            with open("kho_de.txt", "r", encoding="utf-8") as f:
+                noi_dung = f.read()
+                danh_sach_tat_ca_cau = [c.strip() for c in noi_dung.split("Câu ") if c.strip()]
+        except Exception:
+            danh_sach_tat_ca_cau = []
+
+    # Xử lý sự kiện sinh câu hỏi (Tạo mới theo lựa chọn hoặc Tạo câu tương tự)
+    if btn_gen or btn_clone:
+        if not client:
+            st.error("Chưa cấu hình API Key trong mục Secrets của Streamlit.")
+        elif btn_clone and "last_q" not in st.session_state:
+            st.warning("⚠️ Em cần tạo và làm thử 1 câu trước khi chọn tạo câu tương tự!")
+        else:
+            with st.spinner("🤖 Gia sư AI đang thiết kế bài tập bám sát ma trận kho đề..."):
+                # Reset lịch sử chat khi đổi sang câu hỏi mới
+                st.session_state["chat_history"] = []
+
+                gem_instructions = """
+Bạn là Trợ lý Chuyên gia Khảo thí Toán 11 THPT (Chương trình GDPT 2018).
+Quy trình tư duy bắt buộc khi thiết kế câu hỏi:
+1. Dựa vào chủ đề kiến thức và mức độ tư duy học sinh chọn, kết hợp với ma trận kho đề đã đọc để thiết kế câu hỏi chuẩn mực.
+2. Thiết kế đề bài rõ ràng, tự chứa đầy đủ dữ kiện toán học (tuyệt đối KHÔNG ra đề yêu cầu quan sát hình vẽ bên/đồ thị đính kèm).
+3. TỰ GIẢI CHI TIẾT TỪNG BƯỚC vào trường 'step_by_step_solve' để tìm ra kết quả đúng tuyệt đối trước khi gán phương án.
+4. Chọn NGẪU NHIÊN 1 trong 4 nhãn (A, B, C hoặc D) làm đáp án đúng ('correct_answer') và gán kết quả vừa giải vào nhãn đó (tuyệt đối không mặc định luôn là A).
+5. Xây dựng 3 phương án gây nhiễu còn lại dựa trên lỗi sai kinh điển: quên điều kiện xác định, nhầm dấu công thức, nhầm chu kỳ.
+6. Bắt buộc viết toàn bộ công thức toán bằng ký hiệu LaTeX chuẩn đặt trong cặp $...$ hoặc $$...$$.
+7. Explanation (lời giải và phân tích bẫy): Trình bày ngắn gọn, chỉ rõ logic chọn đáp án đúng và cảnh báo bẫy sai lầm để hỗ trợ học sinh.
+8. Luôn trả về đúng định dạng JSON thuần, không bao bọc trong ký hiệu markdown ```json.
+"""
+
+                if btn_clone:
+                    prompt = f"""
+Câu hỏi gốc học sinh vừa làm:
+"{st.session_state['last_q']}"
+
+Nhiệm vụ: Tạo 1 câu hỏi MỚI CÙNG DẠNG, CÙNG MỨC ĐỘ (thay đổi số liệu/hàm số, giữ nguyên mô hình tư duy).
+YÊU CẦU ĐẶC BIỆT: Vị trí đáp án đúng PHẢI được chọn ngẫu nhiên giữa A, B, C hoặc D.
+
+Trả về đúng định dạng JSON:
+{{
+    "question": "Nội dung câu hỏi (chứa LaTeX)...",
+    "step_by_step_solve": "Giải nháp chi tiết từng bước",
+    "options": {{"A": "...", "B": "...", "C": "...", "D": "..."}},
+    "correct_answer": "Chữ cái đáp án đúng (A, B, C hoặc D)",
+    "explanation": "Lời giải chi tiết từng bước và lưu ý bẫy sai lầm..."
+}}
+"""
+                else:
+                    prompt = f"""
+Học sinh đang yêu cầu luyện tập với:
+- Chủ đề kiến thức: "{topic}"
+- Mức độ tư duy: "{level}"
+
+Nhiệm vụ: Dựa vào sự thấu hiểu kho đề đã phân tích trước đó, hãy sáng tác MỘT câu hỏi trắc nghiệm Toán 11 mới hoàn toàn, chuẩn ma trận với chủ đề và mức độ học sinh đã chọn.
+YÊU CẦU ĐẶC BIỆT: Vị trí đáp án đúng PHẢI được chọn ngẫu nhiên giữa A, B, C hoặc D.
+
+Trả về đúng định dạng JSON:
+{{
+    "question": "Nội dung câu hỏi (chứa LaTeX)...",
+    "step_by_step_solve": "Giải nháp chi tiết từng bước",
+    "options": {{"A": "...", "B": "...", "C": "...", "D": "..."}},
+    "correct_answer": "Chữ cái đáp án đúng (A, B, C hoặc D)",
+    "explanation": "Lời giải chi tiết từng bước và lưu ý bẫy sai lầm..."
+}}
+"""
+
+                success = False
+                cac_model = ['gemini-3.5-flash-Lite', 'gemini-3.8-flash']
+                for ten_model in cac_model:
                     try:
                         response = client.models.generate_content(
-                            model=m,
-                            contents=prompt_tao,
-                            config=types.GenerateContentConfig(temperature=0.4)
+                            model=ten_model,
+                            contents=prompt,
+                            config=types.GenerateContentConfig(
+                                system_instruction=gem_instructions,
+                                response_mime_type="application/json",
+                                temperature=0.7
+                            )
                         )
-                        if response and response.text:
-                            txt = response.text.strip()
-                            if txt.startswith("```json"): txt = txt[7:]
-                            elif txt.startswith("```"): txt = txt[3:]
-                            if txt.endswith("```"): txt = txt[:-3]
-                            ai_data = json.loads(txt.strip())
-                            break
+                        st.session_state["quiz"] = json.loads(response.text)
+                        st.session_state["submitted"] = False
+                        st.session_state["last_q"] = st.session_state["quiz"]["question"]
+                        success = True
+                        break
                     except Exception:
                         continue
-                
-                if ai_data and isinstance(ai_data, dict):
-                    noi_dung_q = ai_data.get("noi_dung", "Câu hỏi luyện tập")
-                    options_dict = ai_data.get("options", {})
-                    dap_an_dung_chu = str(ai_data.get("dap_an", "A")).strip().upper()
-                    loi_giai_txt = ai_data.get("loi_giai", "Lời giải chi tiết chuẩn hóa.")
+
+                if not success:
+                    # Fallback an toàn nếu mạng bận
+                    cau_du_phong = "Tìm tập xác định của hàm số $y = \\tan\\left(x - \\frac{\\pi}{3}\\right)$."
+                    if danh_sach_tat_ca_cau:
+                        cau_ngau_nhien = random.choice(danh_sach_tat_ca_cau)
+                        cau_du_phong = "Câu " + cau_ngau_nhien
+
+                    st.info("💡 Đường truyền AI đang bận, hệ thống trích xuất câu chuẩn từ ngân hàng để em luyện tập ngay:")
+                    st.session_state["quiz"] = {
+                        "question": cau_du_phong,
+                        "options": {
+                            "A": "$D = \\mathbb{R} \\setminus \\left\\{\\frac{5\\pi}{6} + k\\pi, k \\in \\mathbb{Z}\\right\\}$",
+                            "B": "$D = \\mathbb{R} \\setminus \\left\\{\\frac{\\pi}{3} + k\\pi, k \\in \\mathbb{Z}\\right\\}$",
+                            "C": "$D = \\mathbb{R} \\setminus \\left\\{\\frac{5\\pi}{6} + k2\\pi, k \\in \\mathbb{Z}\\right\\}$",
+                            "D": "$D = \\mathbb{R} \\setminus \\left\\{\\frac{\\pi}{2} + k\\pi, k \\in \\mathbb{Z}\\right\\}$"
+                        },
+                        "correct_answer": "A",
+                        "explanation": "Hàm số xác định khi $\\sin x \\neq 0$ hoặc $\\cos x \\neq 0$ tùy thuộc vào hàm số lượng giác."
+                    }
+                    st.session_state["submitted"] = False
+                    st.session_state["last_q"] = st.session_state["quiz"]["question"]
+
+    # 4. Hiển thị câu hỏi làm bài
+    if "quiz" in st.session_state:
+        q = st.session_state["quiz"]
+        st.markdown("---")
+        st.markdown(f"**Chủ đề:** `{topic}` | **Mức độ:** `{level}`")
+        st.markdown(f"**Câu hỏi:** {q['question']}")
+
+        # Hàm hiển thị phương án trắc nghiệm chuẩn LaTeX
+        def hien_thi_lua_chon(k):
+            val = str(q['options'][k]).strip()
+            if val.startswith("$") and val.endswith("$") and len(val) >= 2:
+                val = val[1:-1].strip()
+            val = val.replace("\\\\", "\\")
+            return f"**{k}.** ${val}$"
+
+        choice = st.radio(
+            "Chọn đáp án đúng:",
+            options=["A", "B", "C", "D"],
+            index=None,
+            format_func=hien_thi_lua_chon,
+            key="radio_tab3_choice"
+        )
+
+        if st.button("Nộp bài & Kiểm tra đáp án", key="btn_nop_bai_tab3"):
+            if choice is None:
+                st.warning("⚠️ Vui lòng chọn một đáp án trước khi nộp bài!")
+            elif not st.session_state.get("submitted", False):
+                st.session_state["submitted"] = True
+                st.session_state["user_choice"] = choice
+
+                # 1. Thống kê luyện tập
+                st.session_state["practice_total"] = st.session_state.get("practice_total", 0) + 1
+                tong_da_luyen = st.session_state["practice_total"]
+
+                # 2. Đánh giá đúng / sai
+                is_correct = (choice == q["correct_answer"])
+                if is_correct:
+                    st.session_state["practice_correct"] = st.session_state.get("practice_correct", 0) + 1
                 else:
-                    # Fallback an toàn tuyệt đối
-                    noi_dung_q = f"Cho hàm số thuộc chủ đề {topic} ở mức độ {level}. Hãy xác định tính đúng sai của các mệnh đề sau:"
-                    options_dict = {"A": "Đáp án A", "B": "Đáp án B", "C": "Đáp án C", "D": "Đáp án D"}
-                    dap_an_dung_chu = "A"
-                    loi_giai_txt = "Áp dụng lý thuyết trọng tâm của chương trình Toán 11."
-
-                # Xáo trộn đáp án ngẫu nhiên chống lộ
-                if options_dict:
-                    keys_list = ["A", "B", "C", "D"]
-                    vals_list = [str(options_dict.get(k, "")).strip() for k in keys_list]
-                    combined = list(zip(vals_list, [k == dap_an_dung_chu for k in keys_list]))
-                    random.shuffle(combined)
-                    new_options = {}
-                    new_correct_key = "A"
-                    for i, (val_t, is_corr) in enumerate(combined):
-                        new_key = keys_list[i]
-                        new_options[new_key] = val_t
-                        if is_corr: new_correct_key = new_key
-                    options_final = new_options
-                    dap_an_final = new_correct_key
-                else:
-                    options_final = {}
-                    dap_an_final = dap_an_dung_chu
-
-                st.session_state.current_question = {
-                    "chu_de": topic,
-                    "muc_do": level,
-                    "noi_dung": noi_dung_q,
-                    "options": options_final,
-                    "dap_an": dap_an_final,
-                    "loi_giai": loi_giai_txt
-                }
-                st.session_state.started_practice = True
-                st.toast("✨ AI đã tạo câu hỏi chuẩn sát ma trận kho đề của cô!", icon="🎯")
-                st.rerun()
-    with col_btn2:
-        btn_clone = st.button("🔄 AI sinh câu tương tự dạng vừa làm", key="btn_clone_tu_kho")
-        if btn_clone:
-            if not client:
-                st.error("Chưa cấu hình API Key trong mục Secrets của Streamlit.")
-            elif "current_question" not in st.session_state or not st.session_state.started_practice:
-                st.warning("⚠️ Em cần lấy và làm thử 1 câu hỏi từ kho đề trước khi yêu cầu AI tạo câu tương tự nhé!")
-            else:
-                with st.spinner("🤖 Gia sư AI đang dựa vào câu hỏi gốc để thiết kế bài tập tương tự..."):
-                    cau_goc = st.session_state.current_question
-                    prompt_clone = f"""
-                    Bạn là Trưởng ban Khảo thí Toán 11 THPT (Chương trình GDPT 2018).
-                    Dựa trên câu hỏi gốc từ kho đề:
-                    "{cau_goc['noi_dung']}"
-                    Chủ đề: {topic} | Mức độ: {level}
-
-                    Nhiệm vụ: Tạo 1 câu hỏi MỚI CÙNG DẠNG (thay đổi số liệu/hàm số, giữ nguyên mô hình tư duy).
-                    YÊU CẦU:
-                    1. Vị trí đáp án đúng PHẢI được chọn ngẫu nhiên giữa A, B, C hoặc D.
-                    2. Lời giải chi tiết, cảnh báo bẫy sai lầm.
-                    3. Công thức toán viết bằng LaTeX đặt trong $...$.
-                    
-                    Trả về đúng định dạng JSON thuần (không bọc markdown ```json):
-                    {{
-                        "noi_dung": "Nội dung câu hỏi mới chứa LaTeX...",
-                        "options": {{"A": "...", "B": "...", "C": "...", "D": "..."}},
-                        "dap_an": "Chữ cái đáp án đúng (A, B, C hoặc D)",
-                        "loi_giai": "Lời giải chi tiết từng bước..."
-                    }}
-                    """
-                    cac_model = ['gemini-3.1-flash-lite', 'gemini-3.8-flash']
-                    for ten_model in cac_model:
-                        try:
-                            response = client.models.generate_content(
-                                model=ten_model,
-                                contents=prompt,
-                                config=types.GenerateContentConfig(
-                                    system_instruction=gem_instructions,
-                                    response_mime_type="application/json",
-                                    temperature=0.7
-                                )
-                            )
-                            
-                            new_q = json.loads(response.text)
-                            st.session_state.current_question = {
-                                "chu_de": topic,
-                                "muc_do": level,
-                                "noi_dung": new_q.get("noi_dung"),
-                                "options": new_q.get("options"),
-                                "dap_an": new_q.get("dap_an"),
-                                "loi_giai": new_q.get("loi_giai")
-                            }
-                            st.session_state.started_practice = True
-                            q_hash_new = hash(str(st.session_state.current_question['noi_dung']))
-                            st.session_state[f"submitted_{q_hash_new}"] = False
-                            st.success("✨ AI đã sáng tác thành công câu hỏi tương tự dựa trên kho đề cho em!")
-                        except Exception:
-                            st.warning("💡 Hệ thống AI đang bận, em lấy câu hỏi tiếp theo từ kho đề nhé!")
-
-    # 3. HIỂN THỊ CÂU HỎI VÀ TƯƠNG TÁC LÀM BÀI
-    # Sửa từ: if st.session_state.started_practice and "current_question" in st.session_state:
-    # Thành dòng an toàn sau:
-    if st.session_state.get("started_practice", False) and "current_question" in st.session_state:
-        cau = st.session_state.current_question
-
-        st.markdown(f"**Mức độ: {cau.get('muc_do', level)}**")
-        st.write(cau["noi_dung"])
-        
-        # Xử lý phương án trắc nghiệm chuẩn LaTeX không lỗi gạch chéo
-        options = cau.get("options", {})
-        op_list = []
-        op_mapping = {}
-        for key in ["A", "B", "C", "D"]:
-            val = options.get(key)
-            if val:
-                val_clean = str(val).strip()
-                pattern = rf'^(?:{key}|[A-Da-d])[\s\.\:\)\-]+'
-                val_clean = re.sub(pattern, '', val_clean, flags=re.IGNORECASE).strip()
+                    st.session_state["practice_wrong"] = st.session_state.get("practice_wrong", 0) + 1
                 
-                # Áp dụng hàm format_latex có sẵn ở đầu file của cô
-                val_clean = format_latex(val_clean)
-                text_opt = f"**{key}.** {val_clean}"
-                op_list.append(text_opt)
-                op_mapping[text_opt] = key
-                
-        dap_an_dung = str(cau.get("dap_an", "")).strip().upper()
-        if not dap_an_dung and "Đáp án:" in cau["noi_dung"]:
-            parts = cau["noi_dung"].split("Đáp án:")
-            if len(parts) > 1:
-                dap_an_dung = parts[1].strip()[:1].upper()
+                so_dung = st.session_state.get("practice_correct", 0)
+                so_sai = st.session_state.get("practice_wrong", 0)
 
-        q_hash = hash(str(cau['noi_dung']))
-        submit_key = f"submitted_{q_hash}"
-        chosen_cache_key = f"chosen_{q_hash}"
-        radio_key = f"radio_{q_hash}"
-
-        if op_list:
-            # index=None giúp ô chọn để trống hoàn toàn, buộc học sinh tự chọn
-            choice = st.radio("Chọn đáp án của em:", op_list, index=None, key=radio_key)
-            
-            col1, col2 = st.columns([1, 3])
-            with col1:
-                if st.button("✨ Nộp bài & Kiểm tra", key=f"submit_{q_hash}"):
-                    if choice is None:
-                        st.warning("⚠️ Em vui lòng chọn một đáp án trước khi bấm nộp bài nhé!")
-                    else:
-                        st.session_state[submit_key] = True
-                        st.session_state[chosen_cache_key] = choice
-
-                        # --- TÍCH HỢP TỰ ĐỘNG GỬI KẾT QUẢ VỀ GOOGLE SHEET ---
-                        chosen_choice = choice
-                        chosen_key = op_mapping.get(chosen_choice, "")
-                        is_correct = (chosen_key == dap_an_dung)
-
-                        # Tăng bộ đếm
-                        st.session_state["practice_total"] = st.session_state.get("practice_total", 0) + 1
-                        tong_da_luyen = st.session_state["practice_total"]
-
-                        if is_correct:
-                            st.session_state["practice_correct"] = st.session_state.get("practice_correct", 0) + 1
-                        else:
-                            st.session_state["practice_wrong"] = st.session_state.get("practice_wrong", 0) + 1
-
-                        so_dung = st.session_state.get("practice_correct", 0)
-                        so_sai = st.session_state.get("practice_wrong", 0)
-
-                        # Gọi hàm send_data_to_gsheet chuẩn của cô
+                # 3. Gửi sang Google Sheet (nếu hàm send_data_to_gsheet đã được định nghĩa trong app)
+                try:
+                    if 'send_data_to_gsheet' in globals():
                         da_gui = send_data_to_gsheet(
                             action_type=f"Luyện tập (câu {tong_da_luyen})",
                             student_name=st.session_state.get("student_name", "-"),
                             student_class=st.session_state.get("student_class", "-"),
-                            score=f"Đúng: {so_dung} | Sai: {so_sai}",
-                            correct_ratio=f"{so_dung}/{tong_da_luyen}",
-                            note=f"Câu {tong_da_luyen}: {'Đúng' if is_correct else 'Sai'} (Chủ đề: {topic})",
-                            completion_time="N/A"
+                            score=f"Đúng: {so_dung} câu | Sai: {so_sai} câu",
+                            note=f"Chủ đề: {topic} | Mức độ: {level} | {'Đúng' if is_correct else 'Sai'}"
                         )
                         if da_gui:
-                            st.toast(f"✅ Đã lưu kết quả câu thứ {tong_da_luyen} vào Google Sheet!", icon="📊")
+                            st.toast(f"✅ Đã lưu kết quả câu thứ {tong_da_luyen} về Google Sheet!", icon="📊")
+                except Exception:
+                    pass
 
-            # Nếu học sinh đã bấm nộp bài thành công: hiển thị kết quả, phân tích bẫy và lời giải
-            if st.session_state.get(submit_key, False):
-                chosen_choice = st.session_state.get(chosen_cache_key, "")
-                chosen_key = op_mapping.get(chosen_choice, "")
-                
-                if chosen_key == dap_an_dung:
-                    st.success(f"🎉 Chính xác tuyệt vời! Em đã chọn đúng đáp án **{dap_an_dung}**.")
-                else:
-                    st.error(f"❌ Rất tiếc, chưa chính xác. Đáp án đúng của câu này là: **{dap_an_dung}**")
-                    
-                    # --- PHÂN TÍCH BẪY SAI LẦM BỞI AI ---
-                    with st.spinner("🤖 Gia sư AI đang phân tích nguyên nhân sập bẫy của em..."):
-                        prompt_trap = f"""
-                        Bạn là một giáo viên Toán 11 tâm lý và giàu kinh nghiệm.
-                        Câu hỏi: {cau['noi_dung']}
-                        Đáp án đúng là: {dap_an_dung}
-                        Học sinh đã chọn nhầm đáp án: {chosen_key}.
-                        
-                        Hãy phân tích ngắn gọn, dễ hiểu:
-                        1. Vì sao học sinh lại chọn đáp án {chosen_key} (lỗi sai phổ biến, bẫy trong đề, nhầm công thức)?
-                        2. Lời khuyên giúp học sinh tránh lặp lại lỗi này ở lần sau.
-                        """
-                        try:
-                            trap_response = client.models.generate_content(model='gemini-2.5-flash', contents=prompt_trap)
-                            st.warning(f"⚠️ **Phân tích bẫy sai lầm dành cho em:**\n\n{trap_response.text}")
-                        except Exception:
-                            st.warning(f"⚠️ Em đã mắc bẫy ở câu này. Hãy xem lại kỹ các bước biến đổi công thức nhé!")
+        # Khi học sinh đã nộp bài -> Hiển thị kết quả, lời giải, phân tích bẫy và khung hỏi đáp AI
+        if st.session_state.get("submitted", False):
+            user_c = st.session_state.get("user_choice", choice)
+            if user_c == q["correct_answer"]:
+                st.success("🎉 Chính xác! Chúc mừng em đã làm chủ dạng toán này.")
+            else:
+                st.error(f"❌ Chưa chính xác. Đáp án đúng là: **{q['correct_answer']}**")
+                st.info("💡 Em hãy đọc kỹ phần giải thích chi tiết bên dưới nhé!")
 
-                # --- LỜI GIẢI CHI TIẾT ---
-                with st.expander("📖 Xem lời giải chi tiết từng bước", expanded=True):
-                    loi_giai_file = cau.get("loi_giai", "")
-                    if loi_giai_file:
-                        st.write(loi_giai_file)
-                    else:
-                        prompt_lg = f"Hãy trình bày lời giải chi tiết, chuẩn mực theo chương trình Toán 11 cho bài toán sau:\n{cau['noi_dung']}\nĐáp án đúng: {dap_an_dung}"
-                        try:
-                            res_lg = client.models.generate_content(model='gemini-2.5-flash', contents=prompt_lg)
-                            st.write(res_lg.text)
-                        except:
-                            st.write("Lời giải chi tiết đang được cập nhật.")
+            with st.expander("📖 Xem lời giải chi tiết và phân tích bẫy sai lầm", expanded=True):
+                st.markdown(q["explanation"])
 
-        # --- GIA SƯ AI HỎI ĐÁP 24/7 ---
-        with st.expander("🤖 Hỏi Gia sư AI về câu hỏi này"):
-            user_question = st.text_input("Em có thắc mắc gì về bài này (VD: Tại sao ra công thức này?, Cách giải khác là gì?...):", key=f"ai_tutor_{q_hash}")
-            if st.button("✨ Gửi hỏi Gia sư AI", key=f"btn_ai_{q_hash}"):
-                if user_question.strip():
-                    with st.spinner("Gia sư AI đang phân tích và hướng dẫn em..."):
-                        prompt_gia_su = f"""
-                        Bạn là một giáo viên Toán 11 tận tâm, thân thiện. 
-                        Học sinh đang luyện tập câu hỏi: {cau['noi_dung']}
-                        Đáp án đúng: {dap_an_dung}
-                        Thắc mắc của học sinh: "{user_question}"
-                        Hãy giải thích chi tiết, dễ hiểu, khích lệ học sinh và dùng LaTeX cho công thức toán.
-                        """
-                        try:
-                            response = client.models.generate_content(model='gemini-2.5-flash', contents=prompt_gia_su)
-                            st.markdown("### 💡 Gia sư AI giải đáp:")
-                            st.write(response.text)
-                        except Exception:
-                            st.warning("💡 Hệ thống AI đang bận một chút, em bấm gửi lại ngay nhé!")
-                else:
-                    st.warning("Em vui lòng nhập nội dung thắc mắc để Gia sư AI hỗ trợ nhé!")
+            # ================= PHẦN GIA SƯ AI TRÒ CHUYỆN VỀ CÂU HỎI =================
+            st.markdown("---")
+            st.subheader("💬 Gia sư AI: Em có thắc mắc gì về câu hỏi này không?")
+            st.caption("Chưa hiểu bước biến đổi nào, tại sao công thức lại như vậy hay muốn gợi ý cách nhớ? Hãy nhập câu hỏi bên dưới nhé!")
+
+            if "chat_history" not in st.session_state:
+                st.session_state["chat_history"] = []
+
+            for msg in st.session_state["chat_history"]:
+                with st.chat_message(msg["role"]):
+                    st.markdown(msg["content"])
+
+            user_question = st.chat_input("Nhập câu hỏi của em về bài toán trên...", key="chat_input_tab3")
+            if user_question:
+                st.session_state["chat_history"].append({"role": "user", "content": user_question})
+                with st.chat_message("user"):
+                    st.markdown(user_question)
+
+                context_prompt = f"""
+Bạn là Gia sư dạy Toán 11 THPT tận tâm, ân cần và sư phạm.
+Học sinh vừa làm câu hỏi:
+- Chủ đề: {topic} | Mức độ: {level}
+- Đề bài: {q['question']}
+- Các đáp án: {q['options']}
+- Đáp án đúng: {q['correct_answer']}
+- Đáp án học sinh chọn: {user_c}
+- Lời giải chi tiết: {q['explanation']}
+
+Học sinh đang thắc mắc: "{user_question}"
+
+Yêu cầu sư phạm:
+1. Trả lời trực tiếp vào thắc mắc, giải thích cặn kẽ từng bước, không phán xét.
+2. Dùng lời văn động viên, gần gũi như thầy/cô hướng dẫn trực tiếp.
+3. Công thức toán bắt buộc viết dạng LaTeX đặt trong $...$ hoặc $$...$$.
+4. Nhắc lại mẹo nhớ hoặc lưu ý quan trọng để học sinh tránh lặp lại lỗi sai.
+"""
+
+                with st.chat_message("assistant"):
+                    with st.spinner("Thầy/Cô AI đang xem xét câu hỏi của em..."):
+                        tutor_reply = ""
+                        for ten_model in ['gemini-2.5-flash', 'gemini-1.5-flash']:
+                            try:
+                                resp = client.models.generate_content(
+                                    model=ten_model,
+                                    contents=context_prompt
+                                )
+                                tutor_reply = resp.text
+                                break
+                            except Exception:
+                                continue
+
+                        if not tutor_reply:
+                            tutor_reply = "Hệ thống đang bận một chút. Em hãy thử gửi lại câu hỏi nhé!"
+
+                        st.markdown(tutor_reply)
+                        st.session_state["chat_history"].append({"role": "assistant", "content": tutor_reply})
             
-        st.markdown("---")
 # ================= NGÂN HÀNG ĐỀ DỰ PHÒNG 20 CÂU CHUẨN MA TRẬN =================
 BO_DE_CHUAN_20_CAU = [
     # --- PHẦN 1: 16 CÂU TRẮC NGHIỆM (CHỈ GỒM NHẬN BIẾT & THÔNG HIỂU) ---
