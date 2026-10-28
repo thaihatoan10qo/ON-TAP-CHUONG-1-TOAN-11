@@ -550,7 +550,7 @@ with tab_lythuyet:
         st.warning(f"Chưa tìm thấy file '{file_anh}' trên hệ thống. Hãy kiểm tra lại tên file trên GitHub.")
 # ================= TAB 3: LUYỆN TẬP THÍCH ỨNG & GIA SƯ AI TRỰC TIẾP =================
 # --- TAB 3: LUYỆN TẬP THÔNG MINH & GIA SƯ AI ĐỒNG HÀNH ---
-with tab_luyentap    
+with tab_luyentap:    
     st.subheader("✍️ Luyện tập thông minh & Gia sư AI đồng hành")
     st.markdown("Em hãy lựa chọn chủ đề và mức độ tư duy. AI sẽ đọc kho đề, giao bài toán chuẩn ma trận, chấm điểm, phân tích bẫy sai lầm và đồng hành giải đáp thắc mắc cùng em!")
 
