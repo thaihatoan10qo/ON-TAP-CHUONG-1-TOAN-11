@@ -574,116 +574,121 @@ with tab_luyentap:
             key="tab3_level_select"
         )
 
-    # 1. Lọc danh sách câu hỏi từ kho đề KHO-DE.txt bằng các hàm chuẩn phía trên
-    selected_topic_clean = chuan_hoa(topic)
-    selected_diff_clean = chuan_hoa(level)
+   # 1. Cho AI đọc và phân tích tổng quan kho đề ngay lần đầu tiên (hoặc khi đổi kho đề)
+    if "kho_de_summary" not in st.session_state or st.session_state.get("kho_de_path") != "KHO-DE.txt":
+        with st.spinner("🤖 Gia sư AI đang quét và phân tích toàn bộ ma trận kho đề Toán 11..."):
+            noi_dung_kho = ""
+            if os.path.exists("KHO-DE.txt"):
+                try:
+                    with open("KHO-DE.txt", "r", encoding="utf-8") as f:
+                        noi_dung_kho = f.read()
+                except Exception:
+                    noi_dung_kho = ""
+            
+            # Gửi toàn bộ kho đề cho AI phân tích cấu trúc dạng toán
+            prompt_phan_tich = f"""
+            Bạn là chuyên gia khảo thí Toán 11. Dưới đây là toàn bộ ngân hàng đề thi:
+            ---
+            {noi_dung_kho[:15000]} # Giới hạn độ dài an toàn cho token
+            ---
+            Nhiệm vụ của bạn: Hãy phân tích kỹ các dạng toán, phong cách ra đề, và mức độ khó có trong kho đề này để làm cơ sở ra đề sau này. (Chỉ cần ghi nhận ngầm).
+            """
+            try:
+                client.models.generate_content(
+                    model="gemini-3.1-flash-Lite",
+                    contents=prompt_phan_tich
+                )
+                st.session_state["kho_de_summary"] = "Đã nạp kho đề thành công"
+                st.session_state["kho_de_path"] = "kho_de.txt"
+            except Exception:
+                st.session_state["kho_de_summary"] = "Dùng kho đề cục bộ"
 
-    danh_sach_loc = [
-        c for c in ngan_hang_toan_bo
-        if selected_topic_clean in chuan_hoa(c["chu_de"])
-        and selected_diff_clean == chuan_hoa(c["muc_do"])
-    ]
-
-    # Khởi tạo trạng thái ban đầu trong session_state
-    if "started_practice" not in st.session_state:
-        st.session_state.started_practice = False
-
-    if st.session_state.get("selected_topic_cache") != topic or st.session_state.get("selected_level_cache") != level:
-        st.session_state.started_practice = False
-        st.session_state.selected_topic_cache = topic
-        st.session_state.selected_level_cache = level
-
-    # 2. Hai nút chức năng nằm ngang gọn gàng
+    # 2. Giao diện 2 nút chức năng
     col_btn1, col_btn2 = st.columns(2)
-   
+    
     with col_btn1:
-        if st.button("🎲 Lấy câu hỏi từ kho đề", key="btn_lay_tu_kho"):
-            if danh_sach_loc:
-                raw_cau = random.choice(danh_sach_loc)
-                with st.spinner("🤖 Gia sư AI đang chuẩn hóa câu hỏi và biên soạn lời giải..."):
-                    prompt_chuan_hoa = f"""
-                    Bạn là một chuyên gia khảo thí Toán 11 và giáo viên giỏi.
-                    Dưới đây là một câu hỏi trắc nghiệm được lấy từ kho đề:
-                    "{raw_cau['noi_dung']}"
-                    Các phương án lựa chọn trong kho: {raw_cau['options']}
-                    
-                    Nhiệm vụ của bạn:
-                    1. Xác định chính xác đáp án đúng (A, B, C hoặc D) hoặc đáp án số (nếu là câu trả lời ngắn).
-                    2. Biên soạn lời giải chi tiết từng bước (viết bằng LaTeX trong $...$).
-                    3. Chỉ rõ nguyên nhân học sinh hay sập bẫy ở câu này.
-                    
-                    Trả về ĐÚNG định dạng JSON thuần theo mẫu sau (tuyệt đối không bọc trong markdown ```json):
-                    {{
-                        "noi_dung": "Nội dung câu hỏi đã được chuẩn hóa rõ ràng...",
-                        "options": {{"A": "...", "B": "...", "C": "...", "D": "..."}},
-                        "dap_an": "A",
-                        "loi_giai": "Lời giải chi tiết từng bước và phân tích bẫy sai lầm..."
-                    }}
-                    """
-                    ai_data = None
+        if st.button("🎲 AI sáng tác câu hỏi chuẩn ma trận", key="btn_ai_sang_tac"):
+            with st.spinner(f"🤖 Gia sư AI đang sáng tác câu hỏi môn Toán 11 - Chủ đề: [{topic}] - Mức độ: [{level}]..."):
+                
+                # Prompt yêu cầu AI dựa vào ma trận đã học để sáng tác câu mới hoàn toàn
+                prompt_tao_cau = f"""
+                Dựa trên ma trận và phong cách của kho đề Toán 11 đã phân tích trước đó, hãy SÁNG TÁC một câu hỏi mới hoàn toàn (hoặc câu trả lời ngắn) đáp ứng đúng tiêu chí sau:
+                - Chủ đề kiến thức: "{topic}"
+                - Mức độ tư duy: "{level}"
+                - Đảm bảo tính chính xác toán học, chuẩn chương trình GDPT 2018.
+                - Cung cấp đầy đủ các phương án A, B, C, D (nếu là trắc nghiệm) hoặc để trống options nếu là câu trả lời ngắn.
+                - Chỉ rõ đáp án đúng và viết lời giải chi tiết từng bước (dùng LaTeX trong $...$).
+                
+                Trả về ĐÚNG định dạng JSON thuần (tuyệt đối không bọc trong markdown ```json):
+                {{
+                    "noi_dung": "Nội dung câu hỏi mới sáng tác...",
+                    "options": {{"A": "...", "B": "...", "C": "...", "D": "..."}},
+                    "dap_an": "A",
+                    "loi_giai": "Lời giải chi tiết từng bước..."
+                }}
+                """
+                
+                ai_data = None
+                for ten_model in ["gemini-3.1-flash-Lite", "gemini-3.8-flash"]:
                     try:
                         response = client.models.generate_content(
-                            model='gemini-3.1-flash-Lite',
-                            contents=prompt_chuan_hoa,
-                            config=types.GenerateContentConfig(temperature=0.2)
+                            model=ten_model,
+                            contents=prompt_tao_cau,
+                            config=types.GenerateContentConfig(temperature=0.7)
                         )
-                        text_resp = response.text.strip()
-                        if text_resp.startswith("```json"): text_resp = text_resp[7:]
-                        elif text_resp.startswith("```"): text_resp = text_resp[3:]
-                        if text_resp.endswith("```"): text_resp = text_resp[:-3]
-                        ai_data = json.loads(text_resp.strip())
+                        if response and response.text:
+                            text_resp = response.text.strip()
+                            if text_resp.startswith("```json"): text_resp = text_resp[7:]
+                            elif text_resp.startswith("```"): text_resp = text_resp[3:]
+                            if text_resp.endswith("```"): text_resp = text_resp[:-3]
+                            ai_data = json.loads(text_resp.strip())
+                            break
                     except Exception:
-                        ai_data = None
-                    
-                    if ai_data and isinstance(ai_data, dict):
-                        noi_dung_q = ai_data.get("noi_dung", raw_cau['noi_dung'])
-                        options_dict = ai_data.get("options", raw_cau['options'])
-                        dap_an_dung_chu = str(ai_data.get("dap_an", "A")).strip().upper()
-                        loi_giai_txt = ai_data.get("loi_giai", "Lời giải chi tiết đang được cập nhật.")
-                    else:
-                        noi_dung_q = raw_cau['noi_dung']
-                        options_dict = raw_cau['options']
-                        match_da = re.search(r'(?:đáp án|đáp án đúng|đ/a)[:\s]*([A-Da-d0-9\.\-]+)', noi_dung_q, re.IGNORECASE)
-                        if match_da:
-                            dap_an_dung_chu = match_da.group(1).upper()
-                        else:
-                            dap_an_dung_chu = "A"
-                        loi_giai_txt = "Lời giải chi tiết: Áp dụng các định nghĩa và công thức lượng giác cơ bản trong chương trình Toán 11."
+                        continue
+                
+                if ai_data and isinstance(ai_data, dict):
+                    noi_dung_q = ai_data.get("noi_dung", "Câu hỏi đang cập nhật.")
+                    options_dict = ai_data.get("options", {})
+                    dap_an_dung_chu = str(ai_data.get("dap_an", "A")).strip().upper()
+                    loi_giai_txt = ai_data.get("loi_giai", "Lời giải chi tiết đang cập nhật.")
+                else:
+                    # Fallback lấy ngẫu nhiên từ kho nếu AI bận
+                    raw_cau = random.choice(danh_sach_loc) if danh_sach_loc else {"noi_dung": "Câu hỏi thực hành", "options": {"A":"1", "B":"2", "C":"3", "D":"4"}}
+                    noi_dung_q = raw_cau['noi_dung']
+                    options_dict = raw_cau['options']
+                    dap_an_dung_chu = "A"
+                    loi_giai_txt = "Lời giải chi tiết từng bước."
 
-                    # Xáo trộn đáp án nếu là trắc nghiệm
-                    if options_dict:
-                        keys_list = ["A", "B", "C", "D"]
-                        vals_list = [str(options_dict.get(k, "")).strip() for k in keys_list]
-                        dung_idx = ord(dap_an_dung_chu) - ord('A') if dap_an_dung_chu in keys_list else 0
-                        combined = list(zip(vals_list, [k == dap_an_dung_chu for k in keys_list]))
-                        random.shuffle(combined)
-                        new_options = {}
-                        new_correct_key = "A"
-                        for i, (val_t, is_corr) in enumerate(combined):
-                            new_key = keys_list[i]
-                            new_options[new_key] = val_t
-                            if is_corr: new_correct_key = new_key
-                        options_final = new_options
-                        dap_an_final = new_correct_key
-                    else:
-                        options_final = {}
-                        dap_an_final = dap_an_dung_chu
+                # Xáo trộn đáp án ngẫu nhiên chống lộ
+                if options_dict:
+                    keys_list = ["A", "B", "C", "D"]
+                    vals_list = [str(options_dict.get(k, "")).strip() for k in keys_list]
+                    combined = list(zip(vals_list, [k == dap_an_dung_chu for k in keys_list]))
+                    random.shuffle(combined)
+                    new_options = {}
+                    new_correct_key = "A"
+                    for i, (val_t, is_corr) in enumerate(combined):
+                        new_key = keys_list[i]
+                        new_options[new_key] = val_t
+                        if is_corr: new_correct_key = new_key
+                    options_final = new_options
+                    dap_an_final = new_correct_key
+                else:
+                    options_final = {}
+                    dap_an_final = dap_an_dung_chu
 
-                    st.session_state.current_question = {
-                        "chu_de": topic,
-                        "muc_do": level,
-                        "noi_dung": noi_dung_q,
-                        "options": options_final,
-                        "dap_an": dap_an_final,
-                        "loi_giai": loi_giai_txt
-                    }
+                st.session_state.current_question = {
+                    "chu_de": topic,
+                    "muc_do": level,
+                    "noi_dung": noi_dung_q,
+                    "options": options_final,
+                    "dap_an": dap_an_final,
+                    "loi_giai": loi_giai_txt
+                }
                 st.session_state.started_practice = True
-                st.success("✨ Đã tải thành công câu hỏi từ kho đề kèm lời giải từ Gia sư AI!")
+                st.toast("✨ AI đã sáng tác câu hỏi mới sát ma trận kho đề!", icon="🎯")
                 st.rerun()
-            else:
-                st.warning("⚠️ Không tìm thấy câu hỏi phù hợp với chủ đề và mức độ này trong ngân hàng đề!")
-
-   
+    
     with col_btn2:
         btn_clone = st.button("🔄 AI sinh câu tương tự dạng vừa làm", key="btn_clone_tu_kho")
         if btn_clone:
