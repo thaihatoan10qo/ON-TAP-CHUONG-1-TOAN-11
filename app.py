@@ -766,19 +766,21 @@ Trả về đúng định dạng JSON:
             break
         except Exception:
             continue
-
             success = False
-                # Sử dụng đúng các model yêu thích của cô: gemini-3.1-flash-lite và gemini-3.8-flash
-                cac_model = ['gemini-3.1-flash-lite', 'gemini-3.8-flash']
-                for ten_model in cac_model:
-                    try:
-                        response = client.models.generate_content(
-                            model=ten_model,
-                            contents=prompt,
-                            config=types.GenerateContentConfig(
-                                system_instruction=gem_instructions,
-                                response_mime_type="application/json",
-                                temperature=0.7
+    # Sử dụng đúng các model yêu thích của cô: gemini-3.1-flash-lite và gemini-3.8-flash
+    cac_model = ['gemini-3.1-flash-lite', 'gemini-3.8-flash']
+    for ten_model in cac_model:
+        try:
+            response = client.models.generate_content(
+                model=ten_model,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    system_instruction=gem_instructions,
+                    response_mime_type="application/json",
+                    temperature=0.7
+                )
+            )
+           
                             )
                         )
                         txt_resp = response.text.strip()
