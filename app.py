@@ -132,10 +132,7 @@ def get_fallback_quiz(topic, level, danh_sach_cau):
             "explanation": "Lời giải chi tiết: Thiết lập mô hình hàm số lượng giác $y = A\\sin(wt + \\phi) + D$ để giải quyết bài toán thực tế."
         }
         
-def hien_thi_lua_chon(k):
-    val = str(q['options'][k]).strip()
-    # Nếu có chứa định dạng toán thì giữ nguyên, tránh dùng $$
-    return f"**{k}.** {val}"
+
 # Tải toàn bộ ngân hàng đề từ file KHO-DE.txt
 thu_muc_hien_tai = os.path.dirname(os.path.abspath(__file__))
 duong_dan_kho_de = os.path.join(thu_muc_hien_tai, "KHO-DE.txt")
@@ -608,6 +605,19 @@ with tab_lythuyet:
         st.warning(f"Chưa tìm thấy file '{file_anh}' trên hệ thống. Hãy kiểm tra lại tên file trên GitHub.")
 # ================= TAB 3: LUYỆN TẬP THÍCH ỨNG & GIA SƯ AI TRỰC TIẾP =================
 # --- TAB 3: LUYỆN TẬP THÔNG MINH & GIA SƯ AI ĐỒNG HÀNH ---
+def hien_thi_lua_chon(k):
+            val = str(q['options'][k]).strip()
+            # Nếu chuỗi được bọc sẵn dấu $$ hoặc $, ta bỏ bớt đi để tránh bị lặp
+            if val.startswith("$$") and val.endswith("$$"):
+                val = val[2:-2].strip()
+            elif val.startswith("$") and val.endswith("$"):
+                val = val[1:-1].strip()
+            
+            # Khử ký tự escape gạch chéo ngược thừa nếu có
+            val = val.replace("\\\\", "\\")
+            
+            # Bọc chuẩn xác trong 1 cặp dấu $ duy nhất để Streamlit render LaTeX đẹp mắt
+            return f"**{k}.** ${val}$"
 with tab_luyentap:    
     st.subheader("✍️ Luyện tập thông minh & Gia sư AI đồng hành")
     st.markdown("Em hãy lựa chọn chủ đề và mức độ tư duy. AI sẽ đọc kho đề, giao bài toán chuẩn ma trận, chấm điểm, phân tích bẫy sai lầm và đồng hành giải đáp thắc mắc cùng em!")
