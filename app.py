@@ -82,16 +82,22 @@ def tai_va_loc_ngan_hang_de(file_path="KHO-DE.txt"):
 def get_fallback_quiz(topic, level, danh_sach_cau):
     import random
     
-    # Kho câu hỏi dự phòng phong phú theo chuẩn Toán 11
-    kho_cau_hoi_mau = [
-        {
-            "question": "Cho góc lượng giác $\\alpha$ thỏa mãn $\\frac{\\pi}{2} < \\alpha < \\pi$. Xác định dấu của biểu thức $P = \\sin\\alpha \\cdot \\cos\\alpha$.",
-            "options": {"A": "$P > 0$", "B": "$P < 0$", "C": "$P = 0$", "D": "$P$ không đổi dấu"},
+    # Kho câu hỏi dự phòng phân chia chuẩn theo 4 chủ đề Toán 11
+    if "1." in topic or "Giá trị lượng giác" in topic:
+        return {
+            "question": f"Cho góc lượng giác $\\alpha$ thỏa mãn $\\frac{{\\pi}}{2} < \\alpha < \\pi$. Xác định dấu của biểu thức $P = \\sin\\alpha \\cdot \\cos\\alpha$.",
+            "options": {
+                "A": "$P > 0$", 
+                "B": "$P < 0$", 
+                "C": "$P = 0$", 
+                "D": "$P$ không đổi dấu"
+            },
             "correct_answer": "B",
             "explanation": "Vì $\\frac{\\pi}{2} < \\alpha < \\pi$ nên $\\sin\\alpha > 0$ và $\\cos\\alpha < 0$. Do đó tích $P = \\sin\\alpha \\cdot \\cos\\alpha < 0$."
-        },
-        {
-            "question": "Tìm tập xác định $D$ của hàm số $y = \\frac{1}{\\sin x - \\cos x}$.",
+        }
+    elif "2." in topic or "Hàm số lượng giác" in topic:
+        return {
+            "question": f"Tìm tập xác định $D$ của hàm số $y = \\frac{{1}}{{\\sin x - \\cos x}}$.",
             "options": {
                 "A": "$D = \\mathbb{R} \\setminus \\left\\{\\frac{\\pi}{4} + k\\pi, k \\in \\mathbb{Z}\\right\\}$",
                 "B": "$D = \\mathbb{R} \\setminus \\left\\{k\\pi, k \\in \\mathbb{Z}\\right\\}$",
@@ -99,10 +105,11 @@ def get_fallback_quiz(topic, level, danh_sach_cau):
                 "D": "$D = \\mathbb{R}$"
             },
             "correct_answer": "A",
-            "explanation": "Hàm số xác định khi $\\sin x - \\cos x \\neq 0 \\Leftrightarrow \\sin x \\neq \\cos x \\Leftrightarrow \\tan x \\neq 1 \\Leftrightarrow x \\neq \\frac{\\pi}{4} + k\\pi$ ($k \\in \\mathbb{Z}$)."
-        },
-        {
-            "question": "Giải phương trình lượng giác: $\\sin x = \\frac{1}{2}$ có tập nghiệm là:",
+            "explanation": "Hàm số xác định khi $\\sin x - \\cos x \\neq 0 \\Leftrightarrow \\tan x \\neq 1 \\Leftrightarrow x \\neq \\frac{\\pi}{4} + k\\pi$ ($k \\in \\mathbb{Z}$)."
+        }
+    elif "3." in topic or "Phương trình lượng giác" in topic:
+        return {
+            "question": f"Giải phương trình lượng giác: $\\sin x = \\frac{{1}}{{2}}$ có tập nghiệm là:",
             "options": {
                 "A": "$x = \\frac{\\pi}{6} + k2\\pi, x = \\frac{5\\pi}{6} + k2\\pi$ ($k \\in \\mathbb{Z}$)",
                 "B": "$x = \\frac{\\pi}{3} + k2\\pi$ ($k \\in \\mathbb{Z}$)",
@@ -110,26 +117,25 @@ def get_fallback_quiz(topic, level, danh_sach_cau):
                 "D": "$x = \\pm\\frac{\\pi}{6} + k2\\pi$ ($k \\in \\mathbb{Z}$)"
             },
             "correct_answer": "A",
-            "explanation": "Phương trình $\\sin x = \\frac{1}{2} = \\sin\\frac{\\pi}{6}$ có các họ nghiệm là $x = \\frac{\\pi}{6} + k2\\pi$ và $x = \\pi - \\frac{\\pi}{6} + k2\\pi = \\frac{5\\pi}{6} + k2\\pi$ ($k \\in \\mathbb{Z}$)."
+            "explanation": "Phương trình $\\sin x = \\frac{1}{2} = \\sin\\frac{\\pi}{6}$ có các họ nghiệm là $x = \\frac{\\pi}{6} + k2\\pi$ và $x = \\frac{5\\pi}{6} + k2\\pi$ ($k \\in \\mathbb{Z}$)."
         }
-    ]
-    
-    # Nếu trong kho đề cục bộ có câu hỏi, ưu tiên bốc một câu thực tế
-    if danh_sach_cau:
-        chon_ngau_nhien = random.choice(danh_sach_cau)
+    else:
         return {
-            "question": f"Bài toán luyện tập từ ngân hàng: {chon_ngau_nhien[:350]}...",
+            "question": f"Bài toán thực tế ứng dụng hàm số lượng giác ở mức độ **{level}** thuộc chủ đề: *{topic}*.",
             "options": {
-                "A": "Kết quả thứ nhất",
-                "B": "Kết quả chính xác theo định lý",
-                "C": "Kết quả thiếu điều kiện",
-                "D": "Kết quả trái dấu"
+                "A": "Phương án xử lý thứ nhất theo mô hình toán học.",
+                "B": "Phương án tối ưu chính xác cho bài toán thực tế.",
+                "C": "Phương án nhầm lẫn chu kỳ dao động.",
+                "D": "Phương án tính toán sai biên độ."
             },
             "correct_answer": "B",
-            "explanation": "Lời giải chi tiết: Vận dụng linh hoạt các công thức biến đổi lượng giác và điều kiện xác định để tìm ra đáp án."
+            "explanation": "Lời giải chi tiết: Thiết lập mô hình hàm số lượng giác $y = A\\sin(wt + \\phi) + D$ để giải quyết bài toán thực tế."
         }
         
-    return random.choice(kho_cau_hoi_mau)
+def hien_thi_lua_chon(k):
+    val = str(q['options'][k]).strip()
+    # Nếu có chứa định dạng toán thì giữ nguyên, tránh dùng $$
+    return f"**{k}.** {val}"
 # Tải toàn bộ ngân hàng đề từ file KHO-DE.txt
 thu_muc_hien_tai = os.path.dirname(os.path.abspath(__file__))
 duong_dan_kho_de = os.path.join(thu_muc_hien_tai, "KHO-DE.txt")
