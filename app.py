@@ -420,7 +420,7 @@ client = genai.Client(api_key=api_key) if api_key else None
 
 
 # 3. Tạo các phân hệ chức năng
-tab_mophong, tab_lythuyet, tab_luyentap, tab_kiemtra = st.tabs([
+tab_mophong, tab_lythuyet, = st.tabs([
     "🌀 1. MÔ PHỎNG TRỰC QUAN",
     "📖 2. TÓM TẮT LÝ THUYẾT",
     #"✍️ 3. LUYỆN TẬP CÙNG GIA SƯ AI",
