@@ -605,23 +605,26 @@ with tab_lythuyet:
         st.warning(f"Chưa tìm thấy file '{file_anh}' trên hệ thống. Hãy kiểm tra lại tên file trên GitHub.")
 # ================= TAB 3: LUYỆN TẬP THÍCH ỨNG & GIA SƯ AI TRỰC TIẾP =================
 # --- TAB 3: LUYỆN TẬP THÔNG MINH & GIA SƯ AI ĐỒNG HÀNH ---
-def hien_thi_lua_chon(k):
-            val = str(q['options'][k]).strip()
-            # Nếu chuỗi được bọc sẵn dấu $$ hoặc $, ta bỏ bớt đi để tránh bị lặp
-            if val.startswith("$$") and val.endswith("$$"):
-                val = val[2:-2].strip()
-            elif val.startswith("$") and val.endswith("$"):
-                val = val[1:-1].strip()
-            
-            # Khử ký tự escape gạch chéo ngược thừa nếu có
-            val = val.replace("\\\\", "\\")
-            
-            # Bọc chuẩn xác trong 1 cặp dấu $ duy nhất để Streamlit render LaTeX đẹp mắt
-            return f"**{k}.** ${val}$"
+
 with tab_luyentap:    
+    
     st.subheader("✍️ Luyện tập thông minh & Gia sư AI đồng hành")
     st.markdown("Em hãy lựa chọn chủ đề và mức độ tư duy. AI sẽ đọc kho đề, giao bài toán chuẩn ma trận, chấm điểm, phân tích bẫy sai lầm và đồng hành giải đáp thắc mắc cùng em!")
-
+    def hien_thi_lua_chon(k):
+            val = str(q['options'][k]).strip()
+            
+            # Gỡ bỏ toàn bộ dấu $ hoặc $$ thừa ở đầu và cuối chuỗi
+            while val.startswith("$"):
+                val = val[1:]
+            while val.endswith("$"):
+                val = val[:-1]
+            val = val.strip()
+            
+            # Khử ký tự escape gạch chéo ngược nếu có
+            val = val.replace("\\\\", "\\")
+            
+            # Bọc lại bằng đúng 1 cặp dấu $ duy nhất cho dạng toán inline
+            return f"**{k}.** ${val}$"
     # 1. AI đọc toàn bộ file kho_de.txt MỘT LẦN DUY NHẤT ngay khi vào Tab 3 để làm nền tảng ngữ liệu
     if "ai_matrix_kho_de" not in st.session_state:
         with st.spinner("🤖 Gia sư AI đang đọc toàn bộ kho đề (KHO-DE.txt) để nắm bắt ma trận và phân loại dạng bài..."):
