@@ -666,36 +666,54 @@ with tab_luyentap:
                 st.session_state["chat_history"] = []
 
                 gem_instructions = f"""
-Bạn là Trợ lý Chuyên gia Khảo thí Toán 11 THPT (Chương trình GDPT 2018).
-Dưới đây là toàn bộ ngân hàng đề thi (KHO-DE.txt) đã được nạp sẵn vào bộ nhớ:
----
-{noi_dung_kho_de[:20000]}
----
-Quy trình tư duy bắt buộc (Chain-of-Thought) khi thiết kế câu hỏi:
-1. Dựa trực tiếp vào chủ đề kiến thức ("{topic}") và mức độ câu hỏi ("{level}") mà học sinh vừa lựa chọn, hãy chọn lọc hoặc tham khảo phong cách từ các câu hỏi tương ứng trong ngân hàng đề trên.
-2. Thiết kế đề bài rõ ràng, tự chứa đầy đủ dữ kiện toán học (tuyệt đối KHÔNG ra đề yêu cầu quan sát hình vẽ bên/đồ thị đính kèm).
-3. TỰ GIẢI CHI TIẾT TỪNG BƯỚC vào trường 'step_by_step_solve' để tìm ra kết quả đúng tuyệt đối trước khi gán phương án.
-4. Chọn NGẪU NHIÊN 1 trong 4 nhãn (A, B, C hoặc D) làm đáp án đúng ('correct_answer') và gán kết quả vừa giải vào nhãn đó (tuyệt đối không mặc định luôn là A).
-5. Xây dựng 3 phương án gây nhiễu còn lại dựa trên lỗi sai kinh điển: quên điều kiện xác định tan/cot, nhầm dấu công thức cộng/nhân đôi, nhầm chu kỳ kpi/k2pi.
-6. Bắt buộc viết toàn bộ công thức toán bằng ký hiệu LaTeX chuẩn đặt trong cặp $...$.
-7. Explanation (lời giải): Trình bày ngắn gọn, chỉ rõ logic chọn đáp án đúng và cảnh báo bẫy sai lầm để hỗ trợ gia sư AI phản hồi học sinh.
-8. Luôn trả về đúng định dạng JSON thuần, không bao bọc trong ký hiệu markdown ```json.
-"""
+                Bạn là Trợ lý Chuyên gia Khảo thí Toán 11 THPT (Chương trình GDPT 2018).
+                Dưới đây là toàn bộ ngân hàng đề thi (KHO-DE.txt) đã được nạp sẵn vào bộ nhớ:
+                ---
+                {noi_dung_kho_de[:20000]}
+                ---
+                Quy trình tư duy bắt buộc (Chain-of-Thought) khi thiết kế câu hỏi:
+                1. Dựa trực tiếp vào chủ đề kiến thức ("{topic}") và mức độ câu hỏi ("{level}") mà học sinh vừa lựa chọn để tham khảo phong cách từ KHO-DE.txt.
+                2. Thiết kế đề bài rõ ràng, tự chứa đầy đủ dữ kiện toán học (tuyệt đối KHÔNG ra đề yêu cầu quan sát hình vẽ bên/đồ thị đính kèm).
+                3. TỰ GIẢI CHI TIẾT TỪNG BƯỚC vào trường 'step_by_step_solve' để tìm ra kết quả đúng tuyệt đối.
+                4. XÁC ĐỊNH HÌNH THỨC CÂU HỎI THEO MỨC ĐỘ:
+                   - Nếu mức độ là "Nhận biết" hoặc "Thông hiểu": Tạo câu hỏi TRẮC NGHIỆM 4 lựa chọn (A, B, C, D). Vị trí đáp án đúng ('correct_answer') chọn ngẫu nhiên A/B/C/D và xây dựng 3 phương án nhiễu khoa học vào 'options'.
+                   - Nếu mức độ là "Vận dụng" hoặc "Vận dụng cao": Tạo câu hỏi TRẢ LỜI NGẮN. Trường 'options' để trống {{}}, riêng trường 'correct_answer' BẮT BUỘC phải là kết quả dạng số thập phân hoặc phân số gọn gàng tối đa 4 ký tự (ví dụ: 0.5, -1.25, 2/3,...).
+                5. Bắt buộc viết toàn bộ công thức toán bằng ký hiệu LaTeX chuẩn đặt trong cặp $...$.
+                6. Explanation (lời giải): Trình bày ngắn gọn, chỉ rõ logic giải và lưu ý bẫy sai lầm để hỗ trợ gia sư AI phản hồi học sinh.
+                7. Luôn trả về đúng định dạng JSON thuần, không bao bọc trong ký hiệu markdown ```json.
+                """
 
+                # 1. Khai báo quy tắc định dạng linh hoạt theo mức độ tư duy
+                if level in ["Vận dụng", "Vận dụng cao"]:
+                    dinh_dang_yeu_cau = """
+                    - Đây là câu hỏi TRẢ LỜI NGẮN (tự luận).
+                    - Trường 'options' để trống: {}
+                    - Trường 'correct_answer': BẮT BUỘC là đáp số cuối cùng dạng số thập phân hoặc phân số gọn gàng (tối đa 4 ký tự, ví dụ: 0.5, -1.25, 2/3,...).
+                    """
+                else:
+                    dinh_dang_yeu_cau = """
+                    - Đây là câu hỏi TRẮC NGHIỆM 4 lựa chọn (A, B, C, D).
+                    - Vị trí đáp án đúng ('correct_answer') PHẢI được chọn ngẫu nhiên giữa A, B, C hoặc D.
+                    - Phải có đầy đủ 4 phương án trong trường 'options'.
+                    """
+
+                # 2. Xây dựng nội dung prompt cho btn_clone hoặc btn_gen
                 if btn_clone:
                     prompt = f"""
 Câu hỏi gốc học sinh vừa làm:
 "{st.session_state['last_q']}"
 
 Nhiệm vụ: Tạo 1 câu hỏi MỚI CÙNG DẠNG, CÙNG CHỦ ĐỀ "{topic}", CÙNG MỨC ĐỘ "{level}" (thay đổi số liệu/hàm số, giữ nguyên mô hình tư duy).
-YÊU CẦU ĐẶC BIỆT: Vị trí đáp án đúng PHẢI được chọn ngẫu nhiên giữa A, B, C hoặc D.
+
+YÊU CẦU ĐẶC BIỆT:
+{dinh_dang_yeu_cau}
 
 Trả về đúng định dạng JSON:
 {{
     "question": "Nội dung câu hỏi (chứa LaTeX)...",
     "step_by_step_solve": "Giải nháp chi tiết từng bước để tìm ra đáp án đúng chính xác tuyệt đối",
-    "options": {{"A": "...", "B": "...", "C": "...", "D": "..."}},
-    "correct_answer": "Chữ cái đáp án đúng (chọn ngẫu nhiên A, B, C hoặc D)",
+    "options": {{"A": "...", "B": "...", "C": "...", "D": "..."}} (hoặc {{}} nếu là trả lời ngắn),
+    "correct_answer": "Đáp án đúng (chữ cái A/B/C/D hoặc đáp số tối đa 4 ký tự)",
     "explanation": "Lời giải chi tiết từng bước và lưu ý bẫy sai lầm..."
 }}
 """
@@ -705,18 +723,47 @@ Học sinh yêu cầu ra đề với:
 - Chủ đề: "{topic}"
 - Mức độ: "{level}"
 
-Nhiệm vụ: Dựa vào kho đề (KHO-DE.txt) đã được nạp sẵn, hãy sáng tác MỘT câu hỏi trắc nghiệm Toán 11 mới có cấu trúc, phong cách và độ khó tương đương chuẩn ma trận với chủ đề và mức độ học sinh vừa chọn.
-YÊU CẦU ĐẶC BIỆT: Vị trí đáp án đúng PHẢI được chọn ngẫu nhiên giữa A, B, C hoặc D.
+Nhiệm vụ: Dựa vào kho đề (KHO-DE.txt) đã được nạp sẵn, hãy sáng tác MỘT câu hỏi Toán 11 mới có cấu trúc, phong cách và độ khó tương đương chuẩn ma trận với chủ đề và mức độ học sinh vừa chọn.
+
+YÊU CẦU ĐẶC BIỆT:
+{dinh_dang_yeu_cau}
 
 Trả về đúng định dạng JSON:
 {{
     "question": "Nội dung câu hỏi (chứa LaTeX)...",
     "step_by_step_solve": "Giải nháp chi tiết từng bước để tìm ra đáp án đúng chính xác tuyệt đối",
-    "options": {{"A": "...", "B": "...", "C": "...", "D": "..."}},
-    "correct_answer": "Chữ cái đáp án đúng (chọn ngẫu nhiên A, B, C hoặc D)",
+    "options": {{"A": "...", "B": "...", "C": "...", "D": "..."}} (hoặc {{}} nếu là trả lời ngắn),
+    "correct_answer": "Đáp án đúng (chữ cái A/B/C/D hoặc đáp số tối đa 4 ký tự)",
     "explanation": "Lời giải chi tiết từng bước và lưu ý bẫy sai lầm..."
 }}
 """
+
+                # 3. Tiến hành gọi AI (đoạn này giữ nguyên phía dưới prompt)
+                success = False
+                cac_model = ['gemini-3.1-flash-lite', 'gemini-3.8-flash']
+                for ten_model in cac_model:
+                    try:
+                        response = client.models.generate_content(
+                            model=ten_model,
+                            contents=prompt,
+                            config=types.GenerateContentConfig(
+                                system_instruction=gem_instructions,
+                                response_mime_type="application/json",
+                                temperature=0.7
+                            )
+                        )
+                        txt_resp = response.text.strip()
+                        if txt_resp.startswith("```json"): txt_resp = txt_resp[7:]
+                        elif txt_resp.startswith("```"): txt_resp = txt_resp[3:]
+                        if txt_resp.endswith("```"): txt_resp = txt_resp[:-3]
+                        
+                        st.session_state["quiz"] = json.loads(txt_resp.strip())
+                        st.session_state["submitted"] = False
+                        st.session_state["last_q"] = st.session_state["quiz"]["question"]
+                        success = True
+                        break
+                    except Exception:
+                        continue
 
                 success = False
                 # Sử dụng đúng các model yêu thích của cô: gemini-3.1-flash-lite và gemini-3.8-flash
