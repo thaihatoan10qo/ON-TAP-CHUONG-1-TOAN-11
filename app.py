@@ -616,107 +616,75 @@ with tab_luyentap:
             danh_sach_tat_ca_cau = []
 
     # Xử lý sự kiện sinh câu hỏi (Tạo mới theo lựa chọn hoặc Tạo câu tương tự)
+    # Xử lý sự kiện sinh câu hỏi (Tối ưu tốc độ, không bao giờ lỗi bận)
     if btn_gen or btn_clone:
         if not client:
             st.error("Chưa cấu hình API Key trong mục Secrets của Streamlit.")
         elif btn_clone and "last_q" not in st.session_state:
             st.warning("⚠️ Em cần tạo và làm thử 1 câu trước khi chọn tạo câu tương tự!")
         else:
-            with st.spinner("🤖 Gia sư AI đang thiết kế bài tập bám sát ma trận kho đề..."):
-                # Reset lịch sử chat khi đổi sang câu hỏi mới
+            with st.spinner("🤖 Gia sư AI đang chuẩn bị câu hỏi cho em..."):
                 st.session_state["chat_history"] = []
+                
+                # Tạo prompt yêu cầu AI trả về rõ ràng các thành phần
+                prompt = f"""
+                Bạn là chuyên gia Toán 11. Hãy ra MỘT câu hỏi trắc nghiệm khách quan chuẩn chương trình GDPT 2018:
+                - Chủ đề: "{topic}"
+                - Mức độ: "{level}"
+                {"(Tạo câu hỏi tương tự câu: " + st.session_state.get('last_q', '') + ")" if btn_clone else ""}
+                
+                Yêu cầu bắt buộc trả về theo đúng định dạng các thẻ sau (không thêm markdown rườm rà):
+                [DE_BAI]: Nội dung câu hỏi (có dùng LaTeX trong $...$)
+                [DAP_AN_A]: Nội dung phương án A
+                [DAP_AN_B]: Nội dung phương án B
+                [DAP_AN_C]: Nội dung phương án C
+                [DAP_AN_D]: Nội dung phương án D
+                [CHI_CUC]: Chữ cái đáp án đúng (A, B, C hoặc D ngẫu nhiên)
+                [LOI_GIAI]: Lời giải chi tiết từng bước và phân tích bẫy sai lầm
+                """
 
-                gem_instructions = """
-Bạn là Trợ lý Chuyên gia Khảo thí Toán 11 THPT (Chương trình GDPT 2018).
-Quy trình tư duy bắt buộc khi thiết kế câu hỏi:
-1. Dựa vào chủ đề kiến thức và mức độ tư duy học sinh chọn, kết hợp với ma trận kho đề đã đọc để thiết kế câu hỏi chuẩn mực.
-2. Thiết kế đề bài rõ ràng, tự chứa đầy đủ dữ kiện toán học (tuyệt đối KHÔNG ra đề yêu cầu quan sát hình vẽ bên/đồ thị đính kèm).
-3. TỰ GIẢI CHI TIẾT TỪNG BƯỚC vào trường 'step_by_step_solve' để tìm ra kết quả đúng tuyệt đối trước khi gán phương án.
-4. Chọn NGẪU NHIÊN 1 trong 4 nhãn (A, B, C hoặc D) làm đáp án đúng ('correct_answer') và gán kết quả vừa giải vào nhãn đó (tuyệt đối không mặc định luôn là A).
-5. Xây dựng 3 phương án gây nhiễu còn lại dựa trên lỗi sai kinh điển: quên điều kiện xác định, nhầm dấu công thức, nhầm chu kỳ.
-6. Bắt buộc viết toàn bộ công thức toán bằng ký hiệu LaTeX chuẩn đặt trong cặp $...$ hoặc $$...$$.
-7. Explanation (lời giải và phân tích bẫy): Trình bày ngắn gọn, chỉ rõ logic chọn đáp án đúng và cảnh báo bẫy sai lầm để hỗ trợ học sinh.
-8. Luôn trả về đúng định dạng JSON thuần, không bao bọc trong ký hiệu markdown ```json.
-"""
-
-                if btn_clone:
-                    prompt = f"""
-Câu hỏi gốc học sinh vừa làm:
-"{st.session_state['last_q']}"
-
-Nhiệm vụ: Tạo 1 câu hỏi MỚI CÙNG DẠNG, CÙNG MỨC ĐỘ (thay đổi số liệu/hàm số, giữ nguyên mô hình tư duy).
-YÊU CẦU ĐẶC BIỆT: Vị trí đáp án đúng PHẢI được chọn ngẫu nhiên giữa A, B, C hoặc D.
-
-Trả về đúng định dạng JSON:
-{{
-    "question": "Nội dung câu hỏi (chứa LaTeX)...",
-    "step_by_step_solve": "Giải nháp chi tiết từng bước",
-    "options": {{"A": "...", "B": "...", "C": "...", "D": "..."}},
-    "correct_answer": "Chữ cái đáp án đúng (A, B, C hoặc D)",
-    "explanation": "Lời giải chi tiết từng bước và lưu ý bẫy sai lầm..."
-}}
-"""
-                else:
-                    prompt = f"""
-Học sinh đang yêu cầu luyện tập với:
-- Chủ đề kiến thức: "{topic}"
-- Mức độ tư duy: "{level}"
-
-Nhiệm vụ: Dựa vào sự thấu hiểu kho đề đã phân tích trước đó, hãy sáng tác MỘT câu hỏi trắc nghiệm Toán 11 mới hoàn toàn, chuẩn ma trận với chủ đề và mức độ học sinh đã chọn.
-YÊU CẦU ĐẶC BIỆT: Vị trí đáp án đúng PHẢI được chọn ngẫu nhiên giữa A, B, C hoặc D.
-
-Trả về đúng định dạng JSON:
-{{
-    "question": "Nội dung câu hỏi (chứa LaTeX)...",
-    "step_by_step_solve": "Giải nháp chi tiết từng bước",
-    "options": {{"A": "...", "B": "...", "C": "...", "D": "..."}},
-    "correct_answer": "Chữ cái đáp án đúng (A, B, C hoặc D)",
-    "explanation": "Lời giải chi tiết từng bước và lưu ý bẫy sai lầm..."
-}}
-"""
-
-                success = False
-                cac_model = ['gemini-2.5-flash', 'gemini-1.5-flash']
-                for ten_model in cac_model:
+                noi_dung_nhan_duoc = ""
+                for ten_model in ['gemini-2.5-flash', 'gemini-1.5-flash']:
                     try:
                         response = client.models.generate_content(
                             model=ten_model,
-                            contents=prompt,
-                            config=types.GenerateContentConfig(
-                                system_instruction=gem_instructions,
-                                response_mime_type="application/json",
-                                temperature=0.7
-                            )
+                            contents=prompt
                         )
-                        st.session_state["quiz"] = json.loads(response.text)
-                        st.session_state["submitted"] = False
-                        st.session_state["last_q"] = st.session_state["quiz"]["question"]
-                        success = True
-                        break
+                        if response and response.text:
+                            noi_dung_nhan_duoc = response.text
+                            break
                     except Exception:
                         continue
 
-                if not success:
-                    # Fallback an toàn nếu mạng bận
-                    cau_du_phong = "Tìm tập xác định của hàm số $y = \\tan\\left(x - \\frac{\\pi}{3}\\right)$."
-                    if danh_sach_tat_ca_cau:
-                        cau_ngau_nhien = random.choice(danh_sach_tat_ca_cau)
-                        cau_du_phong = "Câu " + cau_ngau_nhien
+                # Nếu AI trả về thành công, ta bóc tách dữ liệu
+                import re
+                if noi_dung_nhan_duoc and "[DE_BAI]" in noi_dung_nhan_duoc:
+                    try:
+                        q_text = re.search(r'\[DE_BAI\]:\s*(.*?)(?=\[DAP_AN_A\]|$)', noi_dung_nhan_duoc, re.DOTALL).group(1).strip()
+                        opt_a = re.search(r'\[DAP_AN_A\]:\s*(.*?)(?=\[DAP_AN_B\]|$)', noi_dung_nhan_duoc, re.DOTALL).group(1).strip()
+                        opt_b = re.search(r'\[DAP_AN_B\]:\s*(.*?)(?=\[DAP_AN_C\]|$)', noi_dung_nhan_duoc, re.DOTALL).group(1).strip()
+                        opt_c = re.search(r'\[DAP_AN_C\]:\s*(.*?)(?=\[DAP_AN_D\]|$)', noi_dung_nhan_duoc, re.DOTALL).group(1).strip()
+                        opt_d = re.search(r'\[DAP_AN_D\]:\s*(.*?)(?=\[CHI_CUC\]|$)', noi_dung_nhan_duoc, re.DOTALL).group(1).strip()
+                        ans_true = re.search(r'\[CHI_CUC\]:\s*([A-Da-d])', noi_dung_nhan_duoc).group(1).strip().upper()
+                        exp_text = re.search(r'\[LOI_GIAI\]:\s*(.*)', noi_dung_nhan_duoc, re.DOTALL).group(1).strip()
 
-                    st.info("💡 Đường truyền AI đang bận, hệ thống trích xuất câu chuẩn từ ngân hàng để em luyện tập ngay:")
-                    st.session_state["quiz"] = {
-                        "question": cau_du_phong,
-                        "options": {
-                            "A": "$D = \\mathbb{R} \\setminus \\left\\{\\frac{5\\pi}{6} + k\\pi, k \\in \\mathbb{Z}\\right\\}$",
-                            "B": "$D = \\mathbb{R} \\setminus \\left\\{\\frac{\\pi}{3} + k\\pi, k \\in \\mathbb{Z}\\right\\}$",
-                            "C": "$D = \\mathbb{R} \\setminus \\left\\{\\frac{5\\pi}{6} + k2\\pi, k \\in \\mathbb{Z}\\right\\}$",
-                            "D": "$D = \\mathbb{R} \\setminus \\left\\{\\frac{\\pi}{2} + k\\pi, k \\in \\mathbb{Z}\\right\\}$"
-                        },
-                        "correct_answer": "A",
-                        "explanation": "Hàm số xác định khi $\\sin x \\neq 0$ hoặc $\\cos x \\neq 0$ tùy thuộc vào hàm số lượng giác."
-                    }
-                    st.session_state["submitted"] = False
-                    st.session_state["last_q"] = st.session_state["quiz"]["question"]
+                        st.session_state["quiz"] = {
+                            "question": q_text,
+                            "options": {"A": opt_a, "B": opt_b, "C": opt_c, "D": opt_d},
+                            "correct_answer": ans_true,
+                            "explanation": exp_text
+                        }
+                    except Exception:
+                        # Fallback an toàn nếu bóc tách lỗi
+                        st.session_state["quiz"] = get_fallback_quiz(topic, level, danh_sach_tat_ca_cau)
+                else:
+                    # Fallback an toàn nếu mạng bận
+                    st.session_state["quiz"] = get_fallback_quiz(topic, level, danh_sach_tat_ca_cau)
+
+                st.session_state["submitted"] = False
+                st.session_state["last_q"] = st.session_state["quiz"]["question"]
+                st.toast("🎯 Đã tải xong câu hỏi luyện tập!", icon="🚀")
+                st.rerun()
 
     # 4. Hiển thị câu hỏi làm bài
     if "quiz" in st.session_state:
