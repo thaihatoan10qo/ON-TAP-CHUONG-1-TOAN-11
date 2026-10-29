@@ -677,7 +677,7 @@ with tab_luyentap:
                 3. TỰ GIẢI CHI TIẾT TỪNG BƯỚC vào trường 'step_by_step_solve' để tìm ra kết quả đúng tuyệt đối.
                 4. XÁC ĐỊNH HÌNH THỨC CÂU HỎI THEO MỨC ĐỘ:
                    - Nếu mức độ là "Nhận biết" hoặc "Thông hiểu": Tạo câu hỏi TRẮC NGHIỆM 4 lựa chọn (A, B, C, D). Vị trí đáp án đúng ('correct_answer') chọn ngẫu nhiên A/B/C/D và xây dựng 3 phương án nhiễu khoa học vào 'options'.
-                   - Nếu mức độ là "Vận dụng" hoặc "Vận dụng cao": Tạo câu hỏi TRẢ LỜI NGẮN. Trường 'options' để trống {{}}, riêng trường 'correct_answer' BẮT BUỘC phải là kết quả dạng số thập phân hoặc phân số gọn gàng tối đa 4 ký tự (ví dụ: 0.5, -1.25, 2/3,...).
+                   - Nếu mức độ là "Vận dụng" hoặc "Vận dụng cao": Tạo câu hỏi TRẢ LỜI NGẮN. Trường 'options' để trống {{}}, riêng trường 'correct_answer' BẮT BUỘC phải là kết quả dạng số thập phân gọn gàng tối đa 4 ký tự tuyệt đối không dùng phân số (ví dụ: 0.5, -1.25, ...).
                 5. Bắt buộc viết toàn bộ công thức toán bằng ký hiệu LaTeX chuẩn đặt trong cặp $...$.
                 6. Explanation (lời giải): Trình bày ngắn gọn, chỉ rõ logic giải và lưu ý bẫy sai lầm để hỗ trợ gia sư AI phản hồi học sinh.
                 7. Luôn trả về đúng định dạng JSON thuần, không bao bọc trong ký hiệu markdown ```json.
@@ -692,9 +692,9 @@ with tab_luyentap:
                     """
                 else:
                     dinh_dang_yeu_cau = """
-                    - Đây là câu hỏi TRẮC NGHIỆM 4 lựa chọn (A, B, C, D).
-                    - Vị trí đáp án đúng ('correct_answer') PHẢI được chọn ngẫu nhiên giữa A, B, C hoặc D.
-                    - Phải có đầy đủ 4 phương án trong trường 'options'.
+                    - Đây là câu hỏi TRẢ LỜI NGẮN (tự luận).
+                    - Trường 'options' để trống: {}
+                    - Trường 'correct_answer': BẮT BUỘC là đáp số cuối cùng dạng **số thập phân** (tối đa 4 ký tự, **tuyệt đối không để phân số**, ví dụ: 0.5, -1.25, 2.5,...).
                     """
 
                 # 2. Xây dựng nội dung prompt cho btn_clone hoặc btn_gen
