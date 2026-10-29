@@ -761,6 +761,7 @@ Trả về đúng định dạng JSON:
             
             st.session_state["quiz"] = json.loads(txt_resp.strip())
             st.session_state["submitted"] = False
+            st.session_state["user_choice"] = ""
             st.session_state["last_q"] = st.session_state["quiz"]["question"]
             success = True
             break
