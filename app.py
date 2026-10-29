@@ -767,7 +767,7 @@ Trả về đúng định dạng JSON:
         except Exception:
             continue
 
-                success = False
+            success = False
                 # Sử dụng đúng các model yêu thích của cô: gemini-3.1-flash-lite và gemini-3.8-flash
                 cac_model = ['gemini-3.1-flash-lite', 'gemini-3.8-flash']
                 for ten_model in cac_model:
