@@ -686,13 +686,13 @@ with tab_luyentap:
                 # 1. Khai báo quy tắc định dạng linh hoạt theo mức độ tư duy
 
                 # 1. Khai báo quy tắc định dạng linh hoạt theo mức độ tư duy
-if level in ["Vận dụng", "Vận dụng cao"]:
+    if level in ["Vận dụng", "Vận dụng cao"]:
     dinh_dang_yeu_cau = """
     - Đây là câu hỏi TRẢ LỜI NGẮN (tự luận).
     - Trường 'options' để trống: {}
     - Trường 'correct_answer': BẮT BUỘC là đáp số cuối cùng dạng số thập phân (tối đa 4 ký tự, tuyệt đối không dùng phân số, ví dụ: 0.5, -1.25,...).
     """
-else:
+    else:
     dinh_dang_yeu_cau = """
     - Đây là câu hỏi TRẮC NGHIỆM 4 lựa chọn (A, B, C, D) dành cho mức độ Nhận biết và Thông hiểu.
     - Vị trí đáp án đúng ('correct_answer') PHẢI được chọn ngẫu nhiên giữa A, B, C hoặc D.
@@ -700,7 +700,7 @@ else:
     """
 
                 # 2. Xây dựng nội dung prompt cho btn_clone hoặc btn_gen
-if btn_clone:
+    if btn_clone:
                     prompt = f"""
 Câu hỏi gốc học sinh vừa làm:
 "{st.session_state['last_q']}"
@@ -719,7 +719,7 @@ Trả về đúng định dạng JSON:
     "explanation": "Lời giải chi tiết từng bước và lưu ý bẫy sai lầm..."
 }}
 """
-else:
+    else:
                     prompt = f"""
 Học sinh yêu cầu ra đề với:
 - Chủ đề: "{topic}"
@@ -741,9 +741,9 @@ Trả về đúng định dạng JSON:
 """
 
                 # 3. Tiến hành gọi AI (đoạn này giữ nguyên phía dưới prompt)
-success = False
-cac_model = ['gemini-3.1-flash-lite', 'gemini-3.8-flash']
-                for ten_model in cac_model:
+    success = False
+    cac_model = ['gemini-3.1-flash-lite', 'gemini-3.8-flash']
+        for ten_model in cac_model:
                     try:
                         response = client.models.generate_content(
                             model=ten_model,
