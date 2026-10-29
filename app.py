@@ -781,8 +781,6 @@ Trả về đúng định dạng JSON:
                 )
             )
            
-                            )
-                        )
                         txt_resp = response.text.strip()
                         if txt_resp.startswith("```json"): txt_resp = txt_resp[7:]
                         elif txt_resp.startswith("```"): txt_resp = txt_resp[3:]
