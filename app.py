@@ -81,20 +81,55 @@ def tai_va_loc_ngan_hang_de(file_path="KHO-DE.txt"):
     
 def get_fallback_quiz(topic, level, danh_sach_cau):
     import random
-    cau_mau = f"Câu hỏi luyện tập chủ đề {topic} ({level}). Hãy áp dụng định nghĩa và tính chất cơ bản để giải quyết bài toán."
-    if danh_sach_cau:
-        cau_mau = random.choice(danh_sach_cau)[:300]
-    return {
-        "question": cau_mau,
-        "options": {
-            "A": "Đáp án A (Xem kỹ giả thiết)",
-            "B": "Đáp án B (Kết quả chính xác)",
-            "C": "Đáp án C (Nhầm dấu biểu thức)",
-            "D": "Đáp án D (Sai điều kiện xác định)"
+    
+    # Kho câu hỏi dự phòng phong phú theo chuẩn Toán 11
+    kho_cau_hoi_mau = [
+        {
+            "question": "Cho góc lượng giác $\\alpha$ thỏa mãn $\\frac{\\pi}{2} < \\alpha < \\pi$. Xác định dấu của biểu thức $P = \\sin\\alpha \\cdot \\cos\\alpha$.",
+            "options": {"A": "$P > 0$", "B": "$P < 0$", "C": "$P = 0$", "D": "$P$ không đổi dấu"},
+            "correct_answer": "B",
+            "explanation": "Vì $\\frac{\\pi}{2} < \\alpha < \\pi$ nên $\\sin\\alpha > 0$ và $\\cos\\alpha < 0$. Do đó tích $P = \\sin\\alpha \\cdot \\cos\\alpha < 0$."
         },
-        "correct_answer": "B",
-        "explanation": "Lời giải chi tiết: Áp dụng các công thức trọng tâm trong chương trình Toán 11 để suy luận ra kết quả đúng."
-    }
+        {
+            "question": "Tìm tập xác định $D$ của hàm số $y = \\frac{1}{\\sin x - \\cos x}$.",
+            "options": {
+                "A": "$D = \\mathbb{R} \\setminus \\left\\{\\frac{\\pi}{4} + k\\pi, k \\in \\mathbb{Z}\\right\\}$",
+                "B": "$D = \\mathbb{R} \\setminus \\left\\{k\\pi, k \\in \\mathbb{Z}\\right\\}$",
+                "C": "$D = \\mathbb{R} \\setminus \\left\\{\\frac{\\pi}{2} + k\\pi, k \\in \\mathbb{Z}\\right\\}$",
+                "D": "$D = \\mathbb{R}$"
+            },
+            "correct_answer": "A",
+            "explanation": "Hàm số xác định khi $\\sin x - \\cos x \\neq 0 \\Leftrightarrow \\sin x \\neq \\cos x \\Leftrightarrow \\tan x \\neq 1 \\Leftrightarrow x \\neq \\frac{\\pi}{4} + k\\pi$ ($k \\in \\mathbb{Z}$)."
+        },
+        {
+            "question": "Giải phương trình lượng giác: $\\sin x = \\frac{1}{2}$ có tập nghiệm là:",
+            "options": {
+                "A": "$x = \\frac{\\pi}{6} + k2\\pi, x = \\frac{5\\pi}{6} + k2\\pi$ ($k \\in \\mathbb{Z}$)",
+                "B": "$x = \\frac{\\pi}{3} + k2\\pi$ ($k \\in \\mathbb{Z}$)",
+                "C": "$x = \\frac{\\pi}{6} + k\\pi$ ($k \\in \\mathbb{Z}$)",
+                "D": "$x = \\pm\\frac{\\pi}{6} + k2\\pi$ ($k \\in \\mathbb{Z}$)"
+            },
+            "correct_answer": "A",
+            "explanation": "Phương trình $\\sin x = \\frac{1}{2} = \\sin\\frac{\\pi}{6}$ có các họ nghiệm là $x = \\frac{\\pi}{6} + k2\\pi$ và $x = \\pi - \\frac{\\pi}{6} + k2\\pi = \\frac{5\\pi}{6} + k2\\pi$ ($k \\in \\mathbb{Z}$)."
+        }
+    ]
+    
+    # Nếu trong kho đề cục bộ có câu hỏi, ưu tiên bốc một câu thực tế
+    if danh_sach_cau:
+        chon_ngau_nhien = random.choice(danh_sach_cau)
+        return {
+            "question": f"Bài toán luyện tập từ ngân hàng: {chon_ngau_nhien[:350]}...",
+            "options": {
+                "A": "Kết quả thứ nhất",
+                "B": "Kết quả chính xác theo định lý",
+                "C": "Kết quả thiếu điều kiện",
+                "D": "Kết quả trái dấu"
+            },
+            "correct_answer": "B",
+            "explanation": "Lời giải chi tiết: Vận dụng linh hoạt các công thức biến đổi lượng giác và điều kiện xác định để tìm ra đáp án."
+        }
+        
+    return random.choice(kho_cau_hoi_mau)
 # Tải toàn bộ ngân hàng đề từ file KHO-DE.txt
 thu_muc_hien_tai = os.path.dirname(os.path.abspath(__file__))
 duong_dan_kho_de = os.path.join(thu_muc_hien_tai, "KHO-DE.txt")
@@ -314,7 +349,7 @@ if not st.session_state.get("logged_in", False):
                     st.rerun()
 
     st.stop()
-# ================= HẾT KHỐI ĐĂNG NHẬP =================
+
 # ================= HẾT KHỐI ĐĂNG NHẬP =================
  # Dừng tại đây, không cho chạy tới dòng tạo tabs bên dưới
 
