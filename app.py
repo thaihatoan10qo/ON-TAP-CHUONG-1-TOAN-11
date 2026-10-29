@@ -719,7 +719,7 @@ Trả về đúng định dạng JSON:
     "explanation": "Lời giải chi tiết từng bước và lưu ý bẫy sai lầm..."
 }}
 """
-                else:
+else:
                     prompt = f"""
 Học sinh yêu cầu ra đề với:
 - Chủ đề: "{topic}"
