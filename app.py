@@ -743,29 +743,29 @@ Trả về đúng định dạng JSON:
                 # 3. Tiến hành gọi AI (đoạn này giữ nguyên phía dưới prompt)
     success = False
     cac_model = ['gemini-3.1-flash-lite', 'gemini-3.8-flash']
-        for ten_model in cac_model:
-                    try:
-                        response = client.models.generate_content(
-                            model=ten_model,
-                            contents=prompt,
-                            config=types.GenerateContentConfig(
-                                system_instruction=gem_instructions,
-                                response_mime_type="application/json",
-                                temperature=0.7
-                            )
-                        )
-                        txt_resp = response.text.strip()
-                        if txt_resp.startswith("```json"): txt_resp = txt_resp[7:]
-                        elif txt_resp.startswith("```"): txt_resp = txt_resp[3:]
-                        if txt_resp.endswith("```"): txt_resp = txt_resp[:-3]
-                        
-                        st.session_state["quiz"] = json.loads(txt_resp.strip())
-                        st.session_state["submitted"] = False
-                        st.session_state["last_q"] = st.session_state["quiz"]["question"]
-                        success = True
-                        break
-                    except Exception:
-                        continue
+    for ten_model in cac_model:
+        try:
+            response = client.models.generate_content(
+                model=ten_model,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    system_instruction=gem_instructions,
+                    response_mime_type="application/json",
+                    temperature=0.7
+                )
+            )
+            txt_resp = response.text.strip()
+            if txt_resp.startswith("```json"): txt_resp = txt_resp[7:]
+            elif txt_resp.startswith("```"): txt_resp = txt_resp[3:]
+            if txt_resp.endswith("```"): txt_resp = txt_resp[:-3]
+            
+            st.session_state["quiz"] = json.loads(txt_resp.strip())
+            st.session_state["submitted"] = False
+            st.session_state["last_q"] = st.session_state["quiz"]["question"]
+            success = True
+            break
+        except Exception:
+            continue
 
                 success = False
                 # Sử dụng đúng các model yêu thích của cô: gemini-3.1-flash-lite và gemini-3.8-flash
