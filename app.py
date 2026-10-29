@@ -741,7 +741,7 @@ Trả về đúng định dạng JSON:
 """
 
                 # 3. Tiến hành gọi AI (đoạn này giữ nguyên phía dưới prompt)
-                success = False
+success = False
                 cac_model = ['gemini-3.1-flash-lite', 'gemini-3.8-flash']
                 for ten_model in cac_model:
                     try:
