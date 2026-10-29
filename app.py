@@ -830,6 +830,7 @@ Trả về đúng định dạng JSON:
             val = val.replace("\\\\", "\\")
             return f"**{k}.** ${val}$"
     # Kiểm tra an toàn xem câu hỏi có đủ 4 phương án trắc nghiệm hay không
+       # Kiểm tra an toàn xem câu hỏi có đủ 4 phương án trắc nghiệm hay không
         co_options = "options" in q and isinstance(q["options"], dict) and all(k in q["options"] for k in ["A", "B", "C", "D"])
 
         user_c = None
@@ -873,6 +874,9 @@ Trả về đúng định dạng JSON:
                     # So khớp kết quả trả lời ngắn (làm sạch khoảng trắng, chữ hoa/thường)
                     is_correct = str(user_c).strip().replace(" ", "").lower() == str(q["correct_answer"]).strip().replace(" ", "").lower()
 
+                # Lưu trạng thái đúng/sai vào session_state để tái sử dụng an toàn
+                st.session_state["is_correct"] = is_correct
+
                 if is_correct:
                     st.session_state["practice_correct"] = st.session_state.get("practice_correct", 0) + 1
                 else:
@@ -882,7 +886,7 @@ Trả về đúng định dạng JSON:
                 so_sai = st.session_state.get("practice_wrong", 0)
                 chu_de = st.session_state.get("cur_question_topic", topic)
 
-                # 3. Gửi dữ liệu lên Google Sheet như bản cũ
+                # 3. Gửi dữ liệu lên Google Sheet
                 try:
                     if 'send_data_to_gsheet' in globals():
                         da_gui = send_data_to_gsheet(
@@ -897,9 +901,10 @@ Trả về đúng định dạng JSON:
                 except Exception:
                     pass
        
-        # Hiển thị kết quả và lời giải khi đã nộp bài
+        # Hiển thị kết quả và lời giải khi đã nộp bài (Đọc trực tiếp từ session_state)
         if st.session_state.get("submitted", False):
-            if is_correct:
+            is_correct_hien_tai = st.session_state.get("is_correct", False)
+            if is_correct_hien_tai:
                 st.success("🎉 Chính xác! Em đã làm chủ phương pháp giải bài toán này.")
             else:
                 st.error(f"❌ Chưa chính xác. Đáp án đúng chuẩn là: **{q['correct_answer']}**")
@@ -907,7 +912,6 @@ Trả về đúng định dạng JSON:
 
             with st.expander("📖 Xem lời giải chi tiết và phân tích bẫy sai lầm", expanded=True):
                 st.markdown(q["explanation"])
-
             st.markdown("---")
             st.subheader("💬 Gia sư AI: Em có thắc mắc gì về câu hỏi này không?")
             st.caption("Em chưa hiểu bước biến đổi nào, tại sao công thức lại như vậy hay muốn gợi ý cách nhớ? Hãy nhập câu hỏi bên dưới nhé!")
