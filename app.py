@@ -829,25 +829,50 @@ Trả về đúng định dạng JSON:
             val = val.strip()
             val = val.replace("\\\\", "\\")
             return f"**{k}.** ${val}$"
+    # Kiểm tra an toàn xem câu hỏi có đủ 4 phương án trắc nghiệm hay không
+        co_options = "options" in q and isinstance(q["options"], dict) and all(k in q["options"] for k in ["A", "B", "C", "D"])
 
-        choice = st.radio(
-            "Chọn đáp án đúng:",
-            options=["A", "B", "C", "D"],
-            index=None,
-            format_func=hien_thi_lua_chon,
-            key="radio_tab3_lua_chon"
-        )
-        if st.button("Nộp bài & Kiểm tra đáp án", key="btn_nop_bai_tab3_doc_kho"):
-            if choice is None:
-                st.warning("⚠️ Vui lòng chọn một đáp án trước khi nộp bài!")
+        user_c = None
+        if co_options:
+            # --- TRƯỜNG HỢP 1: TRẮC NGHIỆM 4 ĐÁP ÁN (Nhận biết / Thông hiểu) ---
+            def hien_thi_lua_chon(k):
+                val = str(q['options'].get(k, "")).strip()
+                while val.startswith("$"): val = val[1:]
+                while val.endswith("$"): val = val[:-1]
+                val = val.strip().replace("\\\\", "\\")
+                return f"**{k}.** ${val}$"
+
+            choice = st.radio(
+                "Chọn đáp án đúng:",
+                options=["A", "B", "C", "D"],
+                index=None,
+                format_func=hien_thi_lua_chon,
+                key="radio_tab3_lua_chon"
+            )
+            user_c = choice
+        else:
+            # --- TRƯỜNG HỢP 2: TRẢ LỜI NGẮN (Vận dụng / Vận dụng cao) ---
+            st.info("💡 Đây là câu hỏi trả lời ngắn. Em hãy tự giải và điền kết quả dạng số thập phân vào ô bên dưới nhé (tối đa 4 ký tự, ví dụ: 0.5, -2, 3.5,...):")
+            user_c = st.text_input("Nhập kết quả của em:", key="input_tra_loi_ngan")
+
+        if st.button("Nộp bài & Kiểm tra đáp án", key="btn_nop_bai_tab3_linh_hoat"):
+            if not user_c or (isinstance(user_c, str) and not user_c.strip()):
+                st.warning("⚠️ Vui lòng chọn hoặc nhập đáp án trước khi nộp bài!")
             elif not st.session_state.get("submitted", False):
                 st.session_state["submitted"] = True
-                st.session_state["user_choice"] = choice
+                st.session_state["user_choice"] = user_c
 
+                # 1. Tăng tổng số câu đã luyện tập
                 st.session_state["practice_total"] = st.session_state.get("practice_total", 0) + 1
                 tong_da_luyen = st.session_state["practice_total"]
 
-                is_correct = (choice == q["correct_answer"])
+                # 2. Chấm điểm linh hoạt
+                if co_options:
+                    is_correct = (user_c == q["correct_answer"])
+                else:
+                    # So khớp kết quả trả lời ngắn (làm sạch khoảng trắng, chữ hoa/thường)
+                    is_correct = str(user_c).strip().replace(" ", "").lower() == str(q["correct_answer"]).strip().replace(" ", "").lower()
+
                 if is_correct:
                     st.session_state["practice_correct"] = st.session_state.get("practice_correct", 0) + 1
                 else:
@@ -857,6 +882,7 @@ Trả về đúng định dạng JSON:
                 so_sai = st.session_state.get("practice_wrong", 0)
                 chu_de = st.session_state.get("cur_question_topic", topic)
 
+                # 3. Gửi dữ liệu lên Google Sheet như bản cũ
                 try:
                     if 'send_data_to_gsheet' in globals():
                         da_gui = send_data_to_gsheet(
@@ -871,12 +897,12 @@ Trả về đúng định dạng JSON:
                 except Exception:
                     pass
        
+        # Hiển thị kết quả và lời giải khi đã nộp bài
         if st.session_state.get("submitted", False):
-            user_c = st.session_state.get("user_choice", choice)
-            if user_c == q["correct_answer"]:
+            if is_correct:
                 st.success("🎉 Chính xác! Em đã làm chủ phương pháp giải bài toán này.")
             else:
-                st.error(f"❌ Chưa chính xác. Đáp án đúng là: **{q['correct_answer']}**")
+                st.error(f"❌ Chưa chính xác. Đáp án đúng chuẩn là: **{q['correct_answer']}**")
                 st.info("💡 Em đọc kỹ lời giải bên dưới rồi có thể trao đổi với Gia sư AI ngay phần bên dưới nhé!")
 
             with st.expander("📖 Xem lời giải chi tiết và phân tích bẫy sai lầm", expanded=True):
