@@ -791,7 +791,7 @@ Trả về đúng định dạng JSON:
         st.session_state["last_q"] = st.session_state["quiz"]["question"]
         success = True
         break
-                    except Exception:
+        except Exception:
                         continue
 
                 if not success:
