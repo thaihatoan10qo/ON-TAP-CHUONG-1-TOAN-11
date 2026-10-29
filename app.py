@@ -767,7 +767,6 @@ Trả về đúng định dạng JSON:
         except Exception:
             continue
             success = False
-    # Sử dụng đúng các model yêu thích của cô: gemini-3.1-flash-lite và gemini-3.8-flash
     cac_model = ['gemini-3.1-flash-lite', 'gemini-3.8-flash']
     for ten_model in cac_model:
         try:
@@ -780,19 +779,22 @@ Trả về đúng định dạng JSON:
                     temperature=0.7
                 )
             )
-           
-                    txt_resp = response.text.strip()
-        if txt_resp.startswith("```json"): txt_resp = txt_resp[7:]
-        elif txt_resp.startswith("```"): txt_resp = txt_resp[3:]
-        if txt_resp.endswith("```"): txt_resp = txt_resp[:-3]
-        
-        st.session_state["quiz"] = json.loads(txt_resp.strip())
-        st.session_state["submitted"] = False
-        st.session_state["last_q"] = st.session_state["quiz"]["question"]
-        success = True
-        break
+            txt_resp = response.text.strip()
+            if txt_resp.startswith("```json"):
+                txt_resp = txt_resp[7:]
+            elif txt_resp.startswith("```"):
+                txt_resp = txt_resp[3:]
+            if txt_resp.endswith("```"):
+                txt_resp = txt_resp[:-3]
+            
+            st.session_state["quiz"] = json.loads(txt_resp.strip())
+            st.session_state["submitted"] = False
+            st.session_state["last_q"] = st.session_state["quiz"]["question"]
+            success = True
+            break
         except Exception:
-                        continue
+            continue
+            
 
                 if not success:
                     import random
