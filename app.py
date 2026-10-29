@@ -687,16 +687,16 @@ with tab_luyentap:
 
                 # 1. Khai báo quy tắc định dạng linh hoạt theo mức độ tư duy
     if level in ["Vận dụng", "Vận dụng cao"]:
-    dinh_dang_yeu_cau = """
-    - Đây là câu hỏi TRẢ LỜI NGẮN (tự luận).
-    - Trường 'options' để trống: {}
-    - Trường 'correct_answer': BẮT BUỘC là đáp số cuối cùng dạng số thập phân (tối đa 4 ký tự, tuyệt đối không dùng phân số, ví dụ: 0.5, -1.25,...).
+        dinh_dang_yeu_cau = """
+        - Đây là câu hỏi TRẢ LỜI NGẮN (tự luận).
+        - Trường 'options' để trống: {}
+        - Trường 'correct_answer': BẮT BUỘC là đáp số cuối cùng dạng số thập phân (tối đa 4 ký tự, tuyệt đối không dùng phân số, ví dụ: 0.5, -1.25,...).
     """
     else:
-    dinh_dang_yeu_cau = """
-    - Đây là câu hỏi TRẮC NGHIỆM 4 lựa chọn (A, B, C, D) dành cho mức độ Nhận biết và Thông hiểu.
-    - Vị trí đáp án đúng ('correct_answer') PHẢI được chọn ngẫu nhiên giữa A, B, C hoặc D.
-    - Phải có đầy đủ 4 phương án trong trường 'options'.
+        dinh_dang_yeu_cau = """
+        - Đây là câu hỏi TRẮC NGHIỆM 4 lựa chọn (A, B, C, D) dành cho mức độ Nhận biết và Thông hiểu.
+        - Vị trí đáp án đúng ('correct_answer') PHẢI được chọn ngẫu nhiên giữa A, B, C hoặc D.
+        - Phải có đầy đủ 4 phương án trong trường 'options'.
     """
 
                 # 2. Xây dựng nội dung prompt cho btn_clone hoặc btn_gen
