@@ -763,8 +763,7 @@ Trả về đúng định dạng JSON:
             st.session_state["submitted"] = False
           
             st.session_state["last_q"] = st.session_state["quiz"]["question"]
-            if "user_choice" in st.session_state:
-                del st.session_state["user_choice"]
+            st.session_state["input_tra_loi_ngan"] = ""
             success = True
             break
         except Exception:
