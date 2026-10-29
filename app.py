@@ -700,7 +700,7 @@ else:
     """
 
                 # 2. Xây dựng nội dung prompt cho btn_clone hoặc btn_gen
-                if btn_clone:
+if btn_clone:
                     prompt = f"""
 Câu hỏi gốc học sinh vừa làm:
 "{st.session_state['last_q']}"
