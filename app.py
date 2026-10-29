@@ -781,16 +781,16 @@ Trả về đúng định dạng JSON:
                 )
             )
            
-                        txt_resp = response.text.strip()
-                        if txt_resp.startswith("```json"): txt_resp = txt_resp[7:]
-                        elif txt_resp.startswith("```"): txt_resp = txt_resp[3:]
-                        if txt_resp.endswith("```"): txt_resp = txt_resp[:-3]
-                        
-                        st.session_state["quiz"] = json.loads(txt_resp.strip())
-                        st.session_state["submitted"] = False
-                        st.session_state["last_q"] = st.session_state["quiz"]["question"]
-                        success = True
-                        break
+                    txt_resp = response.text.strip()
+        if txt_resp.startswith("```json"): txt_resp = txt_resp[7:]
+        elif txt_resp.startswith("```"): txt_resp = txt_resp[3:]
+        if txt_resp.endswith("```"): txt_resp = txt_resp[:-3]
+        
+        st.session_state["quiz"] = json.loads(txt_resp.strip())
+        st.session_state["submitted"] = False
+        st.session_state["last_q"] = st.session_state["quiz"]["question"]
+        success = True
+        break
                     except Exception:
                         continue
 
